@@ -1,0 +1,11 @@
+target/
+.idea/
+.git/
+.gitattributes
+.gitignore
+.mvn/wrapper/maven-wrapper.jar
+openspec/
+.claude/
+frontend/
+*.md
+.env

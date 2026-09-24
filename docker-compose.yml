@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:17-trixie
+    profiles: ["${PROFILE_DB:-local}"]
+    environment:
+      POSTGRES_DB: ${DB_NAME:-login_base}
+      POSTGRES_USER: ${DB_USER:-login_base}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-login_base}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    profiles: ["${PROFILE_APP:-desativado}"]
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-login_base}
+      DB_USER: ${DB_USER:-login_base}
+      DB_PASSWORD: ${DB_PASSWORD:-login_base}
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    profiles: ["${PROFILE_FRONTEND:-local}"]
+    environment:
+      VITE_PRIMEUI_LICENSE: ${VITE_PRIMEUI_LICENSE:-}
+      VITE_USE_POLLING: "true"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+
+volumes:
+  db-data:
+  frontend-node-modules:
