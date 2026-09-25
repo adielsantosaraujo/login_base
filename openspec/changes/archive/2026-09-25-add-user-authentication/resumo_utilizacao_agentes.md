@@ -39,3 +39,20 @@ Progresso da change: 17/17 tasks concluídas.
 Resultado: 67 testes passando (`./mvnw test`), `openspec validate add-user-authentication --strict` válido e verificação integrada (7.1) aprovada.
 
 Sessão principal (orquestrador): consumo não incluso — consulte com `/cost`.
+
+## Execução de 2026-09-25 — archive (sync de specs)
+
+| # | Agente (description) | Função | Modelo | Status | Tool uses | Duração | Tokens |
+|---|----------------------|--------|--------|--------|-----------|---------|--------|
+| 1 | Sync specs add-user-authentication | documento (sync de specs) | haiku | ✅ concluído | 12 | 1m 41s | 38.809 |
+
+### Totais por modelo
+
+| Modelo | Agentes | Tokens |
+|--------|---------|--------|
+| haiku  | 1 | 38.809 |
+| **Total** | **1** | **38.809** |
+
+Specs principais criadas: `openspec/specs/access-control-data/spec.md` e `openspec/specs/user-authentication/spec.md`.
+
+Sessão principal (orquestrador): consumo não incluso — consulte com `/cost`.
