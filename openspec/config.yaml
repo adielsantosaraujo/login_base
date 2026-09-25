@@ -16,22 +16,51 @@ context: |
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  tasks:
+    - |
+      tasks.md é um ÍNDICE enxuto. Cada task ocupa UMA linha sob um heading `## N. Grupo`,
+      no formato `- [ ] X.Y [Título curto](tasks/X.Y-slug.md) — verificação: <resumo curto>`.
+      Não incluir mais nada no índice: sem sub-bullets, sem detalhes.
+    - |
+      Para cada task do índice, criar o arquivo `tasks/X.Y-slug.md` na pasta da change (id igual
+      ao do índice, sem zero à esquerda; slug em kebab-case, sem acentos, com até ~5 palavras).
+      O arquivo da task não usa checkboxes — usar bullets simples.
+    - |
+      O arquivo da task deve ser autocontido: o executor lê apenas esse arquivo (e o que estiver
+      linkado nele), nunca tasks.md nem outros arquivos de task. Incluir trechos curtos copiados
+      das specs/design que forem essenciais (ex.: texto do requirement e cenários relevantes,
+      decisão de design), além do link para a origem com uma linha explicando por que lê-la.
+    - |
+      Convenção de links (todos markdown clicáveis): artefatos da própria change usam caminhos
+      relativos ao arquivo da task (`../proposal.md`, `../design.md`, `../specs/<cap>/spec.md`,
+      outras tasks `2.1-slug.md`, índice `../tasks.md`); qualquer outro arquivo do repositório
+      (código, config, specs principais em openspec/specs) usa caminho a partir da raiz do
+      repositório com barra inicial, ex. `[Usuario.java](/src/main/java/.../Usuario.java)` ou
+      `[spec](/openspec/specs/<cap>/spec.md)` — esses links não quebram durante o archive; âncoras
+      apenas em headings (minúsculas, com hífens); um arquivo ainda não criado recebe a marca
+      "(novo)"; linkar apenas os arquivos/seções realmente necessários.
+    - |
+      Usar como modelo do arquivo de task o template em `openspec/templates/task.md` (ler o
+      arquivo e seguir a estrutura e seções literalmente).
+    - |
+      Ao revisar ou atualizar tasks, manter o índice e os arquivos coerentes entre si (criar,
+      renomear e apagar em conjunto); o arquivo da task é a fonte de verdade dos detalhes.
+    - |
+      Após gravar as mudanças, verificar que todo link do índice aponta para um `tasks/*.md`
+      existente e que os links para arquivos existentes resolvem corretamente.
 
 # Per-operation guidance (optional)
 # Add advisory guidance for how apply and archive work should be conducted.
 # This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - |
+        Para cada task pendente, entregar ao executor apenas o caminho do seu
+        `tasks/X.Y-slug.md` (ele deve seguir os links contidos no arquivo); não passar tasks.md
+        nem outros arquivos de task.
+      - Apenas o orquestrador marca `- [x]` no índice tasks.md.
+      - |
+        Se a change não tiver pasta `tasks/` (formato legado), usar o texto da linha
+        correspondente em tasks.md como a tarefa.

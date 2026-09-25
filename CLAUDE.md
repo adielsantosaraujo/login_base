@@ -14,3 +14,17 @@
   (`openspec/changes/<change>/`), com a lista de agentes usados e os tokens de cada um (o agente
   que grava o relatório fica fora da lista). Em pedido avulso, sem change, apresente o relatório
   no chat.
+
+## OpenSpec — formato das tasks
+
+- Em changes do OpenSpec, `tasks.md` é um índice enxuto (uma linha por task com checkbox `[ ]` e
+  link) e cada task tem seu arquivo autocontido em `openspec/changes/<change>/tasks/<id>-<slug>.md`;
+  as regras completas estão em `openspec/config.yaml` (seções `rules.tasks` e
+  `operations.apply.guidance`).
+- Links nos arquivos de task são markdown clicáveis: relativos para artefatos da própria change
+  (ex.: `../design.md`) e a partir da raiz do repositório (ex.: `/src/...`) para os demais
+  arquivos.
+- O subagente executor recebe apenas o arquivo `.md` da sua task; só o orquestrador marca `[x]`
+  no índice `tasks.md`.
+- Ao revisar tasks (inclusive ajustes pequenos), manter índice e arquivos de task coerentes entre
+  si.
