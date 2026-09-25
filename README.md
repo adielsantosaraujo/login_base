@@ -90,6 +90,95 @@ com `no service selected` (exit code 1) e não sobe nenhum serviço, já que `db
 `app` e `frontend` agora dependem de profile. Use `make up` ou
 `docker compose --profile local up -d`.
 
+## Autenticação e banco de dados
+
+### Esquema do banco
+
+O banco de dados é versionado com **Flyway**. As migrações em
+`src/main/resources/db/migration/` criam e gerenciam o schema:
+
+- **V1__controle_acesso.sql**: tabelas `usuarios`, `perfis`, `permissoes`,
+  `usuario_rel_perfis`, `perfis_rel_permissoes` e `sessoes`, com campos de
+  auditoria (`criado_em`, `criado_por`, `alterado_em`, `alterado_por`).
+  O e-mail é único (índice funcional em minúsculas) e normalizado; celular é
+  opcional, único e validado com 11 dígitos (DDD + número, armazenado só com
+  dígitos).
+- **V2__perfil_admin.sql**: insere o perfil `ADMIN`.
+
+O Hibernate apenas **valida** o schema (`spring.jpa.hibernate.ddl-auto=validate`):
+não cria nem altera tabelas — elas já existem no banco. Se o volume tiver
+tabelas antigas criadas pelo antigo `ddl-auto=update`, o Flyway falha na
+inicialização. Para recriar o volume:
+
+```bash
+make down
+docker volume rm login_base_db-data  # ⚠️ apaga todos os dados
+make up
+```
+
+### Administrador inicial
+
+O perfil `ADMIN` é criado pela migração V2. Na primeira inicialização, a
+aplicação cria o usuário administrador (nome "Administrador") vinculado ao perfil
+`ADMIN`, lendo as variáveis de ambiente:
+
+- **`ADMIN_EMAIL`** (padrão `admin@loginbase.local`): e-mail do admin.
+- **`ADMIN_PASSWORD`** (padrão vazio): senha do admin. Se vazia, nenhum admin é
+  criado — apenas um aviso é registrado no log.
+
+As variáveis são definidas no `.env` (ver `.env.example`) e repassadas ao
+serviço `app` no `docker-compose.yml`. O usuário é criado apenas se
+`ADMIN_PASSWORD` estiver definida e o e-mail ainda não existir.
+
+### URLs de acesso
+
+- **`http://localhost:8080/login`**: tela de login (usuário anônimo).
+- **`http://localhost:8080/`**: página inicial protegida, exibindo
+  "Seja bem vindo" (requer autenticação).
+
+Logout via `POST /logout`.
+
+### Login
+
+- Aceita **e-mail ou celular** + senha.
+- E-mail é normalizado (minúsculas, sem espaços).
+- Celular: 11 dígitos (DDD + número), com ou sem máscara. A aplicação normaliza
+  para somente dígitos na busca.
+- Em caso de falha (usuário inexistente, senha incorreta ou conta sem perfil
+  ativo), a mensagem exibida é sempre "Usuário ou senha inválidos." (genérica,
+  sem enumeração).
+
+### Sessão
+
+A sessão HTTP é configurada em `application.properties`:
+
+- **`SESSION_TIMEOUT`** (padrão `30m`): tempo de inatividade até expiração.
+- **`SESSION_COOKIE_SECURE`** (padrão `false`): use `true` apenas com HTTPS.
+
+Cada login autenticado é registrado na tabela `sessoes` com IP da origem,
+identificação do dispositivo (User-Agent), e timestamp de início/fim.
+
+### Desenvolvimento local fora do Docker
+
+Para rodar a aplicação fora do Docker (pelo IntelliJ ou `./mvnw`), o banco
+deve estar de pé no Docker:
+
+```bash
+make up PROFILE_FRONTEND=desativado  # sobe só o banco
+# ou
+docker compose --profile local up -d db
+```
+
+Depois, execute a aplicação com as variáveis do `.env` exportadas, por exemplo:
+
+```bash
+set -a && . ./.env && set +a
+ADMIN_PASSWORD=sua-senha ./mvnw spring-boot:run
+```
+
+Ou configure as variáveis no IntelliJ na aba "Run Configurations" (opção
+"Environment variables").
+
 ## Rodando/depurando pelo IntelliJ
 
 Para ter debugger, hot-swap e breakpoints, o fluxo recomendado no dia a dia é subir
