@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Keep a Changelog 1.1 (adaptado por change OpenSpec) |
 | Público | todos |
 
@@ -22,7 +22,7 @@
 | 4 | add-subagent-dev-skill | Arquivada | 2026-09-23 | 1 | 6 | n/d | n/d |
 | 5 | add-user-authentication | Arquivada | 2026-09-25 | 4 | 17 | 20 | 1.254.764 |
 | 6 | add-city-builder-game | Arquivada (2026-09-27) | 2026-09-27 | 1 | 25 | 36 | 4.268.464 |
-| 7 | add-frontend-build | Aberta (não implementada) | 2026-09-27 | 1 | 6 | n/d | n/d |
+| 7 | add-frontend-build | Implementada | 2026-09-27 | 1 | 6 | n/d | n/d |
 
 ---
 
@@ -218,50 +218,49 @@
 
 ### Change 7: add-frontend-build
 
-**Status:** Aberta (não implementada) · **Propósito:** Build de produção integrado do frontend Vue/Vite, servido pelo backend Spring em `/` com assets públicos em `/app/**`
+**Status:** Implementada · **Propósito:** Build de produção integrado do frontend Vue/Vite, servido pelo backend Spring em `/` com assets públicos em `/app/**`
 
-**Commits (artefatos da change, código não implementado):**
+**Commits:**
 
 | Hash | Data | Mensagem |
 |---|---|---|
-| `690f4d8` | 2026-09-27 | Implementa serviço `frontend-build`, script Python e integração ao backend (artefatos: proposal.md, design.md, specs, tasks) |
+| `690f4d8` | 2026-09-27 | Implementa serviço `frontend-build`, script Python e integração ao backend |
 
-**Nota:** commit `690f4d8` contém os artefatos da change e a mudança de porta 8080 → 80 (`.env.example`, `Dockerfile` EXPOSE 80, `docker-compose.yml` "80:80", `vite.config.ts` BACKEND_URL, `application.properties` server.port, `openspec/specs/frontend-app/spec.md`) — origem da divergência D-16; a mensagem descreve a implementação, que ainda não ocorreu no código.
+**Funcionalidades:**
 
-**Funcionalidades Previstas:**
-
-- **Adicionado** (não implementado):
-  - **Script Python `scripts/build_front.py`:** Executa `docker compose run --rm --build frontend-build`, valida `frontend/dist/index.html`, copia assets para `src/main/resources/static/app/` e index para `src/main/resources/templates/sistema/seguro/index.html`, registra `build.log`.
+- **Adicionado:**
+  - **Script Python `scripts/build_front.py`:** Executa `docker compose run --rm --build frontend-build`, valida `frontend/dist/index.html`, copia assets para `src/main/resources/static/app/` e index para `src/main/resources/templates/sistema/seguro/index.html`, registra `build.log`. Usa constantes de cores reais de `scripts/cores.py`.
   - **Serviço Docker `frontend-build`:** Profile `build`, volume anônimo `/app/node_modules`, imagem Node 26.
   - **Alvo Makefile `make build_front`:** Executa o script; aparece em `make help`.
   - **Configuração Vite:** `base: '/app/'` apenas em builds (`command === 'build'`); dev server inalterado.
-  - **Rotas da SPA no `PaginaController`:** Fallback do history mode para `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}`.
-  - **Acesso público a assets:** `/app/**` em `SecurityConfig.permitAll()`.
+  - **Rotas da SPA no `PaginaController`:** Fallback do history mode para `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` (lista explícita).
+  - **Acesso público a assets:** `/app/**` em `SecurityConfig` com `requestMatchers`.
   - **Gitignore:** Artefatos gerados (`static/app/`, template index, `build.log`, `frontend/dist/`).
-  - **Testes:** Template mínimo em `src/test/resources/`; verifica rotas autenticadas e acesso público.
+  - **Testes:** Template mínimo em `src/test/resources/`; verifica rotas autenticadas (200) e acesso público; 242 testes passando, 0 falhas.
 
-- **Modificado** (previsto):
-  - `PaginaController`: Adiciona rotas da SPA.
-  - `SecurityConfig`: Adiciona `/app/**` ao permitAll.
-  - `AutenticacaoWebMvcTest`: Ajusta testes de rotas para verificar view + status 200.
+- **Modificado:**
+  - `PaginaController`: Rotas da SPA.
+  - `SecurityConfig`: `/app/**` em permitAll com `requestMatchers`.
+  - `AutenticacaoWebMvcTest`: Validação de rotas e view + status 200.
   - `.gitignore`, `Makefile`, `docker-compose.yml`, `frontend/vite.config.ts`.
   - Docs: `09-guia-desenvolvedor.md`, `10-implantacao-operacao.md`.
 
-- **BREAKING** (previsto):
-  - `/` deixa de mostrar placeholder "Seja bem vindo"; passa a servir a SPA.
-  - `static/app/` e template index.html passam a ser gerados, não versionados.
+- **BREAKING:**
+  - `/` serve a SPA (em vez de placeholder).
+  - `static/app/` e template index.html são gerados (não versionados).
   - Clone limpo exige `make build_front` antes de `./mvnw package` ou `docker build`.
 
-- **Capabilities** (previsto):
+- **Capabilities:**
   - Novas: Nenhuma.
   - Modificadas: `user-authentication` (RF-AUT-005: Página inicial segura), `frontend-app` (RF-FRE-008, RF-FRE-009, RF-FRE-010: Build integrado, rotas, assets públicos).
 
-- **Estatísticas** (previsto):
+- **Estatísticas:**
   - **6 tasks** (1.1–4.1; grupos: infraestrutura do build, backend servindo a SPA, docs, verificação).
-  - **Nenhum agente designado** (em aberto).
-  - **Tokens:** a confirmar após implementação.
-  - **Progresso:** 0/6 tasks concluídas (não iniciada).
-  - **Relatório:** pendente.
+  - **Agentes:** a confirmar em relatório (estrutura de subagentes utilizada).
+  - **Tokens:** a confirmar em relatório.
+  - **Progresso:** 6/6 tasks concluídas (100%).
+  - **Testes:** 242 testes, 0 falhas.
+  - **Relatório:** pendente (change não arquivada; arquivamento futuro).
 
 ---
 
@@ -311,8 +310,8 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 | Infra (4) | 1 | 3 | n/d | n/d |
 | Autenticação (5) | 1 | 17 | 20 | 1.254.764 |
 | Jogo (6) | 1 | 25 | 36 | 4.268.464 |
-| Frontend build (7, previsto) | 1 | 6 | n/d | n/d |
-| **Total (vigente + previsto)** | **7** | **67** | **56+** | **~5.523.228** |
+| Frontend build (7) | 1 | 6 | n/d | n/d |
+| **Total** | **7** | **67** | **56+** | **~5.523.228** |
 
 ---
 
@@ -325,11 +324,11 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 3. Specs delta agora em `openspec/specs/` (sincronizadas via `/opsx:sync`).
 4. Documentação refs atualizada (links removidos de archive, sufixos removidos).
 
-### Change `add-frontend-build` (aberta, não implementada)
+### Change `add-frontend-build` (implementada)
 
-1. Estrutura em `openspec/changes/add-frontend-build/` com proposal.md, design.md, specs/, tasks.md.
-2. Status: "Aberta (não implementada)" na tabela (§1).
-3. Documentação marcada como "previsto — change add-frontend-build" em todos os docs afetados.
+1. Estrutura em `openspec/changes/add-frontend-build/` com proposal.md, design.md, specs/, tasks.md (ainda não arquivada).
+2. Status: "Implementada" na tabela (§1).
+3. Funcionalidades entregues; documentação atualizada para estado de produção.
 
 ---
 
@@ -337,5 +336,6 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto, descreve funcionalidades entregues | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (jogo arquivada) | Adiel, com apoio de agentes Claude |

@@ -4,10 +4,10 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Referência REST em Markdown (estilo OpenAPI) |
 | Público | Desenvolvedores, QA |
-| Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `src/main/java/com/example/loginbase/web/PaginaController.java`, `frontend/src/api/jogo.ts`, `design.md` da change `add-frontend-build` |
+| Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `src/main/java/com/example/loginbase/web/PaginaController.java`, `frontend/src/api/jogo.ts` |
 
 > Parte da [documentação do login_base](README.md). Especifica os endpoints da API REST do jogo, formatos de requisição/resposta, tratamento de erros, autenticação e CSRF.
 
@@ -105,9 +105,7 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 
 ---
 
-### GET / — Página Inicial / SPA (Previsto)
-
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+### GET / — Página Inicial / SPA
 
 **Método:** `GET`  
 **URL:** `/`  
@@ -118,18 +116,17 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 
 | Código | Descrição |
 |--------|-----------|
-| `200` | SPA servida (template `sistema/seguro/index.html`) |
+| `200` | SPA servida (template `sistema/seguro/index.html`, gerado por `make build_front`) |
 | `302` | Anônimo redirecionado para `/login` |
 
 **Comportamento:**
-- **Atual**: Template Thymeleaf "Seja bem vindo" (sem logout button).
-- **Previsto**: Devolve a view `sistema/seguro/index.html` (a SPA). Usuário anônimo é redirecionado para `/login` pelo `SecurityFilterChain`.
+- Devolve a view `sistema/seguro/index.html` (a SPA, gerada em build). Usuário anônimo é redirecionado para `/login` pelo `SecurityFilterChain`.
 
 ---
 
-### GET /fazenda, /forja, /quartel, /masmorras, /batalhas/{id} — Rotas da SPA (Previsto)
+### GET /fazenda, /forja, /quartel, /masmorras, /batalhas/{id} — Rotas da SPA
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+> 
 
 **Método:** `GET`  
 **URL:** `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}`  
@@ -153,9 +150,9 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 
 ---
 
-### GET /app/** — Assets da SPA (Previsto)
+### GET /app/** — Assets da SPA
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+> 
 
 **Método:** `GET`  
 **URL:** `/app/**` (ex.: `/app/assets/main.js`, `/app/assets/index-<hash>.css`)  
@@ -947,5 +944,6 @@ Os três controllers do jogo são anotados com `@Transactional` na classe (GET e
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Adiciona seção "Rotas de página (não-API)" para change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

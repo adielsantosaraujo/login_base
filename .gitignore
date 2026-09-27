@@ -34,3 +34,8 @@ build/
 
 ### Docker / env ###
 .env
+
+### Frontend build (gerado) ###
+build.log
+/src/main/resources/static/app/
+/src/main/resources/templates/sistema/seguro/index.html

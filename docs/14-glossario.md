@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Glossário alfabético técnico e de negócio |
 | Público | todos (desenvolvedores, QA, jogadores) |
-| Fontes | `openspec/changes/archive/2026-09-27-add-city-builder-game/design.md`; `jogo/catalogo/*.java`; `jogo/dominio/*.java`; `CLAUDE.md`; `.claude/skills/dev-subagentes/SKILL.md`; `../openspec/changes/add-frontend-build/design.md` e `proposal.md` (previsto) |
+| Fontes | `openspec/changes/archive/2026-09-27-add-city-builder-game/design.md`; `jogo/catalogo/*.java`; `jogo/dominio/*.java`; `CLAUDE.md`; `.claude/skills/dev-subagentes/SKILL.md`; `openspec/changes/add-frontend-build/design.md` e `proposal.md` |
 
 > Parte da [documentação do login_base](README.md). Definições de termos de jogo, acesso, técnicos e de processo usados em todo o projeto.
 
@@ -259,43 +259,37 @@ Cookie enviado pelo servidor; contém token CSRF. Cliente o lê e envia como hea
 
 ### Assets (`/app/**`)
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build) (aberta, não implementada).**
+> 
 
 Arquivos estáticos (CSS, JS, imagens) do frontend Vue/Vite após build de produção. Servidos em `/app/**` pelo backend Spring sem autenticação.
 
 ### Base do Vite
 
-> **Previsto — change add-frontend-build.**
 
-Propriedade `base` do `vite.config.ts` que define o caminho raiz dos assets. Hoje: `/` (dev server). Previsto: `/app/` apenas em builds de produção (`command === 'build'`), permitindo que o frontend referencie assets em `/app/**` sem erro 404. Dev server inalterado (base `/`).
+Propriedade `base` do `vite.config.ts` que define o caminho raiz dos assets. Dev server: `/` (sem restrição). Build de produção: `/app/` (quando `command === 'build'`), permitindo que o frontend referencie assets em `/app/**` sem erro 404.
 
 ### Build de produção do frontend (`make build_front`)
 
-> **Previsto — change add-frontend-build.**
 
 Alvo Makefile que executa `python3 ./scripts/build_front.py`, que por sua vez roda `docker compose run --rm --build frontend-build` (serviço Docker efêmero com profile `build`). Gera `frontend/dist/`, copia assets para `src/main/resources/static/app/` e index HTML para `src/main/resources/templates/sistema/seguro/index.html`. Tudo em `.gitignore`. Obrigatório em clone limpo antes de `./mvnw package` (do contrário, template não existe e GET `/` retorna HTTP 500).
 
 ### `build.log`
 
-> **Previsto — change add-frontend-build.**
 
-Arquivo de log gerado pelo script `scripts/build_front.py` (previsto) após cada execução de `make build_front`. Registra saída de `docker compose run` e erros. Truncado a cada execução. Listado em `.gitignore`.
+Arquivo de log gerado pelo script `scripts/build_front.py` após cada execução de `make build_front`. Registra saída de `docker compose run` e erros. Truncado a cada execução. Listado em `.gitignore`.
 
 ### Fallback do history mode
 
-> **Previsto — change add-frontend-build.**
 
-Mecânica do Vue Router em modo history (sem hash): quando o navegador acessa uma rota como `/fazenda` diretamente (F5 ou link externo), o backend deve devolver o mesmo HTML de índice (`index.html`). Será implementado no `PaginaController` (mapeando `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` para a view `sistema/seguro/index`), permitindo que o router no cliente decida qual página mostrar.
+Mecânica do Vue Router em modo history (sem hash): quando o navegador acessa uma rota como `/fazenda` diretamente (F5 ou link externo), o backend devolve o mesmo HTML de índice (`index.html`). Implementado no `PaginaController` (mapeando `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` para a view `sistema/seguro/index`), permitindo que o router no cliente decida qual página mostrar.
 
 ### `frontend-build` (serviço)
 
-> **Previsto — change add-frontend-build.**
 
 Serviço Docker no `docker-compose.yml` com profile `build` (não sobe em `make up`). Executa `npm run build` do frontend em ambiente isolado (`build: ./frontend` com base `node:26-trixie-slim`). Volume anônimo `/app/node_modules` descartado após `--rm`, garantindo build limpo.
 
 ### Profile `build`
 
-> **Previsto — change add-frontend-build.**
 
 Profile no `docker-compose.yml` que ativa o serviço `frontend-build` apenas quando explicitamente requisitado (`docker compose --profile build ...`). Não sobe automaticamente em `make up`. Garante que dev não é afetado.
 
@@ -344,9 +338,10 @@ Requisito não-funcional. Aspectos: autenticação (login/sessão), autorizaçã
 
 ### SPA
 
-> **Previsto em produção (change add-frontend-build):** servida pelo Spring Boot em `/` (view `sistema/seguro/index` via Thymeleaf, gerada pelo `make build_front`) e assets em `/app/**`.
-
-Single Page Application. Frontend Vue 3 servido em **dev** pelo Vite dev server na porta 5173, com proxy para backend na porta 80. Roteamento em history mode (sem hash). Não usa Pinia; estado em composable `useVila`.
+Single Page Application. Frontend Vue 3:
+- **Dev:** servido pelo Vite dev server na porta 5173, com proxy para backend na porta 80.
+- **Produção:** servido pelo Spring Boot em `/` (view `sistema/seguro/index` via Thymeleaf, gerada pelo `make build_front`) e assets em `/app/**`.
+Roteamento em history mode (sem hash). Não usa Pinia; estado em composable `useVila`.
 
 ### Sprint
 Iteração de desenvolvimento (não usado aqui; apenas OpenSpec changes).
@@ -421,5 +416,6 @@ Arquivo modelo em `openspec/templates/task.md` com seções padrão (objetivo, a
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

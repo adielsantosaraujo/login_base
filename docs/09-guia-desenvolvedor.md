@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Diátaxis (tutorial + how-tos) |
 | Público | Novos desenvolvedores, colaboradores |
-| Fontes | `README.md`, `Makefile`, `.env.example`, `docker-compose.yml`, `pom.xml`, `CLAUDE.md`, `scripts/build_front.py` (previsto), design.md da change `add-frontend-build` (aberta) |
+| Fontes | `README.md`, `Makefile`, `.env.example`, `docker-compose.yml`, `pom.xml`, `CLAUDE.md`, `scripts/build_front.py` |
 
 > Parte da [documentação do login_base](README.md). Guia prático para clonar o projeto, subir o ambiente, rodar testes, e implementar novas funcionalidades.
 
@@ -97,7 +97,7 @@ docker ps
 4. Aguardar: "Tomcat started on port(s): 80 with context path '/'".
 5. Acessar: `http://localhost:5173` no navegador (Vite dev server, sem build).
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** Após a change, acessar `http://localhost/` sem ter rodado `make build_front` dará HTTP 500; hoje exibe "Seja bem vindo". Em desenvolvimento sem build, o acesso continua por `http://localhost:5173` (Vite + proxy). Para acessar o backend direto em `http://localhost/` (com a SPA gerada), será necessário executar `make build_front` antes — ver §4.10.
+>  Em desenvolvimento sem build, o acesso à SPA continua por `http://localhost:5173` (Vite + proxy). Para acessar o backend direto em `http://localhost/` (com a SPA gerada), é necessário executar `make build_front` antes — ver §4.10.
 
 **Nota sobre privilégios de porta 80:** no Linux, WSL e macOS, rodar a aplicação na porta 80 exige privilégio elevado (root ou sudo) ou uma configuração especial (ex.: `setcap`), pois portas < 1024 são reservadas. Alternativas:
 - Rodar com `sudo ./mvnw spring-boot:run` (rápido, mas sem recomendação para dev).
@@ -121,7 +121,7 @@ docker ps
    - Prédios listados (CENTRO_VILA, ARMAZEM, FAZENDA, SERRARIA, PEDREIRA, MINA_FERRO nível 0).
    - Menu navegação: Vila, Fazenda, Forja, Quartel, Masmorras, Sair.
 
-**Nota:** Se tentar acessar `http://localhost/` antes de executar `make build_front`, receberá HTTP 500 — veja §4.10 (previsto).
+**Nota:** Se tentar acessar `http://localhost/` antes de executar `make build_front`, receberá HTTP 500 — veja §4.10.
 
 ---
 
@@ -153,16 +153,16 @@ login_base/
 │   │   │   ├── application.properties # Configuração Spring
 │   │   │   ├── db/migration/          # Scripts Flyway (V1, V2, V3)
 │   │   │   ├── static/
-│   │   │   │   └── app/              # Assets gerados (GERADO, ignorado — previsto)
+│   │   │   │   └── app/              # Assets gerados (GERADO, ignorado )
 │   │   │   └── templates/
 │   │   │       ├── sistema/seguro/
-│   │   │       │   └── index.html    # SPA index (hoje: placeholder versionado; previsto: gerado e ignorado)
+│   │   │       │   └── index.html    # SPA index (gerado e ignorado)
 │   │   │       └── sistema/public/
 │   │   │           └── login.html
 │   │   └── test/
 │   │       └── resources/
 │   │           └── templates/sistema/seguro/
-│   │               └── index.html    # Template mínimo para testes (previsto)
+│   │               └── index.html    # Template mínimo para testes
 │   └── test/java/...                 # Testes JUnit 5
 ├── frontend/
 │   ├── src/
@@ -173,18 +173,18 @@ login_base/
 │   │   ├── router/                   # Roteamento (router/index.ts)
 │   │   ├── App.vue                   # Componente raiz
 │   │   └── main.ts                   # Entry point
-│   ├── dist/                         # Output Vite (GERADO, ignorado — previsto)
+│   ├── dist/                         # Output Vite (GERADO, ignorado )
 │   ├── package.json                  # Dependências (Vue, Vite, PrimeVue)
-│   ├── vite.config.ts                # Configuração Vite (proxy, base: '/app/' em build — previsto)
+│   ├── vite.config.ts                # Configuração Vite (proxy, base: '/app/' em build )
 │   └── Dockerfile                    # Imagem Node 26
 ├── scripts/
-│   ├── build_front.py                # Build de produção frontend (previsto)
+│   ├── build_front.py                # Build de produção frontend
 │   ├── executar.py                   # Menu interativo do Makefile
 │   └── cores.py                      # Suporte a cores em scripts Python
 ├── Dockerfile                        # Build multi-stage Java (Maven → JRE)
-├── docker-compose.yml                # Serviços: db, app, frontend, frontend-build (profile build — previsto)
-├── Makefile                          # Alvos: up, down, down_v, logs_front, build_front (previsto), e
-├── build.log                         # Log do build frontend (GERADO, ignorado — previsto)
+├── docker-compose.yml                # Serviços: db, app, frontend, frontend-build (profile build )
+├── Makefile                          # Alvos: up, down, down_v, logs_front, build_front, e
+├── build.log                         # Log do build frontend (GERADO, ignorado )
 ├── .env.example                      # Template de variáveis
 ├── .gitignore                        # Arquivos ignorados
 ├── pom.xml                           # Dependências Maven
@@ -236,7 +236,7 @@ make down_v
 Por padrão, o backend roda na IDE (mais rápido e fácil de debugar). Para rodar também em container:
 
 ```bash
-# Pré-requisito: gerar build do frontend (previsto — change add-frontend-build)
+# Pré-requisito: gerar build do frontend
 # make build_front
 
 # Subir db, app (container) e frontend
@@ -250,7 +250,7 @@ make logs_front  # Ctrl+C para sair
 # ou: docker compose logs -f app
 ```
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O `make build_front` é necessário antes de subir o app no Docker, pois copia a SPA gerada para `static/app/` e o template para `templates/sistema/seguro/index.html`. Sem isso, `GET /` resultará em HTTP 500 (template ausente).
+>  O `make build_front` é necessário antes de subir o app no Docker, pois copia a SPA gerada para `static/app/` e o template para `templates/sistema/seguro/index.html`. Sem isso, `GET /` resultará em HTTP 500 (template ausente).
 
 **Nota**: ao rodar app no Docker, a IDE já não consegue debugar. Use para testes de integração ou produção.
 
@@ -446,7 +446,7 @@ onMounted(async () => {
 
 **3. Adicionar ao `PaginaController`** (backend):
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** Toda nova rota da SPA também deve ser listada no `@GetMapping` do `PaginaController` (com a sintaxe `@GetMapping({"/", "/aldeia", ...})`), senão acesso direto ou F5 em `/aldeia` resultará em HTTP 404 — a view não redireciona e o history mode falha (risco R-12).
+>  Toda nova rota da SPA também deve ser listada no `@GetMapping` do `PaginaController` (com a sintaxe `@GetMapping({"/", "/aldeia", ...})`), senão acesso direto ou F5 em `/aldeia` resultará em HTTP 404 — a view não redireciona e o history mode falha (risco R-12).
 
 **4. Adicionar menu** (`frontend/src/App.vue`):
 
@@ -522,7 +522,7 @@ make up
 
 ### 4.10 Gerar o build de produção do frontend
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 O build de produção do frontend Vue/Vite é executado em um container Docker dedicado, gerando assets otimizados e o template `index.html` que o backend servirá em `/`.
 
@@ -677,5 +677,6 @@ Lidas de `.env` (e passadas ao Docker):
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

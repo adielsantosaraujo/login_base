@@ -57,14 +57,14 @@ nunca é ativado — por isso, com os valores padrão, o `app` não sobe.
 # a partir de um shell WSL, na pasta do projeto (/mnt/d/desenvolvimento/projetos/login_base)
 cp .env.example .env   # ajuste as credenciais se quiser
 
-# Pré-requisito (previsto — change add-frontend-build): gerar a SPA antes de subir o app / empacotar
+# Pré-requisito: gerar a SPA antes de subir o app / empacotar
 # make build_front
 
 make up    # sobe o Postgres (db) e o frontend com os valores padrão
 make down  # derruba todos os serviços, mantendo os volumes
 ```
 
-> **Nota (previsto — change add-frontend-build):** o `make build_front` é necessário para gerar a SPA que será servida pelo backend em `/`. Sem ele, `GET /` retorna HTTP 500 (template ausente).
+> **Nota:** o `make build_front` é necessário para gerar a SPA que será servida pelo backend em `/`. Sem ele, `GET /` retorna HTTP 500 (template ausente).
 
 `make` (sem alvo) ou `make help` lista os alvos disponíveis.
 
@@ -80,6 +80,9 @@ Para subir a aplicação (`app`) no Docker também, defina `PROFILE_APP=local` n
 linha de comando ou no `.env`:
 
 ```bash
+# Pré-requisito: gerar a SPA antes de subir o app
+make build_front
+
 PROFILE_APP=local docker compose --profile local build  # se ainda não tiver a imagem
 make up PROFILE_APP=local                                # sobe db, app e frontend
 ```
@@ -139,9 +142,7 @@ serviço `app` no `docker-compose.yml`. O usuário é criado apenas se
 ### URLs de acesso
 
 - **`http://localhost/login`**: tela de login (usuário anônimo).
-- **`http://localhost/`**: página inicial protegida. Hoje exibe "Seja bem vindo"; com a change [add-frontend-build](openspec/changes/add-frontend-build/) (aberta, não implementada), passará a servir a SPA (após `make build_front`; sem build → HTTP 500 — veja seção "Ambiente Docker").
-
-> **Nota (previsto — change add-frontend-build):** em desenvolvimento (`make up` sem build), acesso é por `http://localhost:5173` (Vite dev server, sem SPA gerada).
+- **`http://localhost/`**: página inicial protegida. Serve a SPA após `make build_front` em produção; sem build → HTTP 500. Em desenvolvimento (`make up` sem build), acesso é por `http://localhost:5173` (Vite dev server).
 
 Logout via `POST /logout`.
 
@@ -312,8 +313,6 @@ Erros retornam `422` (violação de regra) ou `409` (conflito — ex.: turno des
 
 ### Build de produção
 
-> **Previsto — change [add-frontend-build](openspec/changes/add-frontend-build/) (aberta, não implementada).**
-
 Para gerar o build de produção do frontend (assets otimizados + template servido pelo backend):
 
 ```bash
@@ -352,16 +351,16 @@ curl -b cookies.txt -X POST \
 - **Testes**: Puros (JUnit 5 + AssertJ) e com Spring (`@DataJpaTest`, `@WebMvcTest`). Rodam contra Postgres do compose.
 - **Rotas do frontend**: `/` (vila), `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/:id`.
 
-## Build manual (sem Docker)
+## Build de produção
 
-> **Previsto — change [add-frontend-build](openspec/changes/add-frontend-build/) (aberta, não implementada):** o frontend exigirá Docker para o build de produção.
+O frontend Vue/Vite é construído com Docker e integrado ao backend:
 
 ```bash
 # Pré-requisito: Docker ativo
-# make build_front
+make build_front
 
 # Depois: package Maven (lê a SPA já copiada)
 ./mvnw -DskipTests package
 ```
 
-**Nota:** `npm run build` avulso (sem Docker) gera `frontend/dist/`, mas não copia os assets para o backend. Para um build funcional, use `make build_front` (previsto — add-frontend-build).
+**Nota:** `npm run build` avulso (sem Docker) gera `frontend/dist/`, mas não copia os assets para o backend. Para um build funcional, use `make build_front`, que executa via Docker Compose, valida a saída e copia automaticamente para `src/main/resources/static/app/` e o template para `templates/sistema/seguro/index.html`.

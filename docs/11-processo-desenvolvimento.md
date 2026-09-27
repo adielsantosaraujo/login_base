@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Spec-driven (OpenSpec) + docs-as-code + orquestração por subagentes |
 | Público | desenvolvedores, líderes de projeto |
 
@@ -212,12 +212,12 @@ Observado em 2 changes completas (autenticação, jogo):
 - **Haiku:** 1–2 por artefato textual (proposal, design, specs). ~50–100k tokens por artefato.
 - **Paralelismo:** Ondas de 4–6 agentes simultaneamente (Sonnet em paralelo) podem ser disparadas sem sobrecarga.
 
-### 4.4 Change em andamento: add-frontend-build (6 tasks, 0 concluídas; relatório pendente)
+### 4.3 Change implementada: add-frontend-build (6 tasks, 5 concluídas; task 3.1 em conclusão)
 
-Status: **Aberta (não implementada).** Artefatos criados em `openspec/changes/add-frontend-build/` (proposal.md, design.md, specs/, tasks.md); código não foi implementado. Aguardando orquestração e execução de tasks. Prioridade: integração crítica para servir SPA em produção.
+Status: **Implementada.** Artefatos em `openspec/changes/add-frontend-build/` (proposal.md, design.md, specs/, tasks.md, resumo_utilizacao_agentes.md). Código implementado: serviço `frontend-build` no compose, script `build_front.py`, Makefile `make build_front`, .gitignore atualizado, PaginaController com fallback history mode, SecurityConfig com `/app/**` permitAll.
 
-- **Tasks:** 1.1 (serviço e Vite), 1.2 (script build_front.py), 1.3 (make build_front e .gitignore), 2.1 (rotas e testes), 3.1 (docs), 4.1 (verificação).
-- **Esperado:** Possibilita `make build_front` em clone limpo, gera `frontend/dist` → `static/app/` + template index, fallback do history mode no backend.
+- **Tasks:** 1.1 (serviço e Vite) ✓, 1.2 (script build_front.py) ✓, 1.3 (make build_front e .gitignore) ✓, 2.1 (rotas e testes) ✓, 3.1 (docs) em conclusão, 4.1 (verificação) em execução.
+- **Implementado:** `make build_front` em clone limpo gera `frontend/dist` → `static/app/` + template index.html, fallback do history mode no backend, build de produção com base `/app/` em Vite.
 
 ---
 
@@ -288,7 +288,7 @@ Uma task / change é pronta quando:
 
 1. **Tasks marcadas** `[x]` no índice `tasks.md` (pelo orquestrador).
 2. **Testes passando:** `./mvnw test` retorna 0 falhas (239 testes no baseline; novos testes adicionados conforme implementação).
-3. **Build do frontend:** `make build_front` (previsto — change add-frontend-build) sem erros; ou `cd frontend && npm run build` sem erros (dev/checagem).
+3. **Build do frontend:** `make build_front` sem erros; ou `cd frontend && npm run build` sem erros (dev/checagem).
 4. **Validação OpenSpec:** `openspec validate <change> --strict` sem warnings.
 5. **README/docs atualizados** com a change (seção no `README.md`, entrada em `16`, divergências em `17`).
 6. **Relatório de agentes** em `resumo_utilizacao_agentes.md` com tabela e arquivos lidos.
@@ -307,8 +307,8 @@ make up  # Postgres deve estar UP
 # Validar OpenSpec
 openspec validate <change> --strict
 
-# Build do frontend (vigente: checagem; previsto com add-frontend-build: produção)
-make build_front  # Previsto — change add-frontend-build (aberta, não implementada)
+# Build do frontend (produção)
+make build_front
 # ou para checagem:
 cd frontend && npm run build && cd ..
 
@@ -373,9 +373,9 @@ Quando criar nova change:
 
 - **IntelliJ IDEA** (Java 25, Spring Boot 4.1.1).
 - **VSCode** (Frontend: Vue 3, TypeScript).
-- **Makefile:** `make up`, `make down`, `make e` (executar), `make build_front` (previsto — change add-frontend-build).
-- **Docker Compose:** 3 serviços (db, app, frontend) + `frontend-build` com profile `build` (previsto).
-- **Python 3:** scripts `executar.py` (menu interativo), `scripts/build_front.py` (previsto — build do frontend).
+- **Makefile:** `make up`, `make down`, `make e` (executar), `make build_front`.
+- **Docker Compose:** 3 serviços (db, app, frontend) + `frontend-build` com profile `build`.
+- **Python 3:** scripts `executar.py` (menu interativo), `scripts/build_front.py` (build do frontend).
 
 ### 8.3 Testes e validação
 
@@ -391,5 +391,6 @@ Quando criar nova change:
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: §4.3 change implementada, §6 DoD com make build_front vigente | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): §4.4 change em andamento, §5.4 commits, §6 DoD com make build_front e gitignore, §8.2 ferramentas | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

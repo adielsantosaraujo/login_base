@@ -4,11 +4,11 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`; previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` com change `add-frontend-build` implementada |
 | Modelo/norma | RTM bidirecional (ISO/IEC/IEEE 29119-1) |
 | Público | QA, revisores, arquitetos |
 
-> Parte da [documentação do login_base](README.md). Mapeamento completo de requisitos (101 RF vigentes + 15 RNF; 104 RF previstos com add-frontend-build) para especificações OpenSpec, tasks, código-fonte e testes automatizados.
+> Parte da [documentação do login_base](README.md). Mapeamento completo de requisitos (104 RF vigentes + 15 RNF com add-frontend-build implementada) para especificações OpenSpec, tasks, código-fonte e testes automatizados.
 
 ---
 
@@ -42,9 +42,9 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-ACD-006` | Campos de auditoria em todas as tabelas (`criado_em/por`, `alterado_em/por`) | access-control-data | auth 3.1 | auditoria/EntidadeAuditavel.java, V1–V3 | UsuarioAuditorAwareTest (3) | Automatizado |
 | `RF-ACD-007` | Esquema versionado por migrações Flyway | access-control-data | auth 1.1 | src/main/resources/db/migration/ | Inspeção de V1, V2, V3 | Inspeção |
 
-### AUT — User Authentication (Vigente: 10 RF; Previsto com add-frontend-build: MODIFICADO)
+### AUT — User Authentication (10 RF; com add-frontend-build: MODIFICADO)
 **Vigente**: 10 RF (9 da spec base + 1 ADDED jogo); RF-AUT-004 MODIFIED.  
-**Previsto**: RF-AUT-005 → MODIFICADO proposto (add-frontend-build).
+**Com change**: RF-AUT-005 → MODIFICADO (add-frontend-build).
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
@@ -52,7 +52,7 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-AUT-002` | Autenticação por e-mail ou celular e senha | user-authentication | auth 4.2, 5.1 | seguranca/UsuarioDetailsService.java, IdentificadorLogin.java | UsuarioDetailsServiceTest (10), IdentificadorLoginTest (7) | Automatizado |
 | `RF-AUT-003` | Perfis vigentes carregados como autoridades `ROLE_<perfil>` | user-authentication | auth 4.3 | seguranca/UsuarioDetailsService.java | UsuarioDetailsServiceTest | Automatizado |
 | `RF-AUT-004` | **MODIFICADO**: Proteção de rotas (401 anônimo em `/api/**` sem cache) | user-authentication + jogo | jogo 1.1 | seguranca/SecurityConfig.java, ErroApiHandler.java | ApiSegurancaWebMvcTest (5) | Automatizado |
-| `RF-AUT-005` | **MODIFICADO — proposto**: Página inicial segura (GET `/` servindo a SPA gerada pelo build do frontend, view `sistema/seguro/index`) | user-authentication + add-frontend-build | auth 4.1 + task 2.1 | web/PaginaController.java, templates/sistema/seguro/index.html (template de teste + gerado) | AutenticacaoWebMvcTest (modificar) | **MODIFICADO — proposto** |
+| `RF-AUT-005` | **MODIFICADO (add-frontend-build)**: Página inicial segura (GET `/` servindo a SPA gerada pelo build do frontend, view `sistema/seguro/index`) | user-authentication + add-frontend-build | auth 4.1 + task 2.1 | web/PaginaController.java, templates/sistema/seguro/index.html (template de teste + gerado) | AutenticacaoWebMvcTest (modificado) | **MODIFICADO (add-frontend-build)** |
 | `RF-AUT-006` | Logout (POST `/logout`) | user-authentication | auth 4.4 | seguranca/SecurityConfig.java | AutenticacaoWebMvcTest | Automatizado |
 | `RF-AUT-007` | Sessão HTTP segura (`HttpOnly`, `SameSite`, `Secure`, timeout 30 min, troca ID no login) | user-authentication | auth 5.2 | seguranca/SecurityConfig.java, SessaoService.java | SessaoEncerradaListenerTest (2) | Automatizado |
 | `RF-AUT-008` | Registro de sessões autenticadas (IP, User-Agent, hash do ID) | user-authentication | auth 3.2, 5.2 | seguranca/RegistroSessaoSuccessHandler.java, SessaoService.java | SessaoServiceTest | Automatizado |
@@ -70,9 +70,9 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-AMB-005` | Derrubar o ambiente via `make down` | docker-dev-environment | compose 1.2 | Makefile | Manual | Manual |
 | `RF-AMB-006` | Ajuda do Makefile (`make help`) | docker-dev-environment | compose 3.1 | Makefile | Manual | Manual |
 
-### FRE — Frontend App (Vigente: 7 RF; Previsto com add-frontend-build: +3 RF = 10 total)
-**Vigente**: 7 RF (4 da spec base + 3 ADDED jogo); "Página inicial de boas-vindas" REMOVED.  
-**Previsto**: FRE-008 (build), FRE-009 (rotas), FRE-010 (assets públicos) → ADICIONADOS propostos.
+### FRE — Frontend App (7 RF vigentes; +3 RF com add-frontend-build implementada = 10 total)
+**Vigente**: 7 RF (4 da spec base + 3 ADDED jogo); "Página inicial de boas-vindas" REMOVIDA.  
+**Com change**: FRE-008 (build), FRE-009 (rotas), FRE-010 (assets públicos) → ADICIONADOS (add-frontend-build).
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
@@ -85,9 +85,9 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-FRE-007` | Roteamento no modo history (não hash) | frontend-app | vue 4.1 | frontend/src/router/index.ts | Build | Build |
 | — | **ADICIONADO**: Navegação do jogo (6 rotas: vila, fazenda, forja, quartel, masmorras, batalha) | game-frontend | jogo 7.1–7.6 | frontend/src/router/index.ts, views/ | Build + task 8.2 (manual) | Build + manual |
 | — | **ADICIONADO**: Polling a cada 5 s, contagem regressiva, Toast de erros | game-frontend | jogo 7.2–7.6 | frontend/src/composables/useVila.ts | Demonstração | Manual |
-| `RF-FRE-008` | **ADICIONADO — proposto**: Build de produção integrado ao backend via `make build_front`; script Python `scripts/build_front.py` executa `docker compose run --rm --build frontend-build`, valida `index.html`, copia assets e template | add-frontend-build | tasks 1.1–1.3, 4.1 | scripts/build_front.py, docker-compose.yml (serviço `frontend-build`), frontend/vite.config.ts (`base: '/app/'` em build), Makefile (`build_front`), .gitignore | Demonstração: `make build_front` exit 0; task 4.1 (verificação manual) | **ADICIONADO — proposto** |
-| `RF-FRE-009` | **ADICIONADO — proposto**: Rotas da SPA servidas pelo backend (recarregar rota interna `/fazenda` direto retorna view `sistema/seguro/index`) | add-frontend-build | task 2.1 | web/PaginaController.java (`@GetMapping` múltiplas rotas) | AutenticacaoWebMvcTest (adicionar testes para rotas) | **ADICIONADO — proposto** |
-| `RF-FRE-010` | **ADICIONADO — proposto**: Assets do frontend públicos em `/app/**` (acessíveis sem autenticação, não redirecionam para login) | add-frontend-build | task 2.1 | seguranca/SecurityConfig.java (`/app/**` em permitAll) | AutenticacaoWebMvcTest: `/app/assets/qualquer.js` anônimo → não é redirecionado (≠ 302) | **ADICIONADO — proposto** |
+| `RF-FRE-008` | **ADICIONADO (add-frontend-build)**: Build de produção integrado ao backend via `make build_front`; script Python `scripts/build_front.py` executa `docker compose run --rm --build frontend-build`, valida `index.html`, copia assets e template | add-frontend-build | tasks 1.1–1.3, 4.1 | scripts/build_front.py, docker-compose.yml (serviço `frontend-build`), frontend/vite.config.ts (`base: '/app/'` em build), Makefile (`build_front`), .gitignore | Demonstração: `make build_front` exit 0; task 4.1 (verificação manual) | **ADICIONADO (add-frontend-build)** |
+| `RF-FRE-009` | **ADICIONADO (add-frontend-build)**: Rotas da SPA servidas pelo backend (recarregar rota interna `/fazenda` direto retorna view `sistema/seguro/index`) | add-frontend-build | task 2.1 | web/PaginaController.java (`@GetMapping` múltiplas rotas) | AutenticacaoWebMvcTest (adicionado teste para rotas) | **ADICIONADO (add-frontend-build)** |
+| `RF-FRE-010` | **ADICIONADO (add-frontend-build)**: Assets do frontend públicos em `/app/**` (acessíveis sem autenticação, não redirecionam para login) | add-frontend-build | task 2.1 | seguranca/SecurityConfig.java (`/app/**` em permitAll) | AutenticacaoWebMvcTest: `/app/assets/qualquer.js` anônimo → não é redirecionado (≠ 302) | **ADICIONADO (add-frontend-build)** |
 
 ### PRC — Subagent Dev Workflow (5 RF)
 
@@ -216,7 +216,7 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 
 | ID | Característica ISO 25010 | Enunciado | Mecanismo | Evidência | Status |
 |---|---|---|---|---|---|
-| `RNF-SEG-001` | Segurança/autenticidade | Toda rota exige autenticação, exceto `/login`, `/app/**` (assets públicos, **previsto**) e estáticos; `/api/**` anônimo → 401 | `SecurityConfig.securityFilterChain()`, `HttpStatusEntryPoint`; **previsto**: `/app/**` em `permitAll` | ApiSegurancaWebMvcTest (5 testes); **previsto**: adicionar teste para `/app/**` públicos | ✅ Automatizado (vigente); **previsto** |
+| `RNF-SEG-001` | Segurança/autenticidade | Toda rota exige autenticação, exceto `/login`, `/app/**` (assets públicos, add-frontend-build) e estáticos; `/api/**` anônimo → 401 | `SecurityConfig.securityFilterChain()`, `HttpStatusEntryPoint`; `/app/**` em `permitAll` | ApiSegurancaWebMvcTest (5 testes); teste para `/app/**` públicos | ✅ Automatizado |
 | `RNF-SEG-002` | Segurança/integridade | CSRF em todo POST (form `_csrf`; SPA `X-XSRF-TOKEN`) | `csrf.spa()` + interceptor | ApiSegurancaWebMvcTest | ✅ Automatizado |
 | `RNF-SEG-003` | Segurança/confidencialidade | Senha com `DelegatingPasswordEncoder` (BCrypt, prefixo `{bcrypt}`) | `PasswordEncoder` bean em config | UsuarioDetailsServiceTest | ✅ Automatizado |
 | `RNF-SEG-004` | Segurança | Cookie `HttpOnly`, `SameSite=Lax`, `Secure` configurável; troca ID no login; expiração 30 min | `SecurityConfig.sessionManagement()`, `SERVER_SERVLET_SESSION_TIMEOUT=30m` | SessaoServiceTest, AutenticacaoWebMvcTest | ✅ Automatizado |
@@ -278,11 +278,11 @@ Os testes automatizados cobrem (resumo por classe-chave):
 | **AMB-001..006** | 6 RF de ambiente | Inspeção + Manual | Profiles, Makefile, Docker — sem testes; validação por `make up`, `make down`, leitura de `.env.example` |
 | **PRC-001..005** | 5 RF de processo | Inspeção | Skill, CLAUDE.md, relatórios — sem teste automatizado; validação por leitura e uso real em changes |
 | **FRE-003, FRE-004** | 2 RF de frontend | Demonstração | Dockerfile, Vite recarga — sem teste; validação por levantar container e editar arquivo |
-| **FRE-008 (PREVISTO)** | 1 RF de build (add-frontend-build, aberta) | Demonstração | `make build_front` sem teste automatizado; validação manual na task 4.1 |
+| **FRE-008 (add-frontend-build)** | 1 RF de build (implementado) | Demonstração | `make build_front` sem teste automatizado; validação manual na task 4.1 |
 
-**Resumo vigente: 101 RF; 88 com teste automatizado (87,1%); 13 com validação manual/build/inspeção (12,9%).**
+**Vigente (baseline 454ae58): 101 RF; 88 com teste automatizado (87,1%); 13 com validação manual/build/inspeção (12,9%).**
 
-**Previsto com change add-frontend-build: 104 RF; 90 com teste automatizado (+FRE-009, FRE-010); 14 manual/inspeção/demonstração (+FRE-008).**
+**Com change add-frontend-build implementada: 104 RF vigentes; 90 com teste automatizado (+FRE-009, FRE-010); 14 manual/inspeção/demonstração (+FRE-008).**
 
 ---
 
@@ -299,14 +299,14 @@ Os testes automatizados cobrem (resumo por classe-chave):
 
 RNF: 15 mapeados → 13 automatizados, 2 por inspeção/manual (RNF-MAN-002, RNF-POR-001); RNF-USA-001 e RNF-DES-001 combinam teste e demonstração.
 
-### Previsto com change add-frontend-build (aberta, não implementada)
+### Com change add-frontend-build implementada (104 RF vigentes)
 
 | Verificação | Quantidade | % |
 |---|---|---|
 | Com teste automatizado | 90 | 86,5% |
 | Por inspeção/demonstração | 9 | 8,7% |
 | Manual (UI, E2E, roteiro, build) | 5 | 4,8% |
-| **Total (104 RF)** | **104** | **100%** |
+| **Total (104 RF vigentes)** | **104** | **100%** |
 
 Adições: FRE-009 e FRE-010 → automatizados (novos testes em AutenticacaoWebMvcTest); FRE-008 → demonstração (task 4.1); RF-AUT-005 MODIFICADO (teste `usuarioAutenticadoVeSejaBemVindo` ajustado para 200 + view).
 
@@ -318,5 +318,6 @@ Adições: FRE-009 e FRE-010 → automatizados (novos testes em AutenticacaoWebM
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
-| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (add-frontend-build implementada) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

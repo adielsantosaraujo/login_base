@@ -16,7 +16,7 @@ export
 
 .PHONY: help
 help: ## Lista os alvos disponíveis com uma descrição curta
-	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-10s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
 
 .PHONY: up
 up: ## Levanta os serviços do profile ativo (PROFILE)
@@ -33,6 +33,10 @@ down_v: ## Derruba todos os serviços e remove os volumes
 .PHONY: logs_front
 logs_front: ## Acompanha os logs do frontend (Ctrl+C para sair)
 	$(COMPOSE) logs -f frontend
+
+.PHONY: build_front
+build_front: ## Gera o build do frontend e copia para o backend
+	python3 ./scripts/build_front.py
 
 
 e:

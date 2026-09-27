@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | MADR 4.0 (Markdown Any Decision Records) |
 | Público | arquitetos, desenvolvedores, revisores |
 | Fontes | `design.md` das changes OpenSpec; código-fonte; `design.md` da change `add-frontend-build` |
@@ -39,7 +39,7 @@
 | [0020](0020-determinismo-clock-aleatorio.md) | Motor puro determinístico; Clock/Aleatorio injetáveis | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0021](0021-velocidade-configuravel.md) | `JOGO_VELOCIDADE` multiplica taxas e divide tempos | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0022](0022-testes-postgres-compose.md) | Testes de integração contra Postgres do compose (sem Testcontainers) | 2026-09-24 | `add-user-authentication` + `add-city-builder-game` | Vigente |
-| [0023](0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | `add-frontend-build` | Proposta |
+| [0023](0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | `add-frontend-build` | Vigente |
 
 ---
 
@@ -156,5 +156,6 @@ Se nenhuma alternativa constar no design.md da change, escrever aqui:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | ADR 0023 implementada pela change add-frontend-build: muda status de Proposta para Vigente | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Adiciona ADR 0023 (SPA servida pelo backend, proposta para change add-frontend-build) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (índice + template MADR 4.0) | Adiel, com apoio de agentes Claude |

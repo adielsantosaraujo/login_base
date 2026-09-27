@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`; previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` com change `add-frontend-build` implementada |
 | Modelo/norma | Casos de Uso (Cockburn, formato casual/completo) + Histórias INVEST com critérios Gherkin |
 | Público | QA, PO, desenvolvedores |
 | Fontes | Specs OpenSpec (16); design do jogo; templates Thymeleaf; views Vue 3 (6); `openspec/changes/add-frontend-build/` (proposal, design, specs) |
@@ -62,7 +62,7 @@ flowchart LR
 - Usuário criado no banco com e-mail ou celular, senha BCrypt, perfil vigente.
 - Sessão HTTP não existe ou expirou.
 
-**Gatilho**: Visitante acessa `http://localhost:5173` (dev, via Vite) ou `http://localhost` (produção prevista: backend servindo a SPA após `make build_front`) sem autenticação.
+**Gatilho**: Visitante acessa `http://localhost:5173` (dev, via Vite) ou `http://localhost` (produção: backend servindo a SPA após `make build_front`) sem autenticação.
 
 **Fluxo principal**:
 1. Sistema exibe formulário de login (Thymeleaf `/login`).
@@ -496,7 +496,7 @@ flowchart LR
 - A.1 (Docker não está rodando): `docker daemon start` ou usar Docker Desktop.
 - A.2 (Volume antigo): `make down && docker volume rm login_base_db-data && make up`.
 - A.3 (Backend na IDE): `make up PROFILE_APP=desativado && make up PROFILE_FRONTEND=desativado` (só DB).
-- **A.4 (Build de produção) — previsto**: Clone limpo requer `make build_front` antes de `./mvnw package` ou `docker compose --profile local build app` (gera `static/app/` e template; HTTP 500 se não executado). Requisitos: RF-FRE-008, RF-FRE-009, RF-FRE-010.
+- **A.4 (Build de produção)**: Clone limpo requer `make build_front` antes de `./mvnw package` ou `docker compose --profile local build app` (gera `static/app/` e template; HTTP 500 se não executado). Requisitos: RF-FRE-008, RF-FRE-009, RF-FRE-010.
 
 **Pós-condições**:
 - `db` (Postgres), `frontend` (Vite dev server), backend (IDE ou Docker) rodando.
@@ -902,14 +902,14 @@ Cenário: Resetar banco corrompido
   Quando faço "make down && docker volume rm login_base_db-data && make up"
   Então volume é recriado, migrações rodam de V1, aplicação inicia
 
-Cenário: Gerar build de produção (PREVISTO — change aberta add-frontend-build)
+Cenário: Gerar build de produção
   Dado que clone está limpo (sem static/app/ e sem template sistema/seguro/index.html)
   Quando faço "make build_front"
   Então o script valida a saída, copia assets e index.html, registra log em build.log
   E exit code é 0
   E posso executar "./mvnw package" / "docker compose --profile local build app" com sucesso
 
-Cenário: Build com erro (PREVISTO — change aberta add-frontend-build)
+Cenário: Build com erro
   Dado que o Vite build falha por erro de TypeScript
   Quando faço "make build_front"
   Então a saída aparece no terminal, log é gravado em build.log
@@ -917,7 +917,7 @@ Cenário: Build com erro (PREVISTO — change aberta add-frontend-build)
   E nada é copiado para static/app/ ou template
 ```
 
-**Origem**: RF-AMB-001..006, RF-AUT-009, UC-11; **previsto**: RF-FRE-008, UC-11 fluxo A.4.
+**Origem**: RF-AMB-001..006, RF-AUT-009, UC-11, RF-FRE-008, UC-11 fluxo A.4.
 
 ---
 
@@ -997,5 +997,6 @@ Cenário: Task falha, corrige e reconecta
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
-| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (add-frontend-build implementada) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

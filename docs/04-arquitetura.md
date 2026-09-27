@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | arc42 (versão 2024.1) + C4 (níveis 1–3 em Mermaid) |
 | Público | desenvolvedores, arquitetos, revisores |
 | Fontes | Especificações OpenSpec; `design.md` do jogo; `design.md` da change `add-frontend-build`; código-fonte em `src/main`; `pom.xml`; `docker-compose.yml`; `Dockerfile`; `frontend/` |
@@ -105,7 +105,7 @@ A solução é um **monólito Spring Boot** que:
 1. Serve a página de login e autenticação em Thymeleaf (`/login`), responsável pela sessão HTTP.
 2. Fornece uma API REST (`/api/jogo/**`) que valida autorização (autenticado, isolamento por dono).
 3. **Desenvolvimento**: Proxy da SPA (Vue) via Vite. Requisições `/` e `/fazenda` etc. servem a SPA via proxy, requerendo autenticação.
-4. **Produção (previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/))**: SPA construída e servida pelo Spring Boot. O `PaginaController` atende rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` com a view `sistema/seguro/index` (fallback do history mode); assets em `/app/**` servidos como recursos estáticos públicos.
+4. **Produção**: SPA construída via `make build_front` e servida pelo Spring Boot. O `PaginaController` atende rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` com a view `sistema/seguro/index` (fallback do history mode); assets em `/app/**` servidos como recursos estáticos públicos.
 
 ### Sessão Stateful
 
@@ -175,11 +175,9 @@ graph TB
 | `db` | 5432 | `postgres:17-trixie` | `db-data` |
 | `app` | 80 | Build multi-stage (Maven + JRE alpine) | — |
 | `frontend` | 5173 | `node:26-trixie-slim` | `frontend-node-modules` (dev) |
-| `frontend-build` (previsto) | — | `build: ./frontend` (node:26-trixie-slim) — definição a confirmar após implementação | `/app/node_modules` (anônimo, descartado) |
+| `frontend-build` | — | `build: ./frontend` (node:26-trixie-slim) | `/app/node_modules` (anônimo, descartado) |
 
-### Build de Produção do Frontend (Previsto)
-
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+### Build de Produção do Frontend
 
 Fluxo de build integrado ao processo de empacotamento:
 
@@ -230,7 +228,7 @@ graph TB
     end
     
     subgraph Web["web"]
-        PC["PaginaController<br/>GET /login, /, /fazenda, /forja,<br/>/quartel, /masmorras, /batalhas/{id}<br/>(previsto)"]
+        PC["PaginaController<br/>GET /login, /, /fazenda, /forja,<br/>/quartel, /masmorras, /batalhas/{id}"]
     end
     
     subgraph Jogo["jogo"]
@@ -427,7 +425,7 @@ graph TB
 3. Após autenticação, retorna ao `/` (SPA).
 4. Polling do `useVila` atualiza estado a cada 5 s.
 
-**Nota — Produção (previsto):** Em produção, um F5 (reload) numa rota interna (ex.: `/fazenda`) será atendido pelo `PaginaController`, que devolve a view `sistema/seguro/index` (fallback do history mode); o frontend carrega e navega para a rota original. Sem o build do frontend executado antes, a view não existe → HTTP 500. Veja change [add-frontend-build](../openspec/changes/add-frontend-build/) e [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
+**Nota — Produção:** Em produção, um F5 (reload) numa rota interna (ex.: `/fazenda`) será atendido pelo `PaginaController`, que devolve a view `sistema/seguro/index` (fallback do history mode); o frontend carrega e navega para a rota original. O build via `make build_front` gera essa view no backend. Veja [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
 
 ---
 
@@ -565,7 +563,7 @@ Descrito em detalhe em [07-seguranca.md](07-seguranca.md). Resumo:
 - **Autenticação**: form login Thymeleaf, e-mail ou celular, `DelegatingPasswordEncoder` (BCrypt).
 - **Autorização**: papel (role) `ROLE_<perfil>` por vínculo `usuario_rel_perfis` com vigência.
 - **API**: anônimo em `/api/**` recebe 401 sem redirecionamento.
-- **Assets (previsto)**: `/app/**` público (assets de SPA sem dados sensíveis), evita que request cache salve um asset como destino pós-login.
+- **Assets**: `/app/**` público (assets de SPA sem dados sensíveis), evita que request cache salve um asset como destino pós-login.
 - **CSRF**: cookie `XSRF-TOKEN` para SPA, parâmetro `_csrf` para formulário.
 - **Sessão**: JSESSIONID `HttpOnly`, `SameSite=Lax`, `Secure` (configurável), 30 min, troca de ID no login.
 - **Auditoria**: `criado_por/em`, `alterado_por/em` em todas as tabelas.
@@ -682,7 +680,7 @@ Ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md) para registro com
 - [Cálculo lazy pode gerar discrepâncias se clock do servidor mudar] → Clock injetável mitiga.
 - [Lock pessimista serializa toda ação do usuário] → Aceitável (1 vila/usuário, ações rápidas).
 - [JSON em `text` sem índices] → Suficiente em dev; JSONB seria melhor em produção.
-- [R-11: Clone limpo sem `make build_front` → HTTP 500 em `/` — Previsto, change [add-frontend-build](../openspec/changes/add-frontend-build/); ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md)].
+- [R-11: Clone limpo sem `make build_front` → HTTP 500 em `/` — Mitigado pela implementação da change [add-frontend-build](../openspec/changes/add-frontend-build/); ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md)].
 
 **Dívidas técnicas principais**:
 - Sem CI/CD.
@@ -721,7 +719,7 @@ Cada decisão é registrada como ADR em `docs/adr/0001-…-0023.md` (formato MAD
 | [0020](adr/0020-determinismo-clock-aleatorio.md) | Motor puro + Clock/Aleatorio injetáveis | 2026-09-26 | Vigente |
 | [0021](adr/0021-velocidade-configuravel.md) | `JOGO_VELOCIDADE` multiplica taxas | 2026-09-26 | Vigente |
 | [0022](adr/0022-testes-postgres-compose.md) | Testes contra Postgres do compose | 2026-09-24/26 | Vigente |
-| [0023](adr/0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | Proposta |
+| [0023](adr/0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | Aceita |
 
 ---
 
@@ -742,5 +740,6 @@ Termos-chave; ver [14-glossario.md](14-glossario.md) para lista completa.
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

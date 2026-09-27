@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Status | Proposta |
+| Status | Aceita |
 | Data | 2026-09-27 |
 | Decisores | Adiel (autor) com apoio de agentes Claude |
-| Change de origem | [add-frontend-build](../../openspec/changes/add-frontend-build/) (aberta) |
+| Change de origem | [add-frontend-build](../../openspec/changes/add-frontend-build/) |
 
 ## Contexto e Problema
 
@@ -157,7 +157,7 @@ Design.md da change registra as 4 opções e justificativas detalhadas em "Decis
 - **Código principal**:
   - Backend: [`web/PaginaController.java`](../../src/main/java/com/example/loginbase/web/PaginaController.java)
   - Config: [`seguranca/SecurityConfig.java`](../../src/main/java/com/example/loginbase/seguranca/SecurityConfig.java)
-  - Build: `scripts/build_front.py` (previsto, ainda não existe)
+  - Build: [`scripts/build_front.py`](../../scripts/build_front.py)
   - Compose: [`docker-compose.yml`](../../docker-compose.yml)
   - Vite: [`frontend/vite.config.ts`](../../frontend/vite.config.ts)
 - **Testes**: [`web/AutenticacaoWebMvcTest.java`](../../src/test/java/com/example/loginbase/web/AutenticacaoWebMvcTest.java)
@@ -168,4 +168,5 @@ Design.md da change registra as 4 opções e justificativas detalhadas em "Decis
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Implementada pela change add-frontend-build: status Proposta → Aceita, remove marcadores de "previsto/aberta" | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

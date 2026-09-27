@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Diátaxis (referência + runbook) |
 | Público | Desenvolvedores, operação |
-| Fontes | `docker-compose.yml`, `Dockerfile`, `frontend/Dockerfile`, `Makefile`, `.env.example`, `application.properties`, `frontend/vite.config.ts`, `scripts/build_front.py` (previsto), `PaginaController.java` (previsto), `SecurityConfig.java` (previsto), `.gitignore` (previsto) |
+| Fontes | `docker-compose.yml`, `Dockerfile`, `frontend/Dockerfile`, `Makefile`, `.env.example`, `application.properties`, `frontend/vite.config.ts`, `scripts/build_front.py`, `PaginaController.java`, `SecurityConfig.java`, `.gitignore` |
 
 > Parte da [documentação do login_base](README.md). Descreve o ambiente Docker, configurações, variáveis e procedimentos para levantar, manter e resolver problemas comuns.
 
@@ -70,9 +70,9 @@
 | `db` | `postgres:17-trixie` | Docker Hub | PostgreSQL 17 (Debian trixie) | — |
 | `app` | Build multi-stage | Local `Dockerfile` | Maven 3.9-eclipse-temurin-25-alpine → eclipse-temurin:25-jre-alpine | — |
 | `frontend` | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 | Dev server Vite |
-| `frontend-build` (previsto) | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 | Build de produção (efêmero, profile `build`) |
+| `frontend-build` | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 | Build de produção (efêmero, profile `build`) |
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O serviço `frontend-build` é um serviço efêmero que executa o build de produção (`npm run build`) via `docker compose run --rm --build frontend-build`. Definição exata (volumes, command, etc.) a confirmar após implementação.
+>  O serviço `frontend-build` é um serviço efêmero que executa o build de produção (`npm run build`) via `docker compose run --rm --build frontend-build`. Volumes: mount bind `./frontend:/app`, volume anônimo `/app/node_modules` descartado após `--rm`.
 
 ---
 
@@ -117,13 +117,13 @@ frontend:
   profiles: ["${PROFILE_FRONTEND:-local}"]
   # Ativa se PROFILE_FRONTEND=local (padrão)
 
-frontend-build:  # (previsto — change add-frontend-build)
+frontend-build:
   profiles: ["build"]
   # Só ativa explicitamente via `docker compose --profile build run frontend-build`
   # Ou via `make build_front` (que chama python3 ./scripts/build_front.py)
 ```
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O profile `build` é usado exclusivamente para o build de produção do frontend; não é ativado por `make up` (usa `PROFILE=local` por padrão).
+>  O profile `build` é usado exclusivamente para o build de produção do frontend; não é ativado por `make up` (usa `PROFILE=local` por padrão).
 
 ---
 
@@ -203,7 +203,7 @@ make down_v
 # Acompanhar logs do frontend (Ctrl+C para sair)
 make logs_front
 
-# Gerar o build de produção do frontend (previsto — change add-frontend-build)
+# Gerar o build de produção do frontend
 make build_front
 
 # Abrir menu interativo de alvos
@@ -211,7 +211,7 @@ make executar
 # ou: make e (atalho)
 ```
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O alvo `make build_front` executa `python3 ./scripts/build_front.py`, que roda `docker compose run --rm --build frontend-build` (serviço efêmero com profile `build`). Requer Docker ativo.
+>  O alvo `make build_front` executa `python3 ./scripts/build_front.py`, que roda `docker compose run --rm --build frontend-build` (serviço efêmero com profile `build`). Requer Docker ativo.
 
 ---
 
@@ -249,9 +249,9 @@ docker compose --profile local build app
 # Nenhum asset versionado gerado; tudo é transitório
 ```
 
-#### Fluxo de build (previsto)
+#### Fluxo de build
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 ```bash
 # 1. Gerar build de produção
@@ -326,18 +326,17 @@ npm run build  # Gera frontend/dist/, mas não copia para o backend
 
 ### Estado atual
 
-- **Sem servir SPA em produção** (previsto mudar com add-frontend-build).
+- **SPA servida pelo backend** (implementado): `/` e rotas da SPA (`/fazenda`, `/forja`, etc.) devolvem a view `sistema/seguro/index` (Thymeleaf); assets em `/app/**` são públicos.
 - **Sem pipeline de implantação**: sem GitHub Actions, sem GitLab CI, sem outro servidor CI/CD.
 - **Sem HTTPS**: `SESSION_COOKIE_SECURE=false` fixado; produção exigiria SSL/TLS.
 - **Sem observabilidade**: sem logs centralizados, sem métricas, sem APM.
 - **Sem backup**: volume Docker `db-data` não tem snapshot automático.
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** SPA **será servida pelo backend** (risco R-11): `/` e rotas da SPA (`/fazenda`, `/forja`, etc.) devolvem a view `sistema/seguro/index` (Thymeleaf); assets em `/app/**` são públicos. Clone limpo requer `make build_front` antes do package (pré-requisito para deploy). Sem o build, `GET /` retorna HTTP 500 (template ausente). **Rollback:** reverter change e redeploy jar/imagem anterior (placeholder volta).
+>  Clone limpo requer `make build_front` antes do package (pré-requisito para deploy). Sem o build, `GET /` retorna HTTP 500 (template ausente). **Rollback:** reverter commit e redeploy jar/imagem anterior (placeholder volta).
 
 ### Roadmap (futuro)
 
 Itens planejados em [`17-riscos-divida-roadmap.md`](17-riscos-divida-roadmap.md):
-- SPA servida pelo backend — em andamento na change add-frontend-build (aberta).
 - Adicionar CI/CD (GitHub Actions); deve rodar `make build_front` antes do package.
 - TLS/HTTPS com certificado válido.
 - Observabilidade (logs, métricas).
@@ -544,7 +543,7 @@ docker compose exec frontend pwd
 
 ### Problema: HTTP 500 em `/` (TemplateInputException: template não encontrado)
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 **Causa**: `src/main/resources/templates/sistema/seguro/index.html` ausente ou vazio. Ocorre em clone limpo sem `make build_front`.
 
@@ -570,7 +569,7 @@ curl http://localhost/ | head -c 100
 
 ### Problema: `make build_front` falha
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 **Causa comum:** erro de compilação TypeScript ou Docker não ativo.
 
@@ -599,7 +598,7 @@ docker compose --profile build run --rm frontend-build node --version
 
 ### Problema: Página em branco ou 404 em `/app/assets/...`
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 **Causa**: assets não foram copiados para `src/main/resources/static/app/`.
 
@@ -622,7 +621,7 @@ cat build.log | grep -i "erro\|fail\|copy"
 
 ### Problema: F5 em rota da SPA dá 404 (ex.: `/fazenda`)
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 **Causa**: rota não está listada em `PaginaController` (R-12).
 
@@ -648,7 +647,7 @@ curl -H "Cookie: JSESSIONID=seu-session" http://localhost/aldeia
 
 ## 8. Dúvida em aberto: Licença PrimeUI no bundle
 
-> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+> 
 
 **Questão:** se `VITE_PRIMEUI_LICENSE` for passada ao serviço `frontend-build` (para evitar aviso no console), a chave de licença fica pública no bundle de produção (`/app/assets/*.js`). Decisão pendente:
 
@@ -691,5 +690,6 @@ docker compose exec db psql -U login_base login_base < backup.sql
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: SPA servida pelo backend, remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

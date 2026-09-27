@@ -22,7 +22,7 @@ Frontend Vue (SPA) precisa comunicar com backend Spring (API REST). Há múltipl
 
 | Opção | Descrição |
 |---|---|
-| **Proxy Vite em dev, SPA em produção** | Dev: Vite proxy `/api`, `/login`, etc. para backend. Prod: SPA servida por backend (não implementado). |
+| **Proxy Vite em dev, SPA em produção** | Dev: Vite proxy `/api`, `/login`, etc. para backend. Prod: SPA servida por backend (implementada pela ADR 0023). |
 | CORS aberto | `Access-Control-Allow-Origin: *`. Rejeitada: inseguro; credenciais não passam. |
 | Login em Vue | Reescrever `/login` em Vue. Rejeitada: fora de escopo (Non-Goal); Thymeleaf já funciona. |
 
@@ -66,7 +66,7 @@ Adotou-se **proxy do Vite em desenvolvimento**:
 
 ### Consequências negativas
 - **BREAKING**: proxy não funciona em produção (seria diferente)
-- **Mudança de arquitetura**: em produção precisa de build SPA + servidor (não pedido agora — **Previsto na [ADR 0023](0023-spa-servida-pelo-backend.md) — change `add-frontend-build` (aberta)**)
+- **Mudança de arquitetura**: em produção, complementada pela [ADR 0023](0023-spa-servida-pelo-backend.md) (implementada pela change `add-frontend-build`)
 - **Chave de licença PrimeUI**: com redirect, chave precisa estar em `.env` do frontend (mitigado)
 
 ## Prós e contras das opções

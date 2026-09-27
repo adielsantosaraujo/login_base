@@ -50,3 +50,221 @@ Escopo desta execução: ajuste da documentação (docs/ e README.md raiz) à ch
 Progresso da change: 0/6 tasks concluídas (documentação atualizada como "previsto"; a task 3.1 deve ser revisitada após a implementação para confirmar números e remover as marcações de previsto).
 
 Sessão principal: medida até o início da criação do relatório; o consumo posterior (incluindo o agente do relatório) não é contabilizado.
+
+---
+
+## Execução 2026-09-27 — apply da change (implementação)
+
+Escopo: implementação das 6 tasks da change add-frontend-build. Decisão do usuário: ampliar a task 3.1 para remover o marcador "previsto" de todos os docs.
+
+| # | Agente (description) | Função | Modelo | Status | Tool uses | Duração | Tokens |
+|---|---|---|---|---|---|---|---|
+| 1 | Planejar apply add-frontend-build | planejamento | opus | ✅ concluído | 4 | 1m 13s | 52.189 |
+| 2 | Task 1.1 serviço frontend-build | código | sonnet | ✅ concluído | 15 | 2m 10s | 52.479 |
+| 3 | Task 1.2 script build_front | código | sonnet | ✅ concluído | 12 | 2m 15s | 52.176 |
+| 4 | Task 1.3 make e gitignore | código | sonnet | ✅ concluído | 11 | 1m 19s | 42.982 |
+| 5 | Task 2.1 rotas SPA e testes | código | sonnet | ✅ concluído | 32 | 8m 13s | 73.460 |
+| 6 | Ampliar escopo task 3.1 | documento | haiku | ✅ concluído | 13 | 1m 07s | 37.828 |
+| 7 | Task 4.1 verificação ponta a ponta | verificação | sonnet | ✅ concluído | 23 | 7m 36s | 72.120 |
+| 8 | Task 3.1 atualizar docs | documento | haiku | ⚠️ concluído incompleto (corrigido em #9–#14) | 58 | 6m 38s | 144.467 |
+| 9 | Correção 3.1 grupo A | documento (correção) | haiku | ✅ concluído | 35 | 2m 50s | 69.854 |
+| 10 | Correção 3.1 grupo B | documento (correção) | haiku | ✅ concluído | 31 | 2m 35s | 98.172 |
+| 11 | Correção 3.1 grupo C | documento (correção) | haiku | ✅ concluído | 33 | 2m 05s | 85.855 |
+| 12 | Correção 3.1 grupo D | documento (correção) | haiku | ✅ concluído | 62 | 7m 52s | 106.282 |
+| 13 | Correção 3.1 grupo E | documento (correção) | haiku | ✅ concluído | 19 | 1m 55s | 54.074 |
+| 14 | Ajustes finais docs 01/16/17 | documento (correção) | haiku | ✅ concluído | 11 | 0m 46s | 30.881 |
+| — | Sessão principal (orquestrador) | orquestração | opus | ✅ até o início do relatório | 25 | 2h 26m | 125.595 |
+
+### Arquivos lidos por agente
+
+#### 1 — Planejar apply add-frontend-build
+**Harness**
+- CLAUDE.md (global, via contexto)
+- CLAUDE.md (projeto, via contexto)
+**Negócio**
+- openspec/changes/add-frontend-build/proposal.md
+- openspec/changes/add-frontend-build/design.md
+- openspec/changes/add-frontend-build/tasks.md
+- openspec/changes/add-frontend-build/specs/frontend-app/spec.md
+- openspec/changes/add-frontend-build/specs/user-authentication/spec.md
+- openspec/changes/add-frontend-build/tasks/*.md (cabeçalhos)
+- docker-compose.yml
+- .gitignore
+- frontend/vite.config.ts
+- frontend/Dockerfile
+- Makefile (grep)
+- frontend/package.json (grep)
+- src/test/java/com/example/loginbase/web/AutenticacaoWebMvcTest.java (grep)
+
+#### 2 — Task 1.1 serviço frontend-build
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/1.1-servico-frontend-build.md
+- openspec/changes/add-frontend-build/design.md
+- openspec/changes/add-frontend-build/specs/frontend-app/spec.md
+- docker-compose.yml
+- frontend/vite.config.ts
+- frontend/Dockerfile
+
+#### 3 — Task 1.2 script build_front
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/1.2-script-build-front.md
+- openspec/changes/add-frontend-build/design.md
+- openspec/changes/add-frontend-build/specs/frontend-app/spec.md
+- scripts/executar.py
+- scripts/cores.py
+- Makefile
+
+#### 4 — Task 1.3 make e gitignore
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/1.3-alvo-make-e-gitignore.md
+- Makefile
+- .gitignore
+- src/main/resources/templates/sistema/seguro/index.html
+
+#### 5 — Task 2.1 rotas SPA e testes
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/2.1-rotas-spa-e-testes.md
+- src/main/java/com/example/loginbase/web/PaginaController.java
+- src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
+- src/test/java/com/example/loginbase/web/AutenticacaoWebMvcTest.java
+- src/main/resources/templates/sistema/seguro/index.html
+- src/main/resources/application.properties
+
+#### 6 — Ampliar escopo task 3.1
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/3.1-atualizar-docs.md
+- openspec/changes/add-frontend-build/tasks.md
+
+#### 7 — Task 4.1 verificação ponta a ponta
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/4.1-verificacao-ponta-a-ponta.md
+- openspec/changes/add-frontend-build/design.md
+- openspec/changes/add-frontend-build/specs/frontend-app/spec.md
+- .gitignore
+- Makefile
+
+#### 8 — Task 3.1 atualizar docs
+**Harness**
+- —
+**Negócio**
+- openspec/changes/add-frontend-build/tasks/3.1-atualizar-docs.md
+- openspec/changes/add-frontend-build/design.md
+- docker-compose.yml
+- Makefile
+- scripts/build_front.py
+- frontend/vite.config.ts
+- .gitignore
+- src/main/java/com/example/loginbase/web/PaginaController.java
+- src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
+- docs/09-guia-desenvolvedor.md
+- docs/10-implantacao-operacao.md
+- README.md
+- docs/04-arquitetura.md
+- docs/02-requisitos.md
+- docs/03-casos-de-uso.md
+- docs/06-api-rest.md
+- docs/07-seguranca.md
+- docs/08-plano-testes.md
+- docs/01-visao-produto.md
+
+#### 9 — Correção 3.1 grupo A
+**Harness**
+- —
+**Negócio**
+- README.md
+- docs/README.md
+- docs/adr/README.md
+- docs/adr/0010-login-formulario-sessao.md
+- docs/adr/0014-spa-mesma-origem-proxy-vite.md
+- docs/adr/0023-spa-servida-pelo-backend.md
+- .gitignore
+- docker-compose.yml
+- frontend/vite.config.ts
+- scripts/build_front.py
+- Makefile
+- src/main/java/com/example/loginbase/web/PaginaController.java
+- src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
+
+#### 10 — Correção 3.1 grupo B
+**Harness**
+- —
+**Negócio**
+- docs/01-visao-produto.md
+- docs/02-requisitos.md
+- docs/03-casos-de-uso.md
+- docs/15-rastreabilidade.md
+
+#### 11 — Correção 3.1 grupo C
+**Harness**
+- —
+**Negócio**
+- docs/04-arquitetura.md
+- docs/06-api-rest.md
+- docs/07-seguranca.md
+- docs/08-plano-testes.md
+
+#### 12 — Correção 3.1 grupo D
+**Harness**
+- —
+**Negócio**
+- docs/09-guia-desenvolvedor.md
+- docs/10-implantacao-operacao.md
+- docs/11-processo-desenvolvimento.md
+- docs/13-manual-jogador.md
+- docs/14-glossario.md
+- docker-compose.yml
+- frontend/vite.config.ts
+- .gitignore
+- src/main/java/com/example/loginbase/web/PaginaController.java
+- src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
+- scripts/build_front.py
+- Makefile
+
+#### 13 — Correção 3.1 grupo E
+**Harness**
+- —
+**Negócio**
+- docs/16-historico-changelog.md
+- docs/17-riscos-divida-roadmap.md
+
+#### 14 — Ajustes finais docs 01/16/17
+**Harness**
+- —
+**Negócio**
+- docs/01-visao-produto.md
+- docs/16-historico-changelog.md
+- docs/17-riscos-divida-roadmap.md
+
+#### — Sessão principal (orquestrador)
+**Harness**
+- skill:dev-subagentes
+**Negócio**
+- —
+
+### Totais por modelo
+
+| Modelo | Agentes | Tokens |
+|---|---|---|
+| opus | 1 | 52.189 |
+| sonnet | 5 | 293.217 |
+| haiku | 8 | 627.413 |
+| orquestrador (sessão principal) | 1 | 125.595 |
+| **Total** | **15** | **1.098.414** |
+
+Progresso da change: 6/6 tasks concluídas.
+
+Sessão principal: medida até o início da criação do relatório; o consumo posterior (incluindo o agente do relatório) não é contabilizado.
+
+Observação: o script de consumo listou para a sessão principal apenas a skill como arquivo lido. Leituras feitas via Bash (tasks.md, grep em docs/) não foram capturadas.

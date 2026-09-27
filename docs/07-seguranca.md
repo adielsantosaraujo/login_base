@@ -4,10 +4,10 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | STRIDE, OWASP ASVS 4.0 L1 (seleção), LGPD |
 | Público | Desenvolvedores, revisores de segurança |
-| Fontes | `src/main/java/com/example/loginbase/seguranca/*.java`, `src/main/resources/application.properties`, `frontend/src/App.vue`, design jogo §18, `design.md` da change `add-frontend-build` |
+| Fontes | `src/main/java/com/example/loginbase/seguranca/*.java`, `src/main/resources/application.properties`, `frontend/src/App.vue`, design jogo §18 |
 
 > Parte da [documentação do login_base](README.md). Modela ameaças por STRIDE, verifica conformidade com ASVS nível 1 e registra compliance com LGPD.
 
@@ -47,7 +47,7 @@
 5. POST /logout (com CSRF) → invalida a sessão; o `SessaoEncerradaListener` grava `data_fim`; redireciona para /login?logout
 ```
 
-> **Nota — Produção (previsto)**: Em produção, um F5 (reload) numa rota interna (ex.: `/fazenda`) será atendido pelo `PaginaController`, que devolve a view `sistema/seguro/index` (fallback do history mode). Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md) e change [add-frontend-build](../openspec/changes/add-frontend-build/).
+> **Nota — Produção:** Em produção, um F5 (reload) numa rota interna (ex.: `/fazenda`) será atendido pelo `PaginaController`, que devolve a view `sistema/seguro/index` (fallback do history mode). Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
 
 ### Resolução de Identidade
 
@@ -97,9 +97,9 @@ Rotas acessíveis por qualquer usuário, autenticado ou não:
 | `/images/**` | GET | Imagens estáticas | Atual |
 | `/favicon.ico` | GET | Ícone do navegador | Atual |
 | `/error` | GET | Página de erro genérica | Atual |
-| `/app/**` | GET | Assets de SPA (JavaScript, CSS, imagens da SPA) | Previsto |
+| `/app/**` | GET | Assets de SPA (JavaScript, CSS, imagens da SPA) | Implementado |
 
-> **Nota — `/app/**` (previsto)**: Assets da SPA (gerados por `npm run build` e copiados em `make build_front`) são públicos por design. Não contêm dados sensíveis e nunca são salvos pelo request cache. Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md) e [change add-frontend-build](../openspec/changes/add-frontend-build/).
+> **Nota — `/app/**`:** Assets da SPA (gerados por `npm run build` e copiados em `make build_front`) são públicos por design. Não contêm dados sensíveis e nunca são salvos pelo request cache. Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
 
 ### Rotas Autenticadas
 
@@ -107,8 +107,8 @@ Todas as demais rotas exigem autenticação:
 
 | Padrão | Comportamento |
 |---|---|
-| `/` | GET autenticado → view da SPA; anônimo → 302 `/login` (previsto) |
-| `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` | GET autenticado → view da SPA; anônimo → 302 `/login` (previsto) |
+| `/` | GET autenticado → view da SPA; anônimo → 302 `/login` |
+| `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` | GET autenticado → view da SPA; anônimo → 302 `/login` |
 | `/api/**` | Anônimo → 401 (sem redirecionamento); autenticado → processada normalmente |
 
 > **Rota não listada**: anônimo → 302 `/login`; autenticado → 404 (confirmar após implementação).
@@ -146,7 +146,7 @@ Todas as demais rotas exigem autenticação:
 - **Comportamento:** Após login, Spring redireciona usuário para a requisição original (não autenticada)
 - **Configuração:** Desabilitado para `/api/**` (APIs devem ser idempotentes; não salvar estado)
 - **Efeito:** Usuário anônimo que tenta acessar API recebe 401, não é redirecionado para login
-- **Assets (previsto)**: `/app/**` evita que o request cache salve um asset como destino pós-login (público, sem redirecionamento pós-login). Evita que um asset seja salvo como destino de redirect após autenticação (bug comum em SPAs). Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
+- **Assets**: `/app/**` evita que o request cache salve um asset como destino pós-login (público, sem redirecionamento pós-login). Evita que um asset seja salvo como destino de redirect após autenticação (bug comum em SPAs). Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
 
 ---
 
@@ -186,11 +186,11 @@ Todas as demais rotas exigem autenticação:
 - Todas as ações: `POST /api/jogo/**`
 
 **CSRF Não Aplicável:**
-- GETs da SPA: `GET /`, `GET /fazenda`, `GET /forja`, `GET /quartel`, `GET /masmorras`, `GET /batalhas/{id}` (previsto)
+- GETs da SPA: `GET /`, `GET /fazenda`, `GET /forja`, `GET /quartel`, `GET /masmorras`, `GET /batalhas/{id}`
 - `GET /api/jogo/vila` — Leitura de dados
 - `GET /api/jogo/catalogo` — Leitura de dados
 - `GET /api/jogo/batalhas/{id}` — Leitura de dados
-- `GET /app/**` — Assets públicos (previsto); CSRF nunca aplicável a GETs
+- `GET /app/**` — Assets públicos; CSRF nunca aplicável a GETs
 
 ---
 
@@ -239,7 +239,7 @@ Todas as demais rotas exigem autenticação:
 - ✓ Senhas hasheadas (bcrypt)
 - ✓ Sessão não expõe token em URL (apenas cookie)
 - ✓ Mensagens de erro genéricas (404 para vila não encontrada, não "usuário X não existe")
-- ⚠ **Bundle de SPA (previsto)**: Assets em `/app/**` são públicos. O bundle não pode conter segredos (variáveis de ambiente `VITE_*` entram no bundle compilado). **Dúvida em aberto**: licença `VITE_PRIMEUI_LICENSE` — se não for passada ao build Docker, bundle sai sem a chave (aviso no console); se for passada, a chave fica pública em `/app/**`. Decisão pendente. Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
+- ⚠ **Bundle de SPA**: Assets em `/app/**` são públicos. O bundle não pode conter segredos (variáveis de ambiente `VITE_*` entram no bundle compilado). **Dúvida em aberto**: licença `VITE_PRIMEUI_LICENSE` — se não for passada ao build Docker, bundle sai sem a chave (aviso no console); se for passada, a chave fica pública em `/app/**`. Decisão pendente. Ver [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
 - ⚠ Recomendação: Rate limiting em endpoints sensíveis (/login)
 - ⚠ Recomendação: Mascarar IDs de usuário/vila em APIs (usar slugs)
 
@@ -403,7 +403,7 @@ Todas as demais rotas exigem autenticação:
 - [ ] HTTPS habilitado (TLS 1.2+)
 - [ ] HSTS header configurado (`Strict-Transport-Security`)
 - [ ] CSP (Content Security Policy) configurado
-- [ ] **`make build_front` executado antes do `./mvnw package` / imagem Docker (previsto)** — Garante que template `sistema/seguro/index.html` e assets `/app/**` existem antes de empacotar/buildear.
+- [ ] **`make build_front` executado antes do `./mvnw package` / imagem Docker** — Garante que template `sistema/seguro/index.html` e assets `/app/**` existem antes de empacotar/buildear.
 - [ ] Rate limiting ativado em `/login`
 - [ ] Logs centralizados (ELK, CloudWatch)
 - [ ] Monitoramento de erros (Sentry, DataDog)
@@ -430,7 +430,7 @@ Todas as demais rotas exigem autenticação:
 
 **Código Relevante:**
 - `../src/main/java/com/example/loginbase/seguranca/SecurityConfig.java` — Configuração de segurança (permitAll, CSRF, sessão)
-- `../src/main/java/com/example/loginbase/web/PaginaController.java` — Rotas autenticadas da SPA (previsto para change add-frontend-build)
+- `../src/main/java/com/example/loginbase/web/PaginaController.java` — Rotas autenticadas da SPA
 - `../src/main/java/com/example/loginbase/acesso/` — Entidades de autenticação
 - `../src/main/java/com/example/loginbase/jogo/api/ErroApiHandler.java` — Tratamento de erros
 - `../src/main/resources/application.properties` — Configuração de session timeout, HTTPS, etc.
@@ -442,5 +442,6 @@ Todas as demais rotas exigem autenticação:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): rotas públicas, /app/**, cache, CSRF, bundle, checklist | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

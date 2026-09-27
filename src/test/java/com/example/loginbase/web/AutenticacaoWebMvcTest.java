@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -252,10 +253,31 @@ class AutenticacaoWebMvcTest {
 	}
 
 	@Test
-	void usuarioAutenticadoVeSejaBemVindo() throws Exception {
+	void usuarioAutenticadoAcessaPaginaInicial() throws Exception {
 		mockMvc.perform(get("/").with(user("ana@exemplo.com")))
 				.andExpect(status().isOk())
-				.andExpect(content().string(containsString("Seja bem vindo")));
+				.andExpect(view().name("sistema/seguro/index"));
+	}
+
+	@Test
+	void usuarioAutenticadoAcessaRotaInterna_fazenda() throws Exception {
+		mockMvc.perform(get("/fazenda").with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/seguro/index"));
+	}
+
+	@Test
+	void visitanteAnonimoAcessaRotaInterna_redireciona() throws Exception {
+		mockMvc.perform(get("/forja"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
+	void visitanteAnonimoRequisitaAsset_naoRedireciona() throws Exception {
+		// GET /app/assets/qualquer.js deve retornar 404 (não existe), não 302 (redirect)
+		mockMvc.perform(get("/app/assets/qualquer.js"))
+				.andExpect(status().is(404));
 	}
 
 	@Test

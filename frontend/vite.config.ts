@@ -14,7 +14,8 @@ const proxyBackend = {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/app/' : '/',
   plugins: [vue()],
   server: {
     watch: {
@@ -29,4 +30,4 @@ export default defineConfig({
       '/images': proxyBackend,
     },
   },
-})
+}))

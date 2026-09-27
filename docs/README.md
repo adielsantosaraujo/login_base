@@ -4,10 +4,10 @@
 |---|---|
 | Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Público | todos |
 
-> Mapa completo da documentação do sistema login_base — um framework de autenticação e autorização que evoluiu para um city builder tático baseado em web, com build de frontend integrado (previsto).
+> Mapa completo da documentação do sistema login_base — um framework de autenticação e autorização que evoluiu para um city builder tático baseado em web, com build de frontend integrado.
 
 ---
 
@@ -30,10 +30,10 @@ A plataforma é reproduzível via Docker Compose no WSL2, com testes automatizad
 | Nº | Título | Propósito | Público |
 |---|---|---|---|
 | **01** | [Visão do produto](01-visao-produto.md) | Contexto, stakeholders, escopo, objetivos, não-objetivos, premissas | Todos, stakeholders |
-| **02** | [Requisitos (SRS)](02-requisitos.md) | 101 requisitos funcionais vigentes (104 previstos com add-frontend-build), 15 não-funcionais, 8 regras de negócio | Desenvolvedores, QA, revisores |
+| **02** | [Requisitos (SRS)](02-requisitos.md) | 104 requisitos funcionais vigentes, 15 não-funcionais, 8 regras de negócio | Desenvolvedores, QA, revisores |
 | **03** | [Casos de uso e histórias](03-casos-de-uso.md) | 12 casos de uso com fluxos, 12 histórias com critérios Gherkin | QA, PO, desenvolvedores |
-| **04** | [Arquitetura (arc42 + C4)](04-arquitetura.md) | 12 seções arc42 + C4 níveis 1–3 em Mermaid, 22 ADRs vigentes + 0023 proposta (add-frontend-build) | Desenvolvedores, arquitetos |
-| **adr/** | [ADRs (decisões)](adr/README.md) | 22 decisões arquiteturais vigentes no formato MADR 4.0 + 0023 proposta (add-frontend-build) | Arquitetos, desenvolvedores |
+| **04** | [Arquitetura (arc42 + C4)](04-arquitetura.md) | 12 seções arc42 + C4 níveis 1–3 em Mermaid, 23 ADRs vigentes | Desenvolvedores, arquitetos |
+| **adr/** | [ADRs (decisões)](adr/README.md) | 23 decisões arquiteturais vigentes no formato MADR 4.0 | Arquitetos, desenvolvedores |
 | **05** | [Modelo de dados](05-modelo-dados.md) | ER bidirecional, 14 tabelas, dicionário, constraints, enums | Desenvolvedores, DBA |
 | **06** | [API REST](06-api-rest.md) | 9 endpoints, esquemas DTOs, mapeamento de erros, exemplos cURL | Frontend/backend, QA |
 | **07** | [Segurança](07-seguranca.md) | STRIDE, OWASP ASVS L1, LGPD, autenticação, sessão, CSRF | Desenvolvedores, revisores |
@@ -44,8 +44,8 @@ A plataforma é reproduzível via Docker Compose no WSL2, com testes automatizad
 | **12** | [Game Design Document (GDD)](12-gdd.md) | Conceito, core loop, recursos, prédios, combate, loot, UI | Game designers, QA |
 | **13** | [Manual do jogador](13-manual-jogador.md) | Acesso, primeiros passos, telas, como fazer, dicas (sem termos técnicos) | Jogador final |
 | **14** | [Glossário](14-glossario.md) | Termos de domínio, acesso, técnicos, processo (alfabético) | Todos |
-| **15** | [Rastreabilidade (RTM)](15-rastreabilidade.md) | Matriz RF → spec → task → código → teste (101 RF vigentes; 104 previstos) | QA, revisores |
-| **16** | [Histórico e changelog](16-historico-changelog.md) | Uma seção por change (7 total: 6 arquivadas + 1 aberta), com commits e estatísticas | Todos |
+| **15** | [Rastreabilidade (RTM)](15-rastreabilidade.md) | Matriz RF → spec → task → código → teste (104 RF vigentes) | QA, revisores |
+| **16** | [Histórico e changelog](16-historico-changelog.md) | Uma seção por change (7 total: 6 arquivadas + 1 implementada), com commits e estatísticas | Todos |
 | **17** | [Riscos, dívida e roadmap](17-riscos-divida-roadmap.md) | 16 divergências D-01…D-16, dívida técnica, riscos, roadmap | Líderes, arquitetos |
 
 ---
@@ -156,14 +156,14 @@ Exemplo: `` `user-authentication` › *Requirement: Página inicial segura* `` �
 
 ### 4.6 Identificadores fixos (contrato entre lotes — usar exatamente)
 
-**Requisitos funcionais (RF):** `RF-<CAP>-NNN` (104 total previsto: 101 vigentes + 3 add-frontend-build, em `02-requisitos.md` tabela §3).
+**Requisitos funcionais (RF):** `RF-<CAP>-NNN` (104 total vigentes, em `02-requisitos.md` tabela §3).
 
 | Prefixo | Capability | Qtde | Nota |
 |---|---|---|---|
 | ACD | `access-control-data` | 7 | Vigente |
 | AUT | `user-authentication` | 10 | Vigente (modificado pela change jogo) |
 | AMB | `docker-dev-environment` | 6 | Vigente |
-| FRE | `frontend-app` | 10 | Vigente 7 + 3 previstos (RF-FRE-008, -009, -010) com add-frontend-build |
+| FRE | `frontend-app` | 10 | Vigente |
 | PRC | `subagent-dev-workflow` | 5 | Vigente |
 | DAD | `game-data` | 6 | Vigente (change jogo, arquivada) |
 | VIL | `game-village` | 10 | Vigente (change jogo, arquivada) |
@@ -179,9 +179,9 @@ Exemplo: `` `user-authentication` › *Requirement: Página inicial segura* `` �
 
 **Casos de uso (UC):** `UC-01` … `UC-12` (fixos).
 
-**ADRs:** `0001-spring-boot-java-25-maven.md` … `0023-spa-servida-pelo-backend.md` (23 total; 0023 proposta com add-frontend-build).
+**ADRs:** `0001-spring-boot-java-25-maven.md` … `0023-spa-servida-pelo-backend.md` (23 total).
 
-**Divergências:** `D-01` … `D-16` (16 total: D-01–D-12 vigentes + D-13–D-16 registradas com a change add-frontend-build — D-16 é pré-existente no código, em `17-riscos-divida-roadmap.md`).
+**Divergências:** `D-01` … `D-16` (16 total em `17-riscos-divida-roadmap.md`).
 
 ---
 
@@ -191,8 +191,8 @@ Hierarquia de autoridade:
 
 1. **Código rodando** (prevalece sempre): o que o compilador aceitou, os testes validam.
 2. **OpenSpec specs vigentes** (`openspec/specs/*/spec.md`, arquivadas): requisitos ratificados.
-3. **Design.md da change** (arquivadas: jogo em 2026-09-27; aberta: add-frontend-build): decisões e rationale.
-4. **Este conjunto de docs**: derivado das três anteriores (inclui comportamento previsto com marca explícita).
+3. **Design.md da change** (todas arquivadas): decisões e rationale.
+4. **Este conjunto de docs**: derivado das três anteriores (registro de decisões, specs vigentes e comportamento implementado).
 
 **Conflito?** Código prevalece; registre a divergência com marca `> **Divergência:** ...` no doc afetado e consolide em `17-riscos-divida-roadmap.md`.
 
@@ -238,5 +238,6 @@ Quando código ou spec divergem:
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto/aberta/proposto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): RF 101→104, ADRs 22→23 (0023 proposto), divergências D-01…D-16, 7 changes (6 arquivadas + 1 aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

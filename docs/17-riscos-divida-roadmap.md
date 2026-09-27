@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
+| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
 | Modelo/norma | Registro de riscos (ISO 31010) + backlog de evolução |
 | Público | líderes, arquitetos, desenvolvedores |
 
@@ -14,7 +14,7 @@
 
 ## 1. Registro de Riscos
 
-Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks do design do jogo; R-11, R-12, R-13 derivam do design da change `add-frontend-build` aberta; os demais são avaliação do revisor):
+Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks do design do jogo; R-11, R-12, R-13 derivam do design da change `add-frontend-build` implementada; os demais são avaliação do revisor):
 
 | # | Risco | Probabilidade | Impacto | Status Atual | Mitigação Existente | Risco Residual |
 |---|---|---|---|---|---|---|
@@ -28,9 +28,9 @@ Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks d
 | R-08 | Build: sem CI/CD — validação manual, deploy manual, sem rollback automático | **Média** | **Crítico** | **Vigente** | Nenhuma. `openspec validate --strict` roda local. | **Crítico**: impossível em produção. Roadmap: CI com GitHub Actions (test, build, publish). |
 | R-09 | Dependências: `spring-boot-starter-hateoas` declarado, não usado — acumula dívida | **Baixa** | **Baixo** | **Vigente** | Nenhuma. `pom.xml` intacto; poderia remover. | **Baixo**: harmless; vira tech debt. Roadmap: cleanup no próximo refactor. |
 | R-10 | Frontend: `@primeicons/vue` importado implicitamente (transitive dependency) — pode quebrar | **Baixa** | **Médio** | **Vigente** | Entrada em `package-lock.json`; se PrimeVue atualiza, pode romper. | **Baixo**: atualmente estável; pinned no lock. Roadmap: declarar explicitamente. |
-| R-11 | Clone limpo sem `make build_front` → erro 500 em `/` | **Média** | **Alto** | **Previsto (add-frontend-build)** | Nenhuma em clone atual. Mitigação prevista: docs em `09-guia-desenvolvedor.md` §4.10, `10-implantacao-operacao.md` §5, README setup; CI futuro executa `make build_front` antes de `./mvnw package` / `docker build`. | **Médio**: template não existe até primeiro build. Documentação clara é essencial. |
-| R-12 | Rota nova da SPA fora do `PaginaController` → F5/link direto dá 404 | **Média** | **Médio** | **Previsto (add-frontend-build)** | Lista explícita de rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` prevista no design. Mitigação: documentar padrão; considerar catch-all futuro se rotas crescerem demais. | **Médio**: risco de esquecer atualizar lista; trade-off entre segurança (lista) e flexibilidade (catch-all). |
-| R-13 | Build de produção depende de Docker | **Baixa** | **Médio** | **Previsto (add-frontend-build)** | Docker já é obrigatório para dev (serviço `frontend`). Mitigação: CI/CD assume Docker disponível; sem Docker, sem build de produção (aceitável em projeto containerizado). | **Baixo**: alinhado com escolha de stack (Docker Compose obrigatório). |
+| R-11 | Clone limpo sem `make build_front` → erro 500 em `/` | **Média** | **Alto** | **Ativo — mitigado por docs** | Mitigação implementada: docs em `09-guia-desenvolvedor.md` §4.10, `10-implantacao-operacao.md` §5, README setup; CI futuro executa `make build_front` antes de `./mvnw package` / `docker build`. | **Médio**: template não existe até primeiro build. Documentação clara implementada. |
+| R-12 | Rota nova da SPA fora do `PaginaController` → F5/link direto dá 404 | **Média** | **Médio** | **Ativo — mitigado por design** | Lista explícita de rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` implementada em `PaginaController`. Mitigação: padrão documentado; considerar catch-all futuro se rotas crescerem demais. | **Médio**: risco de esquecer atualizar lista em mudanças futuras; trade-off entre segurança (lista) e flexibilidade (catch-all). |
+| R-13 | Build de produção depende de Docker | **Baixa** | **Médio** | **Ativo — aceito** | Docker já é obrigatório para dev (serviço `frontend`). Mitigação implementada: CI/CD futuro assume Docker disponível; sem Docker, sem build de produção (aceitável em projeto containerizado). | **Baixo**: alinhado com escolha de stack (Docker Compose obrigatório). |
 
 ### Resumo de Risco
 
@@ -57,14 +57,14 @@ Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks d
 | DT-11 | `comando_git_push.md` vazio e `chat.md` (pedido original) na raiz (`/`) | Limpeza | Negligenciável | P4 |
 | DT-12 | Exemplo cURL no README.md incorreto (não inclui `_csrf`, token vem de cookie) | Documentação | Médio | P3 (corrigir em próximo release notes) |
 | DT-13 | Sem configuração de rate limiting, bloqueio por tentativa, MFA | Segurança | Crítico (produção) | P1 (roadmap: change de segurança) |
-| DT-14 | Lista de rotas duplicada entre `frontend/src/router/index.ts` e `PaginaController` — difícil manter sincronizadas (prevista, change add-frontend-build) | Design | Médio | P2 (considerar catch-all genérico ou gerador de rotas futuro) |
+| DT-14 | Lista de rotas duplicada entre `frontend/src/router/index.ts` e `PaginaController` — difícil manter sincronizadas | Design | Médio | P2 (considerar catch-all genérico ou gerador de rotas futuro) |
 
 ### Total: 14 itens de dívida
 
 **Distribuição por urgência:**
 
 - **P1 (Bloqueador para produção):** 3 (CI, sync specs, segurança).
-- **P2 (Antes de carga/teste):** 4 (E2E, UsuarioAtual, ItemDto, rotas duplicadas previstas).
+- **P2 (Antes de carga/teste):** 4 (E2E, UsuarioAtual, ItemDto, rotas duplicadas).
 - **P3 (Próximo sprint):** 4 (JaCoCo, OpenAPI, Testcontainers, README).
 - **P4 (Nice-to-have):** 3 (Cleanup, PrimeIcons, chat.md).
 
@@ -72,7 +72,7 @@ Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks d
 
 ## 3. Divergências entre Planejamento e Código
 
-Consolidadas de `proposal.md`, `design.md`, specs, código-fonte e artefatos previstos da change `add-frontend-build` (aberta, não implementada) com a marca "o código prevalece":
+Consolidadas de `proposal.md`, `design.md`, specs, código-fonte e artefatos implementados da change `add-frontend-build` com a marca "o código prevalece":
 
 | ID | Donde Citado | Planejado/Documentado | Código Real | Documentação Afetada | Recomendação |
 |---|---|---|---|---|---|
@@ -88,18 +88,22 @@ Consolidadas de `proposal.md`, `design.md`, specs, código-fonte e artefatos pre
 | **D-10** | task 8.2 verificação integrada | Soldado Espada N1 + Armadura Couro N1 = "ataque 8"; IDs `J<unidadeId>` | Ataque = **arma = 6** (`base 6 + bonus 2×(L−1)` → N1=6); IDs = **`J1..J4`** pela ordem do esquadrão em `MasmorraService` | `03-casos-de-uso.md` (corrigido), `08-plano-testes.md`, `12-gdd.md` (§9, exemplo numérico) | Task 8.2 tinha cálculo errado; números recalculados (agente 34 ajustou). **Status:** Resolvido. |
 | **D-11** | specs principais (vigentes) | "Página inicial de boas-vindas" (FRE-005); "Proteção de rotas" sem 401 (AUT-004 original) | Código implementou delta: página inicial **= vila** (jogo); **401 sem cache** em `/api/**` | `02-requisitos.md` (marca REMOVIDO/MODIFICADO), `15-rastreabilidade.md` | Specs vigentes sincronizadas. Change jogo arquivada em 2026-09-27; specs vigentes atualizadas. **Status:** Resolvido. |
 | **D-12** | `pom.xml` / `frontend/package.json` | HATEOAS no README; ícones importados mas não declarados | `spring-boot-starter-hateoas` sem uso; `@primeicons/vue` em transitive (lockfile) | `04-arquitetura.md` (ADR 0012 registra), `17` (DT-01, DT-02) | Dívida técnica, sem impacto atual. **Status:** Cleanup P4. |
-| **D-13** | design change `add-frontend-build` task 1.1 | Serviço `frontend-build` com `image: node:20-alpine` + volume nomeado | Projeto usa `node:26-trixie-slim` e design (§3) pede `build: ./frontend` + volume anônimo (descartado em `--rm`) | `10-implantacao-operacao.md` §1 (Imagens base) | Design da change é correto; task pode ter sugestão obsoleta. Código prevalecerá na implementação. |
-| **D-14** | design change `add-frontend-build`, Migration Plan item 2 | Build "automático em CI/CD" | Não há CI configurado (R-08); build é manual via `make build_front` | `11-processo-desenvolvimento.md` §6, `17` (R-08, CH-CI roadmap) | Esperado: CI não existe; implementação será manual até CH-CI. |
-| **D-15** | tasks 1.2, 2.1 change `add-frontend-build` | Code snippets (exemplos de `@RestController`, uso de `antMatchers`, import `CORES`) | Task 1.2 importa `CORES` de `cores.py`, que não existe; task 2.1 sugere `@RestController` em vez de `@Controller`, removeria `@GetMapping("/login")`, usa `antMatchers`/`/login/**` — verificação pendente em implementação | Tasks 1.2 e 2.1 da change (a confirmar após código) | Snippets são guias; executador validará contra código real. |
-| **D-16** | docs (README/09/10: 'porta 80') | Porta do backend = 80 | `application.properties`: `server.port=${SERVER_PORT:8080}`, `.env.example`: `SERVER_PORT=8080`, compose app: não recebe `SERVER_PORT`, mapeia `"80:80"` → app provavelmente inacessível em container | `09-guia-desenvolvedor.md` §7 (SERVER_PORT), `10-implantacao-operacao.md` §3 (Variáveis, nota D-16) | Inconsistência pré-existente; não parte da change add-frontend-build. Requer sync futuro. |
+| **D-13** | design change `add-frontend-build` task 1.1 vs. implementação | Serviço `frontend-build` com `image: node:20-alpine` + volume nomeado | Projeto usa `node:26-trixie-slim` e implementação usa `build: ./frontend` + volume anônimo (descartado em `--rm`) — design corrigido na implementação | `10-implantacao-operacao.md` §1 (Imagens base) | **Resolvida na implementação.** Código correto (build + volume anônimo é mais leve e limpo). |
+| **D-14** | design change `add-frontend-build`, Migration Plan item 2 | Build "automático em CI/CD" | Não há CI configurado (R-08); build é manual via `make build_front` | `11-processo-desenvolvimento.md` §6, `17` (R-08, CH-CI roadmap) | **Resolvida conforme design.** Esperado: CI não existe; build é manual via `make build_front` até CH-CI. Documentação clara. |
+| **D-15** | tasks 1.2, 2.1 change `add-frontend-build` | Code snippets (exemplos de `@RestController`, uso de `antMatchers`, import `CORES`) | Task 1.2 importa `CORES` de `cores.py`; implementação usa `scripts/cores.py` real com constantes BLUE_COLOR/RED_COLOR/CYAN_COLOR. Task 2.1 usa `@Controller` + `RequestMatchers` conforme SecurityConfig real. | Tasks 1.2 e 2.1 da change (validação em implementação) | **Resolvida na implementação.** Snippets eram guias; executor validou contra código real. |
+| **D-16** | docs (README/09/10: 'porta 80') | Porta do backend = 80 | `application.properties`: `server.port=${SERVER_PORT:8080}`, `.env.example`: `SERVER_PORT=8080`, compose app: não recebe `SERVER_PORT`, mapeia `"80:80"` → app provavelmente inacessível em container | `09-guia-desenvolvedor.md` §7 (SERVER_PORT), `10-implantacao-operacao.md` §3 (Variáveis, nota D-16) | **Divergência pré-existente, não originária de add-frontend-build.** Requer sync futuro (fora do escopo desta change). |
 
 ### Consolidação de Divergências
 
-- **D-01 … D-12:** 12 divergências do código vigente, registradas acima.
-- **D-13 … D-16:** 4 divergências entre design/tasks da change `add-frontend-build` (aberta) e realidade do projeto, registradas acima.
-- **Total:** 16 divergências de conhecimento.
-- **Origem comum:** Specs legadas (ainda em `openspec/specs/`, não atualizadas); change jogo tinha delta separado não arquivado; nova change aberta tem detalhes a confirmar em implementação.
-- **Resolução:** Change jogo arquivada em 2026-09-27; D-11 resolvida (specs vigentes sincronizadas). Change `add-frontend-build` em aberto; D-13 a D-16 serão validadas/resolvidas na implementação.
+- **D-01 … D-12:** 12 divergências do código vigente, registradas acima. **Status:** Resolvidas.
+- **D-13 … D-16:** 4 divergências entre design/tasks da change `add-frontend-build` e implementação real, registradas acima.
+  - **D-13:** Resolvida na implementação (volume anônimo + build).
+  - **D-14:** Resolvida conforme design (build manual até CI).
+  - **D-15:** Resolvida na implementação (snippets validados, cores.py usado).
+  - **D-16:** Divergência pré-existente, fora do escopo de add-frontend-build.
+- **Total:** 16 divergências de conhecimento; 15 resolvidas, 1 pré-existente em backlog.
+- **Origem comum:** Specs legadas (ainda em `openspec/specs/`, não atualizadas); change jogo tinha delta separado não arquivado; change `add-frontend-build` agora implementada com design validado.
+- **Resolução:** Change jogo arquivada em 2026-09-27 (D-11 resolvida, specs sincronizadas). Change `add-frontend-build` implementada em 2026-09-27 (D-13 a D-15 resolvidas; D-16 em backlog futuro).
 
 ---
 
@@ -116,9 +120,9 @@ Propostas de evolução (não aprovadas). Só os itens marcados com * constam co
 
 ### Fase 2: Frontend & Build
 
-- [ ] **CH-FRONT-BUILD:** Build de produção integrado do frontend; SPA servida pelo backend.
-  - Novo: change `add-frontend-build` (aberta, não implementada, 6 tasks).
-  - Reduz: Risco R-11, R-12, R-13; introduz: DT-14 (lista de rotas duplicada).
+- [x] **CH-FRONT-BUILD:** Build de produção integrado do frontend; SPA servida pelo backend (implementado 2026-09-27).
+  - Realizado: change `add-frontend-build` (implementada, 6 tasks).
+  - Mitigou: Riscos R-11, R-12, R-13; confirmou dívida: DT-14 (lista de rotas duplicada).
 
 ### Fase 2B: Segurança & Operação
 
@@ -182,5 +186,6 @@ Propostas de evolução (não aprovadas). Só os itens marcados com * constam co
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: atualiza R-11/R-12/R-13 para "Ativo — mitigado", D-13/D-14/D-15 para "Resolvida", roadmap CH-FRONT-BUILD marca como [x] realizado | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): riscos R-11 a R-13, dívida DT-14, divergências D-13 a D-16, roadmap CH-FRONT-BUILD | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (jogo) | Adiel, com apoio de agentes Claude |
