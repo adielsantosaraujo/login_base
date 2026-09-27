@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
 | Modelo/norma | Spec-driven (OpenSpec) + docs-as-code + orquestração por subagentes |
 | Público | desenvolvedores, líderes de projeto |
 
@@ -205,12 +205,19 @@ Gravado na pasta da change por subagente Haiku após todas as ondas concluírem.
 
 ### 4.3 Padrões observados
 
-Observado em 2 changes (autenticação, jogo):
+Observado em 2 changes completas (autenticação, jogo):
 
 - **Opus:** 1 agente por change (planning). ~100–150k tokens por planejamento.
 - **Sonnet:** 1 por tarefa de código (média 85–160k tokens). Tarefas críticas (motor, API) custam mais (150–200k).
 - **Haiku:** 1–2 por artefato textual (proposal, design, specs). ~50–100k tokens por artefato.
 - **Paralelismo:** Ondas de 4–6 agentes simultaneamente (Sonnet em paralelo) podem ser disparadas sem sobrecarga.
+
+### 4.4 Change em andamento: add-frontend-build (6 tasks, 0 concluídas; relatório pendente)
+
+Status: **Aberta (não implementada).** Artefatos criados em `openspec/changes/add-frontend-build/` (proposal.md, design.md, specs/, tasks.md); código não foi implementado. Aguardando orquestração e execução de tasks. Prioridade: integração crítica para servir SPA em produção.
+
+- **Tasks:** 1.1 (serviço e Vite), 1.2 (script build_front.py), 1.3 (make build_front e .gitignore), 2.1 (rotas e testes), 3.1 (docs), 4.1 (verificação).
+- **Esperado:** Possibilita `make build_front` em clone limpo, gera `frontend/dist` → `static/app/` + template index, fallback do history mode no backend.
 
 ---
 
@@ -219,7 +226,7 @@ Observado em 2 changes (autenticação, jogo):
 ### 5.1 Branch principal e de trabalho
 
 - **`main`**: branch principal. Existem também `main_v1` e `production` (remotas). Não há regra registrada de 1 commit por change (ex.: auth teve 3 commits).
-- **`jogo_adiel`**: branch de trabalho da change `add-city-builder-game` (arquivada em 2026-09-27); após archive, retornou a `main`.
+- **`jogo_adiel`**: branch de trabalho inicial da change `add-city-builder-game` (arquivada em 2026-09-27). Após archive, continua recebendo commits (change `add-frontend-build` em aberto nesta branch).
 - **Remoto:** GitHub (`github.com/adielsantosaraujo/login_base`).
 
 ### 5.2 Mensagens de commit
@@ -257,9 +264,11 @@ Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
 - **Push**: apenas com consentimento do usuário.
 - **PR para `main`**: criar quando change estiver pronta para merge (após verificação, testes, docs atualizados).
 
-### 5.4 Histórico recente (9 commits desde init)
+### 5.4 Histórico recente (11 commits desde init)
 
 ```
+690f4d8 (2026-09-27) Implementa serviço `frontend-build`, script Python e integração ao backend (artefatos: change add-frontend-build)
+0fd3443 (2026-09-27) Arquiva a change add-city-builder-game e sincroniza as specs
 454ae58 (2026-09-27) criação do sistema de jogo
 fd9405e (2026-09-26) Adiciona script `executar.py`, suporte a cores em scripts e comando `executar` ao Makefile
 6ce0641 (2026-09-25) OpenSpec: tasks em arquivos separados com links clicáveis
@@ -278,12 +287,13 @@ eb618a4 (2026-09-24) Adiciona autenticação de usuários: modelo de acesso, log
 Uma task / change é pronta quando:
 
 1. **Tasks marcadas** `[x]` no índice `tasks.md` (pelo orquestrador).
-2. **Testes passando:** `./mvnw test` retorna 0 falhas (239 testes no baseline).
-3. **Build do frontend:** `cd frontend && npm run build` sem erros (dentro ou fora do container).
+2. **Testes passando:** `./mvnw test` retorna 0 falhas (239 testes no baseline; novos testes adicionados conforme implementação).
+3. **Build do frontend:** `make build_front` (previsto — change add-frontend-build) sem erros; ou `cd frontend && npm run build` sem erros (dev/checagem).
 4. **Validação OpenSpec:** `openspec validate <change> --strict` sem warnings.
 5. **README/docs atualizados** com a change (seção no `README.md`, entrada em `16`, divergências em `17`).
 6. **Relatório de agentes** em `resumo_utilizacao_agentes.md` com tabela e arquivos lidos.
-7. **Nenhuma mudança fora de escopo:** `git status` mostra apenas `docs/` e `openspec/changes/archive/2026-09-27-add-city-builder-game/` (se arquivada em 2026-09-27).
+7. **Nenhuma mudança fora de escopo:** `git status` mostra apenas `docs/` e `openspec/` (changes/ ou archive/).
+8. **Artefatos ignorados não versionados:** `git status` não deve listar `build.log`, `static/app/` nem template `sistema/seguro/index.html` (quando add-frontend-build implementada).
 
 ### 6.1 Verificação pré-commit
 
@@ -292,16 +302,18 @@ Antes de pedido de merge:
 ```bash
 # Rodar testes
 make up  # Postgres deve estar UP
-./mvnw test  # 239 testes, 0 falhas esperadas
+./mvnw test  # 239 testes no baseline (contagem após add-frontend-build a confirmar), 0 falhas esperadas
 
 # Validar OpenSpec
-openspec validate add-city-builder-game --strict
+openspec validate <change> --strict
 
-# Build frontend
+# Build do frontend (vigente: checagem; previsto com add-frontend-build: produção)
+make build_front  # Previsto — change add-frontend-build (aberta, não implementada)
+# ou para checagem:
 cd frontend && npm run build && cd ..
 
 # Verificar status git
-git status  # Apenas docs/ alterado
+git status  # Apenas docs/ e openspec/ alterados; sem build.log, static/app/, template index.html
 
 # Verificar links (opcional, mas recomendado)
 # Todos os links relativos devem resolver
@@ -361,9 +373,9 @@ Quando criar nova change:
 
 - **IntelliJ IDEA** (Java 25, Spring Boot 4.1.1).
 - **VSCode** (Frontend: Vue 3, TypeScript).
-- **Makefile:** `make up`, `make down`, `make e` (executar).
-- **Docker Compose:** 3 serviços (db, app, frontend).
-- **Python 3:** script `executar.py` (menu interativo).
+- **Makefile:** `make up`, `make down`, `make e` (executar), `make build_front` (previsto — change add-frontend-build).
+- **Docker Compose:** 3 serviços (db, app, frontend) + `frontend-build` com profile `build` (previsto).
+- **Python 3:** scripts `executar.py` (menu interativo), `scripts/build_front.py` (previsto — build do frontend).
 
 ### 8.3 Testes e validação
 
@@ -379,4 +391,5 @@ Quando criar nova change:
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): §4.4 change em andamento, §5.4 commits, §6 DoD com make build_front e gitignore, §8.2 ferramentas | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

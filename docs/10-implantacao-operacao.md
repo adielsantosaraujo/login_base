@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
 | Status | Vigente — baseline do commit `454ae58` |
 | Modelo/norma | Diátaxis (referência + runbook) |
 | Público | Desenvolvedores, operação |
-| Fontes | `docker-compose.yml`, `Dockerfile`, `frontend/Dockerfile`, `Makefile`, `.env.example`, `application.properties`, `frontend/vite.config.ts` |
+| Fontes | `docker-compose.yml`, `Dockerfile`, `frontend/Dockerfile`, `Makefile`, `.env.example`, `application.properties`, `frontend/vite.config.ts`, `scripts/build_front.py` (previsto), `PaginaController.java` (previsto), `SecurityConfig.java` (previsto), `.gitignore` (previsto) |
 
 > Parte da [documentação do login_base](README.md). Descreve o ambiente Docker, configurações, variáveis e procedimentos para levantar, manter e resolver problemas comuns.
 
@@ -65,11 +65,14 @@
 
 ### Imagens base
 
-| Serviço | Imagem | Origem | Versão |
-|---|---|---|---|
-| `db` | `postgres:17-trixie` | Docker Hub | PostgreSQL 17 (Debian trixie) |
-| `app` | Build multi-stage | Local `Dockerfile` | Maven 3.9-eclipse-temurin-25-alpine → eclipse-temurin:25-jre-alpine |
-| `frontend` | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 |
+| Serviço | Imagem | Origem | Versão | Nota |
+|---|---|---|---|---|
+| `db` | `postgres:17-trixie` | Docker Hub | PostgreSQL 17 (Debian trixie) | — |
+| `app` | Build multi-stage | Local `Dockerfile` | Maven 3.9-eclipse-temurin-25-alpine → eclipse-temurin:25-jre-alpine | — |
+| `frontend` | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 | Dev server Vite |
+| `frontend-build` (previsto) | Node build | Local `frontend/Dockerfile` | node:26-trixie-slim + npm 12 | Build de produção (efêmero, profile `build`) |
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O serviço `frontend-build` é um serviço efêmero que executa o build de produção (`npm run build`) via `docker compose run --rm --build frontend-build`. Definição exata (volumes, command, etc.) a confirmar após implementação.
 
 ---
 
@@ -85,6 +88,9 @@ Docker Compose ativa serviços por **profiles**. Variáveis controlam qual profi
 | `PROFILE_DB` | `local` | `local`, `desativado` | Serviço `db` (sempre use `local` para testes) |
 | `PROFILE_APP` | `desativado` | `local`, `desativado` | Serviço `app` (manter `desativado` se backend roda na IDE) |
 | `PROFILE_FRONTEND` | `local` | `local`, `desativado` | Serviço `frontend` (use `local` para dev com Vite) |
+| `SERVER_PORT` | `8080` | número | Porta backend (Spring `server.port`; não repassada ao serviço `app`; veja D-16 abaixo) |
+
+**Nota D-16 — Porta do backend:** `application.properties` define `server.port=${SERVER_PORT:8080}` com padrão 8080; `.env.example` tem `SERVER_PORT=8080`; o serviço Docker `app` não recebe esta variável e mapeia `"80:80"` (port host 80 → container port 80) → app em container provavelmente inacessível no host. Inconsistência pré-existente, correção de código fora desta change. Solução: IDE roda na porta 80 (com privilégios); container seria em 8080 ou com `SERVER_PORT` passado ao compose (futuro).
 
 ### Combinações de uso
 
@@ -110,7 +116,14 @@ app:
 frontend:
   profiles: ["${PROFILE_FRONTEND:-local}"]
   # Ativa se PROFILE_FRONTEND=local (padrão)
+
+frontend-build:  # (previsto — change add-frontend-build)
+  profiles: ["build"]
+  # Só ativa explicitamente via `docker compose --profile build run frontend-build`
+  # Ou via `make build_front` (que chama python3 ./scripts/build_front.py)
 ```
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O profile `build` é usado exclusivamente para o build de produção do frontend; não é ativado por `make up` (usa `PROFILE=local` por padrão).
 
 ---
 
@@ -190,10 +203,15 @@ make down_v
 # Acompanhar logs do frontend (Ctrl+C para sair)
 make logs_front
 
+# Gerar o build de produção do frontend (previsto — change add-frontend-build)
+make build_front
+
 # Abrir menu interativo de alvos
 make executar
 # ou: make e (atalho)
 ```
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** O alvo `make build_front` executa `python3 ./scripts/build_front.py`, que roda `docker compose run --rm --build frontend-build` (serviço efêmero com profile `build`). Requer Docker ativo.
 
 ---
 
@@ -223,18 +241,83 @@ docker compose --profile local build app
 
 ### Frontend (distribuição)
 
+#### Hoje (vigente)
+
 ```bash
-# Dentro do container
-docker compose exec frontend npm run build
+# Dev server Vite (sem build de produção)
+# Rodando em http://localhost:5173 com proxy para backend
+# Nenhum asset versionado gerado; tudo é transitório
+```
+
+#### Fluxo de build (previsto)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+```bash
+# 1. Gerar build de produção
+make build_front
+
+# 2. Package do backend (que agora inclui a SPA gerada)
+./mvnw clean package -DskipTests
+
+# 3. Build da imagem Docker
+docker compose --profile local build app
 
 # Resultado
-# frontend/dist/ (~50 KB gzipped, minificado)
+# - src/main/resources/static/app/  (assets: CSS, JS, imagens — público em /app/**)
+# - src/main/resources/templates/sistema/seguro/index.html  (template: view Thymeleaf)
+# - target/login-base-0.0.1-SNAPSHOT.jar (JAR com SPA incluída)
+# - imagem `login-base-app` (com os artefatos acima do COPY src)
+```
 
-# Ou localmente (requer Node 26 + npm 12)
-cd frontend
-npm ci
-npm run build
-cd ..
+**Destinos:**
+
+| Artefato | Origem | Destino | Servido em | Nota |
+|---|---|---|---|---|
+| Assets (JS, CSS, imagens) | `frontend/dist/` (exceto `index.html`) | `src/main/resources/static/app/` | `/app/**` | Público, sem autenticação |
+| Template SPA | `frontend/dist/index.html` (gerado) | `src/main/resources/templates/sistema/seguro/index.html` | `/`, `/fazenda`, etc. | View Thymeleaf, roteamento history mode |
+| Build Vite | `npm run build` (vue-tsc -b && vite build) | `frontend/dist/` (GERADO, ignorado) | — | Apenas durante o build |
+
+**Base Vite:**
+
+- **Dev server** (`make up`): base `/` (acesso raiz, assets em `/`).
+- **Build** (`make build_front`): base `/app/` (assets com hash em `/app/**`; configurável em `frontend/vite.config.ts` na lógica `command === 'build'`).
+
+#### Ordem de build (clone limpo / CI)
+
+```bash
+# Pré-requisito: Docker ativo
+git clone https://github.com/adielsantosaraujo/login_base.git
+cd login_base
+
+# 1. Configurar variáveis
+cp .env.example .env
+# Editar .env: ADMIN_PASSWORD (obrigatório para criar admin; vazio apenas não cria)
+
+# 2. Build de produção do frontend
+make build_front
+
+# 3. Package Maven
+./mvnw clean package -DskipTests
+
+# 4. Build da imagem Docker (opcional, se planeja deploy em container)
+docker compose --profile local build app
+
+# Resultado: aplicação pronta para deploy (JAR com SPA incluída)
+```
+
+**CI/CD (inexistente — R-08):** quando existir pipeline de CI, deve:
+1. Executar `make build_front` primeiro (requer Docker).
+2. Depois `./mvnw clean package` (lê a SPA já copiada).
+3. Depois `docker compose build` (inclui a SPA na imagem).
+
+#### Avulso (sem docker integrado)
+
+```bash
+# Possível, mas não integrado: build do frontend requer Docker
+npm run build  # Gera frontend/dist/, mas não copia para o backend
+
+# ✅ SOLUÇÃO INTEGRADA: usar Docker via make build_front (copia automaticamente)
 ```
 
 ---
@@ -243,17 +326,19 @@ cd ..
 
 ### Estado atual
 
+- **Sem servir SPA em produção** (previsto mudar com add-frontend-build).
 - **Sem pipeline de implantação**: sem GitHub Actions, sem GitLab CI, sem outro servidor CI/CD.
-- **Sem servir SPA em produção**: `frontend/dist/` não é servido pelo backend; Vite dev server é só para desenvolvimento.
 - **Sem HTTPS**: `SESSION_COOKIE_SECURE=false` fixado; produção exigiria SSL/TLS.
 - **Sem observabilidade**: sem logs centralizados, sem métricas, sem APM.
 - **Sem backup**: volume Docker `db-data` não tem snapshot automático.
 
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).** SPA **será servida pelo backend** (risco R-11): `/` e rotas da SPA (`/fazenda`, `/forja`, etc.) devolvem a view `sistema/seguro/index` (Thymeleaf); assets em `/app/**` são públicos. Clone limpo requer `make build_front` antes do package (pré-requisito para deploy). Sem o build, `GET /` retorna HTTP 500 (template ausente). **Rollback:** reverter change e redeploy jar/imagem anterior (placeholder volta).
+
 ### Roadmap (futuro)
 
 Itens planejados em [`17-riscos-divida-roadmap.md`](17-riscos-divida-roadmap.md):
-- Adicionar CI/CD (GitHub Actions).
-- SPA servida por backend ou nginx reverso.
+- SPA servida pelo backend — em andamento na change add-frontend-build (aberta).
+- Adicionar CI/CD (GitHub Actions); deve rodar `make build_front` antes do package.
 - TLS/HTTPS com certificado válido.
 - Observabilidade (logs, métricas).
 - Backup/DR automático.
@@ -457,9 +542,124 @@ docker compose exec frontend pwd
 # e arquivos dentro devem ser os do host (mount bind)
 ```
 
+### Problema: HTTP 500 em `/` (TemplateInputException: template não encontrado)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+**Causa**: `src/main/resources/templates/sistema/seguro/index.html` ausente ou vazio. Ocorre em clone limpo sem `make build_front`.
+
+**Ação**:
+
+```bash
+# 1. Executar build
+make build_front
+
+# 2. Verificar log
+cat build.log
+
+# 3. Confirmar template criado
+ls -la src/main/resources/templates/sistema/seguro/index.html
+# Deve ter conteúdo (minificado)
+
+# 4. Reiniciar backend (IDE: Ctrl+C + Run; container: docker compose restart app)
+
+# 5. Testar
+curl http://localhost/ | head -c 100
+# Esperado: HTML do template (<!DOCTYPE html> ou similar)
+```
+
+### Problema: `make build_front` falha
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+**Causa comum:** erro de compilação TypeScript ou Docker não ativo.
+
+**Ação**:
+
+```bash
+# 1. Verificar Docker
+docker ps
+# Esperado: Docker rodando (ao menos containers ativos)
+
+# 2. Verificar build log
+cat build.log
+
+# 3. Procurar erro (vue-tsc ou vite build)
+# Exemplo: `src/components/MyComponent.vue:42: Type 'X' is not assignable to type 'Y'`
+
+# 4. Corrigir erro no código do frontend
+# (Exemplo: adicionar type annotation faltante)
+
+# 5. Rodar build novamente
+make build_front
+
+# 6. Se persistir, verificar Node
+docker compose --profile build run --rm frontend-build node --version
+```
+
+### Problema: Página em branco ou 404 em `/app/assets/...`
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+**Causa**: assets não foram copiados para `src/main/resources/static/app/`.
+
+**Ação**:
+
+```bash
+# 1. Verificar se build foi executado
+ls -la src/main/resources/static/app/
+# Esperado: diretório com assets (*.js, *.css, imagens)
+
+# 2. Se vazio ou ausente: rodar build
+make build_front
+
+# 3. Verificar log
+cat build.log | grep -i "erro\|fail\|copy"
+
+# 4. Se tudo OK, reiniciar backend
+# (IDE: Ctrl+C + Run; container: docker compose restart app)
+```
+
+### Problema: F5 em rota da SPA dá 404 (ex.: `/fazenda`)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+**Causa**: rota não está listada em `PaginaController` (R-12).
+
+**Ação**:
+
+```bash
+# 1. Verificar PaginaController
+grep -A 5 "@GetMapping" src/main/java/com/example/loginbase/web/PaginaController.java
+# Esperado: {"/", "/fazenda", "/forja", "/quartel", "/masmorras", "/batalhas/{id}"}
+
+# 2. Se rota faltante: adicionar ao @GetMapping
+# Exemplo: @GetMapping({"/", "/fazenda", "/forja", "/aldeia"})
+
+# 3. Recompilar e rodar backend novamente
+./mvnw compile spring-boot:run
+
+# 4. Testar
+curl -H "Cookie: JSESSIONID=seu-session" http://localhost/aldeia
+# Esperado: 200 + conteúdo HTML (não 404)
+```
+
 ---
 
-## 8. Backup e restauração (não definido)
+## 8. Dúvida em aberto: Licença PrimeUI no bundle
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+**Questão:** se `VITE_PRIMEUI_LICENSE` for passada ao serviço `frontend-build` (para evitar aviso no console), a chave de licença fica pública no bundle de produção (`/app/assets/*.js`). Decisão pendente:
+
+1. **Opção A:** não passar chave ao `frontend-build` → aviso no console, bundle sem chave (seguro).
+2. **Opção B:** passar chave → bundle sem aviso, mas chave pública em `/app/**` (risco se a chave for sensível).
+
+**Ação recomendada:** implementador decidir ao revisar a change (Opção C complexa: build com chave inviável pois `VITE_*` entra no bundle).
+
+---
+
+## 9. Backup e restauração (não definido)
 
 ### Status atual
 
@@ -491,4 +691,5 @@ docker compose exec db psql -U login_base login_base < backup.sql
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

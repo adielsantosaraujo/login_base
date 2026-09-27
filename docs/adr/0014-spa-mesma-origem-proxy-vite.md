@@ -5,7 +5,7 @@
 | Status | Aceita |
 | Data | 2026-09-26 |
 | Decisores | Adiel (autor) com apoio de agentes Claude |
-| Change de origem | [`add-city-builder-game`](../../openspec/changes/archive/2026-09-27-add-city-builder-game/) |
+| Change de origem | [`add-city-builder-game`](../../openspec/changes/archive/2026-09-27-add-city-builder-game/) (complementada por ADR 0023 — change `add-frontend-build`) |
 
 ## Contexto e problema
 
@@ -46,6 +46,7 @@ Adotou-se **proxy do Vite em desenvolvimento**:
      }
    }
    ```
+   > **Nota**: O código atual usa `process.env.BACKEND_URL ?? 'http://localhost'` (sem porta 8080); consulte `frontend/vite.config.ts` para valores exatos. A variável `BACKEND_URL` é configurada no `docker-compose.yml` e no `.env.example`.
 
 2. **Fluxo de login**:
    - Usuário acessa `http://localhost:5173/`
@@ -65,7 +66,7 @@ Adotou-se **proxy do Vite em desenvolvimento**:
 
 ### Consequências negativas
 - **BREAKING**: proxy não funciona em produção (seria diferente)
-- **Mudança de arquitetura**: em produção precisa de build SPA + servidor (não pedido agora)
+- **Mudança de arquitetura**: em produção precisa de build SPA + servidor (não pedido agora — **Previsto na [ADR 0023](0023-spa-servida-pelo-backend.md) — change `add-frontend-build` (aberta)**)
 - **Chave de licença PrimeUI**: com redirect, chave precisa estar em `.env` do frontend (mitigado)
 
 ## Prós e contras das opções
@@ -87,4 +88,5 @@ Adotou-se **proxy do Vite em desenvolvimento**:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Referência para ADR 0023 (complementação para produção); nota sobre BACKEND_URL | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

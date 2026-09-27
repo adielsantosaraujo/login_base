@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.0.1 |
 | Data | 2026-09-27 |
 | Status | Vigente — baseline do commit `454ae58` |
 | Modelo/norma | Diátaxis (tutorial + how-to) |
@@ -17,7 +17,7 @@
 
 ### Como entrar no jogo
 
-1. Abra o navegador e acesse `http://localhost:5173`.
+1. Abra o navegador e acesse `http://localhost:5173` (ou o endereço do servidor onde o jogo estiver publicado; previsto — add-frontend-build: `http://localhost/`, servido pelo backend após `make build_front`).
 2. Na tela de login, informe seus dados:
    - **Login:** e-mail ou celular (11 dígitos, apenas números).
    - **Senha:** senha fornecida pelo administrador.
@@ -413,4 +413,5 @@ Diversifique os canteiros para maximizar comida, pois treinar tropas consome rec
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.0.1 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) — endereço do servidor | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

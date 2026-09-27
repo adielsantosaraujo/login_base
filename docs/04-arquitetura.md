@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
 | Modelo/norma | arc42 (versão 2024.1) + C4 (níveis 1–3 em Mermaid) |
 | Público | desenvolvedores, arquitetos, revisores |
-| Fontes | Especificações OpenSpec; `design.md` do jogo; código-fonte em `src/main`; `pom.xml`; `docker-compose.yml`; `Dockerfile`; `frontend/` |
+| Fontes | Especificações OpenSpec; `design.md` do jogo; `design.md` da change `add-frontend-build`; código-fonte em `src/main`; `pom.xml`; `docker-compose.yml`; `Dockerfile`; `frontend/` |
 
 > Parte da [documentação do login_base](README.md). Descreve a estrutura técnica, topologia, componentes e decisões arquiteturais do sistema de jogo construído sobre infraestrutura de autenticação Spring Boot + SPA Vue.
 
@@ -104,7 +104,8 @@ A solução é um **monólito Spring Boot** que:
 
 1. Serve a página de login e autenticação em Thymeleaf (`/login`), responsável pela sessão HTTP.
 2. Fornece uma API REST (`/api/jogo/**`) que valida autorização (autenticado, isolamento por dono).
-3. Proxy da SPA (Vue) via Vite durante desenvolvimento: requisições `/` e `/fazenda` etc. servem a SPA, requerindo autenticação.
+3. **Desenvolvimento**: Proxy da SPA (Vue) via Vite. Requisições `/` e `/fazenda` etc. servem a SPA via proxy, requerendo autenticação.
+4. **Produção (previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/))**: SPA construída e servida pelo Spring Boot. O `PaginaController` atende rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` com a view `sistema/seguro/index` (fallback do history mode); assets em `/app/**` servidos como recursos estáticos públicos.
 
 ### Sessão Stateful
 
@@ -174,6 +175,34 @@ graph TB
 | `db` | 5432 | `postgres:17-trixie` | `db-data` |
 | `app` | 80 | Build multi-stage (Maven + JRE alpine) | — |
 | `frontend` | 5173 | `node:26-trixie-slim` | `frontend-node-modules` (dev) |
+| `frontend-build` (previsto) | — | `build: ./frontend` (node:26-trixie-slim) — definição a confirmar após implementação | `/app/node_modules` (anônimo, descartado) |
+
+### Build de Produção do Frontend (Previsto)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementada).**
+
+Fluxo de build integrado ao processo de empacotamento:
+
+```mermaid
+graph LR
+    A["make build_front"] -->|script Python| B["scripts/build_front.py"]
+    B -->|executa| C["docker compose run<br/>--rm --build<br/>frontend-build"]
+    C -->|gera| D["frontend/dist/"]
+    D -->|copia assets| E["src/main/resources/<br/>static/app/"]
+    D -->|copia index| F["src/main/resources/<br/>templates/sistema/seguro/<br/>index.html"]
+    E -->|servido como| G["/app/** (público)"]
+    F -->|mapeado em| H["PaginaController<br/>GET /, /fazenda,<br/>/forja, /quartel,<br/>/masmorras, /batalhas/{id}"]
+    H -->|retorna| I["view sistema/seguro/index"]
+    E -->|depois| J["./mvnw package<br/>ou docker build"]
+    F -->|depois| J
+```
+
+**Características**:
+- Serviço `frontend-build` com profile `build`, não sobe em `make up`.
+- Volume anônimo `/app/node_modules` é descartado no `--rm`.
+- Validação: script confere existência de `frontend/dist/index.html` antes de copiar.
+- Log: `build.log` na raiz, truncado a cada execução.
+- Artefatos gerados: `frontend/dist/`, `static/app/`, template `index.html`, todos em `.gitignore`.
 
 ---
 
@@ -201,7 +230,7 @@ graph TB
     end
     
     subgraph Web["web"]
-        PC["PaginaController<br/>GET /login, /"]
+        PC["PaginaController<br/>GET /login, /, /fazenda, /forja,<br/>/quartel, /masmorras, /batalhas/{id}<br/>(previsto)"]
     end
     
     subgraph Jogo["jogo"]
@@ -398,6 +427,8 @@ graph TB
 3. Após autenticação, retorna ao `/` (SPA).
 4. Polling do `useVila` atualiza estado a cada 5 s.
 
+**Nota — Produção (previsto):** Em produção, um F5 (reload) numa rota interna (ex.: `/fazenda`) será atendido pelo `PaginaController`, que devolve a view `sistema/seguro/index` (fallback do history mode); o frontend carrega e navega para a rota original. Sem o build do frontend executado antes, a view não existe → HTTP 500. Veja change [add-frontend-build](../openspec/changes/add-frontend-build/) e [ADR 0023](adr/0023-spa-servida-pelo-backend.md).
+
 ---
 
 ## 8. Visão de Tempo de Execução — Sequências
@@ -534,6 +565,7 @@ Descrito em detalhe em [07-seguranca.md](07-seguranca.md). Resumo:
 - **Autenticação**: form login Thymeleaf, e-mail ou celular, `DelegatingPasswordEncoder` (BCrypt).
 - **Autorização**: papel (role) `ROLE_<perfil>` por vínculo `usuario_rel_perfis` com vigência.
 - **API**: anônimo em `/api/**` recebe 401 sem redirecionamento.
+- **Assets (previsto)**: `/app/**` público (assets de SPA sem dados sensíveis), evita que request cache salve um asset como destino pós-login.
 - **CSRF**: cookie `XSRF-TOKEN` para SPA, parâmetro `_csrf` para formulário.
 - **Sessão**: JSESSIONID `HttpOnly`, `SameSite=Lax`, `Secure` (configurável), 30 min, troca de ID no login.
 - **Auditoria**: `criado_por/em`, `alterado_por/em` em todas as tabelas.
@@ -650,6 +682,7 @@ Ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md) para registro com
 - [Cálculo lazy pode gerar discrepâncias se clock do servidor mudar] → Clock injetável mitiga.
 - [Lock pessimista serializa toda ação do usuário] → Aceitável (1 vila/usuário, ações rápidas).
 - [JSON em `text` sem índices] → Suficiente em dev; JSONB seria melhor em produção.
+- [R-11: Clone limpo sem `make build_front` → HTTP 500 em `/` — Previsto, change [add-frontend-build](../openspec/changes/add-frontend-build/); ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md)].
 
 **Dívidas técnicas principais**:
 - Sem CI/CD.
@@ -662,7 +695,7 @@ Ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md) para registro com
 
 ## 12. Decisões Arquiteturais
 
-Cada decisão é registrada como ADR em `docs/adr/0001-…-0022.md` (formato MADR 4.0).
+Cada decisão é registrada como ADR em `docs/adr/0001-…-0023.md` (formato MADR 4.0).
 
 | Nº | Título | Data | Status |
 |---|---|---|---|
@@ -679,7 +712,7 @@ Cada decisão é registrada como ADR em `docs/adr/0001-…-0022.md` (formato MAD
 | [0011](adr/0011-senhas-delegating-encoder.md) | `DelegatingPasswordEncoder` (BCrypt) | 2026-09-24 | Vigente |
 | [0012](adr/0012-registro-sessoes-tabela-propria.md) | Tabela `sessoes` com SHA-256 | 2026-09-24 | Vigente |
 | [0013](adr/0013-admin-inicial-por-ambiente.md) | Admin por `ApplicationRunner` | 2026-09-24 | Vigente |
-| [0014](adr/0014-spa-mesma-origem-proxy-vite.md) | SPA via proxy do Vite | 2026-09-26 | Vigente |
+| [0014](adr/0014-spa-mesma-origem-proxy-vite.md) | SPA via proxy do Vite | 2026-09-26 | Vigente (a ser complementada por 0023) |
 | [0015](adr/0015-api-401-e-csrf-spa.md) | `/api/**` → 401 sem cache + CSRF SPA | 2026-09-26 | Vigente |
 | [0016](adr/0016-catalogo-em-codigo.md) | Catálogo em enums/records Java | 2026-09-26 | Vigente |
 | [0017](adr/0017-calculo-preguicoso-milesimos.md) | Cálculo lazy + milésimos | 2026-09-26 | Vigente |
@@ -688,6 +721,7 @@ Cada decisão é registrada como ADR em `docs/adr/0001-…-0022.md` (formato MAD
 | [0020](adr/0020-determinismo-clock-aleatorio.md) | Motor puro + Clock/Aleatorio injetáveis | 2026-09-26 | Vigente |
 | [0021](adr/0021-velocidade-configuravel.md) | `JOGO_VELOCIDADE` multiplica taxas | 2026-09-26 | Vigente |
 | [0022](adr/0022-testes-postgres-compose.md) | Testes contra Postgres do compose | 2026-09-24/26 | Vigente |
+| [0023](adr/0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | Proposta |
 
 ---
 
@@ -708,4 +742,5 @@ Termos-chave; ver [14-glossario.md](14-glossario.md) para lista completa.
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

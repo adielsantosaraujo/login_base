@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58` + previsto da change `add-frontend-build` (aberta) |
 | Modelo/norma | Keep a Changelog 1.1 (adaptado por change OpenSpec) |
 | Público | todos |
 
@@ -21,7 +21,8 @@
 | 3 | add-vue-frontend | Arquivada | 2026-09-23 | 1 | 11 | n/d | n/d |
 | 4 | add-subagent-dev-skill | Arquivada | 2026-09-23 | 1 | 6 | n/d | n/d |
 | 5 | add-user-authentication | Arquivada | 2026-09-25 | 4 | 17 | 20 | 1.254.764 |
-| 6 | add-city-builder-game | Concluída (arquivada em 2026-09-27) | 2026-09-27 | 1 | 25 | 36 | 4.268.464 |
+| 6 | add-city-builder-game | Arquivada (2026-09-27) | 2026-09-27 | 1 | 25 | 36 | 4.268.464 |
+| 7 | add-frontend-build | Aberta (não implementada) | 2026-09-27 | 1 | 6 | n/d | n/d |
 
 ---
 
@@ -163,7 +164,7 @@
 
 ### Change 6: add-city-builder-game
 
-**Status:** Concluída (2026-09-27), **não arquivada** · **Propósito:** City builder tático com economia, combate por turnos, frontend reativo
+**Status:** Arquivada (2026-09-27) · **Propósito:** City builder tático com economia, combate por turnos, frontend reativo
 
 **Commits:**
 
@@ -215,6 +216,55 @@
 
 ---
 
+### Change 7: add-frontend-build
+
+**Status:** Aberta (não implementada) · **Propósito:** Build de produção integrado do frontend Vue/Vite, servido pelo backend Spring em `/` com assets públicos em `/app/**`
+
+**Commits (artefatos da change, código não implementado):**
+
+| Hash | Data | Mensagem |
+|---|---|---|
+| `690f4d8` | 2026-09-27 | Implementa serviço `frontend-build`, script Python e integração ao backend (artefatos: proposal.md, design.md, specs, tasks) |
+
+**Nota:** commit `690f4d8` contém os artefatos da change e a mudança de porta 8080 → 80 (`.env.example`, `Dockerfile` EXPOSE 80, `docker-compose.yml` "80:80", `vite.config.ts` BACKEND_URL, `application.properties` server.port, `openspec/specs/frontend-app/spec.md`) — origem da divergência D-16; a mensagem descreve a implementação, que ainda não ocorreu no código.
+
+**Funcionalidades Previstas:**
+
+- **Adicionado** (não implementado):
+  - **Script Python `scripts/build_front.py`:** Executa `docker compose run --rm --build frontend-build`, valida `frontend/dist/index.html`, copia assets para `src/main/resources/static/app/` e index para `src/main/resources/templates/sistema/seguro/index.html`, registra `build.log`.
+  - **Serviço Docker `frontend-build`:** Profile `build`, volume anônimo `/app/node_modules`, imagem Node 26.
+  - **Alvo Makefile `make build_front`:** Executa o script; aparece em `make help`.
+  - **Configuração Vite:** `base: '/app/'` apenas em builds (`command === 'build'`); dev server inalterado.
+  - **Rotas da SPA no `PaginaController`:** Fallback do history mode para `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}`.
+  - **Acesso público a assets:** `/app/**` em `SecurityConfig.permitAll()`.
+  - **Gitignore:** Artefatos gerados (`static/app/`, template index, `build.log`, `frontend/dist/`).
+  - **Testes:** Template mínimo em `src/test/resources/`; verifica rotas autenticadas e acesso público.
+
+- **Modificado** (previsto):
+  - `PaginaController`: Adiciona rotas da SPA.
+  - `SecurityConfig`: Adiciona `/app/**` ao permitAll.
+  - `AutenticacaoWebMvcTest`: Ajusta testes de rotas para verificar view + status 200.
+  - `.gitignore`, `Makefile`, `docker-compose.yml`, `frontend/vite.config.ts`.
+  - Docs: `09-guia-desenvolvedor.md`, `10-implantacao-operacao.md`.
+
+- **BREAKING** (previsto):
+  - `/` deixa de mostrar placeholder "Seja bem vindo"; passa a servir a SPA.
+  - `static/app/` e template index.html passam a ser gerados, não versionados.
+  - Clone limpo exige `make build_front` antes de `./mvnw package` ou `docker build`.
+
+- **Capabilities** (previsto):
+  - Novas: Nenhuma.
+  - Modificadas: `user-authentication` (RF-AUT-005: Página inicial segura), `frontend-app` (RF-FRE-008, RF-FRE-009, RF-FRE-010: Build integrado, rotas, assets públicos).
+
+- **Estatísticas** (previsto):
+  - **6 tasks** (1.1–4.1; grupos: infraestrutura do build, backend servindo a SPA, docs, verificação).
+  - **Nenhum agente designado** (em aberto).
+  - **Tokens:** a confirmar após implementação.
+  - **Progresso:** 0/6 tasks concluídas (não iniciada).
+  - **Relatório:** pendente.
+
+---
+
 ## 3. Commits sem Change OpenSpec
 
 Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolução posterior:
@@ -234,7 +284,8 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 | `pom.xml` (`<version>`) | 0.0.1-SNAPSHOT | Sempre | Maven standard; sem release tag |
 | `frontend/package.json` | 0.0.0 | Sempre | Não versionado; dev only |
 | Git tags | Nenhuma | — | Sem release formal (alpha/beta/GA) |
-| Baseline docs | 1.0.0 | 2026-09-27 | Primeira documentação formal (este commit) |
+| Baseline docs | 1.0.0 | 2026-09-27 | Primeira documentação formal (change jogo arquivada) |
+| Docs + previsto (change 7) | 1.1.0 | 2026-09-27 | Atualização para add-frontend-build (aberta, não implementada) |
 
 ---
 
@@ -260,18 +311,25 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 | Infra (4) | 1 | 3 | n/d | n/d |
 | Autenticação (5) | 1 | 17 | 20 | 1.254.764 |
 | Jogo (6) | 1 | 25 | 36 | 4.268.464 |
-| **Total** | **6** | **61** | **56+** | **~5.523.228** |
+| Frontend build (7, previsto) | 1 | 6 | n/d | n/d |
+| **Total (vigente + previsto)** | **7** | **67** | **56+** | **~5.523.228** |
 
 ---
 
 ## 6. Visibilidade de Changelog
 
-Quando a change `add-city-builder-game` foi arquivada (roadmap em `17`):
+### Change `add-city-builder-game` (já arquivada em 2026-09-27)
 
-1. Mover para `openspec/changes/archive/2026-09-27-add-city-builder-game/`.
-2. Tabela acima será atualizada: "Status: Arquivada (2026-09-TBD)".
-3. Specs delta estarão em `openspec/specs/` (separadas).
-4. Documentação refs será atualizada (links, sufixos removidos).
+1. Movida para `openspec/changes/archive/2026-09-27-add-city-builder-game/`.
+2. Tabela acima atualizada: "Status: Arquivada (2026-09-27)".
+3. Specs delta agora em `openspec/specs/` (sincronizadas via `/opsx:sync`).
+4. Documentação refs atualizada (links removidos de archive, sufixos removidos).
+
+### Change `add-frontend-build` (aberta, não implementada)
+
+1. Estrutura em `openspec/changes/add-frontend-build/` com proposal.md, design.md, specs/, tasks.md.
+2. Status: "Aberta (não implementada)" na tabela (§1).
+3. Documentação marcada como "previsto — change add-frontend-build" em todos os docs afetados.
 
 ---
 
@@ -279,4 +337,5 @@ Quando a change `add-city-builder-game` foi arquivada (roadmap em `17`):
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
-| 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
+| 1.0.0 | 2026-09-27 | Versão inicial (jogo arquivada) | Adiel, com apoio de agentes Claude |

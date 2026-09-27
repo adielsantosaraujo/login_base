@@ -51,7 +51,7 @@ Adotou-se **sessão HTTP + Spring Security form login**:
 3. **Templates Thymeleaf**:
    - `login.html`: campos `login` (rótulo "E-mail ou celular"), `senha`, `_csrf`
    - Mensagens: "Usuário ou senha inválidos." (genérica, sem enumeração)
-   - `index.html`: "Seja bem vindo" (sem logout button)
+   - `index.html`: "Seja bem vindo" (sem logout button) — **Previsto ser substituído**: `/` passará a servir a SPA em produção ([ADR 0023](0023-spa-servida-pelo-backend.md), change `add-frontend-build`)
 
 ### Consequências positivas
 - **Simples**: Spring Security padrão, sem código de autenticação customizado
@@ -87,4 +87,5 @@ Adotou-se **sessão HTTP + Spring Security form login**:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Referência para ADR 0023 (substituição do placeholder `/` por SPA) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

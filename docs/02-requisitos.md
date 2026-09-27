@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`; previsto da change `add-frontend-build` (aberta) |
 | Modelo/norma | ISO/IEC/IEEE 29148:2018 (SRS) + ISO/IEC 25010:2023 (RNF) |
 | Público | Desenvolvedores, QA, revisores |
-| Fontes | 16 arquivos de spec OpenSpec; designs das 6 changes; código em jogo/; jogo/CodigoErro.java |
+| Fontes | 16 arquivos de spec OpenSpec (6 changes implementadas, 1 aberta); designs das changes; código em jogo/; jogo/CodigoErro.java; `openspec/changes/add-frontend-build/` (proposal, design, specs) |
 
 > Parte da [documentação do login_base](README.md). Requisitos funcionais, não funcionais e regras de negócio do sistema.
 
@@ -69,7 +69,7 @@ Sistema web monolítico Spring Boot com autenticação stateful (sessão HTTP), 
 
 | Classe | Permissões | Acesso |
 |---|---|---|
-| **Jogador autenticado** | Leitura/escrita de própria vila; combate; jogo | SPA (porta 5173 / proxy via 80) |
+| **Jogador autenticado** | Leitura/escrita de própria vila; combate; jogo | SPA via Vite (porta 5173, dev); previsto: servida pelo backend na porta 80 após `make build_front` |
 | **Admin inicial** | Idem jogador (no escopo atual; futuro: gestão de usuários) | SPA |
 | **Visitante anônimo** | Leitura de página de login; nenhum acesso ao jogo | Thymeleaf `/login` |
 
@@ -122,8 +122,8 @@ Fonte: [`openspec/specs/user-authentication/spec.md`](../openspec/specs/user-aut
 | RF-AUT-001 | Página de login pública (Thymeleaf) em `/login`; exibe "Usuário ou senha inválidos." em falha genérica | Obrigatório | Demonstração | 2 | Vigente |
 | RF-AUT-002 | Login aceita e-mail (normalizado minúsculo) **ou celular** (11 dígitos, normalizado só números) + senha | Obrigatório | Teste + inspeção: `NormalizacaoContato` | 3 | Vigente |
 | RF-AUT-003 | Perfis vigentes e permissões carregados como autoridades Spring (`ROLE_<nome>`, não usadas em rotas | Obrigatório | Inspeção: `UsuarioDetailsService` + `UserDetails` | 1 | Vigente |
-| RF-AUT-004 | Proteção de rotas: qualquer rota requer autenticação, exceto `/login` e estáticos; `/api/**` anônimo → 401 **sem request cache**, sem redirecionamento | Obrigatório | Teste: `ApiSegurancaWebMvcTest` | 2 | **MODIFICADO** |
-| RF-AUT-005 | Página inicial segura em `/` exibindo "Seja bem-vindo" (Thymeleaf) quando acessada diretamente na porta 80 | Obrigatório | Demonstração | 1 | Vigente |
+| RF-AUT-004 | Proteção de rotas: qualquer rota requer autenticação, exceto `/login` e estáticos (previsto — add-frontend-build: `/app/**` também público; ver RF-FRE-010); `/api/**` anônimo → 401 **sem request cache**, sem redirecionamento | Obrigatório | Teste: `ApiSegurancaWebMvcTest` | 2 | **MODIFICADO** |
+| RF-AUT-005 | Página inicial segura em `/` (view `sistema/seguro/index`). **Hoje:** exibe o placeholder "Seja bem vindo". **Previsto (add-frontend-build):** serve a SPA (index.html gerado pelo build); anônimo → `/login` | Obrigatório | Demonstração | 1 (previsto: 2) | Vigente + **MODIFICADO proposto** |
 | RF-AUT-006 | Logout via POST `/logout` com CSRF; redirect para `/login?logout` com mensagem "Você saiu do sistema." | Obrigatório | Teste: `AutenticacaoWebMvcTest` | 2 | Vigente |
 | RF-AUT-007 | Sessão HTTP com `JSESSIONID` cookie `HttpOnly`, `SameSite=Lax`, `Secure` (configurável por `SESSION_COOKIE_SECURE`); timeout 30 min por `SESSION_TIMEOUT`; ID trocado ao login | Obrigatório | Teste: `SessaoServiceTest` | 2 | Vigente |
 | RF-AUT-008 | Cada autenticação registrada em tabela `sessoes` com IP, User-Agent, data/hora, fecha em logout/expiração/startup | Obrigatório | Teste: `SessaoServiceTest` | 1 | Vigente |
@@ -156,6 +156,9 @@ Fonte: [`openspec/specs/frontend-app/spec.md`](../openspec/specs/frontend-app/sp
 | RF-FRE-005 | Página inicial do jogo exibindo vila (substitui "Página inicial de boas-vindas") | Obrigatório | Demonstração: `/` → vila | 1 | **ADICIONADO** + **REMOVIDO** (página de boas-vindas) |
 | RF-FRE-006 | Proxy de desenvolvimento para backend: `/api`, `/login`, `/logout`, `/css`, `/js`, `/images` → `BACKEND_URL` | Obrigatório | Inspeção: vite.config.ts | 1 | **ADICIONADO** |
 | RF-FRE-007 | Roteamento em history mode (não hash); rotas: `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/:id` | Obrigatório | Demonstração + inspeção: router/index.ts | 1 | **ADICIONADO** |
+| RF-FRE-008 | **ADICIONADO — proposto**: Build de produção integrado ao backend via script Python `scripts/build_front.py`; comando `make build_front` executa via Docker Compose, valida saída, copia assets para `static/app/` e `index.html` para template | Obrigatório | Demonstração: `make build_front` exit 0 | 3 | **ADICIONADO — proposto** (add-frontend-build, aberta): [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
+| RF-FRE-009 | **ADICIONADO — proposto**: Rotas da SPA servidas pelo backend (história do browser permite recarregar página interna `/fazenda` diretamente) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 2 | **ADICIONADO — proposto** (add-frontend-build, aberta): [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
+| RF-FRE-010 | **ADICIONADO — proposto**: Assets do frontend públicos em `/app/**` (acessíveis sem autenticação) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 1 | **ADICIONADO — proposto** (add-frontend-build, aberta): [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
 
 ### 3.5 Workflow de Desenvolvimento (PRC)
 
@@ -304,7 +307,7 @@ Fonte: delta [`openspec/specs/game-frontend/spec.md`](../openspec/specs/game-fro
 
 | ID | Característica ISO 25010 | Enunciado | Critério | Verificação |
 |---|---|---|---|---|
-| **RNF-SEG-001** | Segurança/autenticidade | Toda rota exige autenticação, exceto `/login` e estáticos; `/api/**` anônimo → 401 | Implementado em SecurityConfig | Teste + inspeção |
+| **RNF-SEG-001** | Segurança/autenticidade | Toda rota exige autenticação, exceto `/login`, `/app/**` (assets públicos, previsto) e estáticos; `/api/**` anônimo → 401 | Implementado em SecurityConfig (previsto: `/app/**` em permitAll) | Teste + inspeção |
 | **RNF-SEG-002** | Segurança/integridade | CSRF em todo POST (form `_csrf`; SPA `X-XSRF-TOKEN` via header) | Habilitado em SecurityConfig | Teste `ApiSegurancaWebMvcTest` |
 | **RNF-SEG-003** | Segurança/confidencialidade | Senha com `DelegatingPasswordEncoder` (BCrypt, prefixo `{bcrypt}`) | Implementado em UsuarioDetailsService | Inspeção + teste |
 | **RNF-SEG-004** | Segurança | Cookie `HttpOnly`, `SameSite=Lax`, `Secure` (config `SESSION_COOKIE_SECURE`); troca de ID ao login; timeout 30 min | Implementado em SecurityConfig | Inspeção + teste SessaoServiceTest |
@@ -385,8 +388,8 @@ Fonte: delta [`openspec/specs/game-frontend/spec.md`](../openspec/specs/game-fro
 ### UI (Apresentação)
 
 - **Login**: Thymeleaf em `/login` (formulário POST com campos `login`, `senha`, `_csrf`).
-- **Página inicial protegida**: Thymeleaf em `/` ("Seja bem-vindo").
-- **Jogo**: SPA Vue 3 em 6 rotas, servido via proxy Vite em `localhost:5173` (dev) ou backend (prod).
+- **Página inicial protegida**: Thymeleaf em `/` (atual: "Seja bem-vindo"; **previsto**: SPA Vue 3 servida pelo backend após `make build_front`).
+- **Jogo**: SPA Vue 3 em 6 rotas, servido via proxy Vite em `localhost:5173` (dev, **previsto**: backend na porta 80 em produção).
 
 ### API REST
 
@@ -419,6 +422,8 @@ Detalhes em [05-modelo-dados.md](05-modelo-dados.md).
 
 ### 8.1 Resumo de requisitos
 
+**Vigente (baseline commit `454ae58`)**:
+
 | Capability | RF | RNF | RN | Cenários | Testes automatizados |
 |---|---|---|---|---|---|
 | ACD | 7 | — | — | 21 | 3 testes (`UsuarioTest`, `UsuarioAuditorAwareTest`, `LoginBaseApplicationTests`) |
@@ -435,9 +440,17 @@ Detalhes em [05-modelo-dados.md](05-modelo-dados.md).
 | COM | 10 | 1 | 1 | 33 | 3 testes (motor, masmorra, controller) |
 | LOO | 6 | — | 1 | 16 | 2 testes (gerador loot, masmorra) |
 | UIJ | 11 | 1 | — | 32 | Build (npm) + demonstração manual |
-| **Total** | **101** | **15** | **8 cat.** | **262** | **27 classes / 239 testes** |
+| **Vigente total** | **101** | **15** | **8 cat.** | **262** | **27 classes / 239 testes** |
 
-Observação: AUT=10 e FRE=7 totalizam 101 RF (antes estava 99 por erro de contagem).
+**Previsto com change `add-frontend-build` (aberta, não implementada)**:
+
+| Capability | RF | RNF | Cenários adicionais |
+|---|---|---|---|
+| AUT | — (RF-AUT-005 MODIFICADO) | — | +1 (RF-AUT-005: 1 → 2 cenários) |
+| FRE | +3 (RF-FRE-008, FRE-009, FRE-010, build + rotas + assets públicos) | — | +6 (3 + 2 + 1) |
+| **Previsto total** | **104** | **15** | **+7 (262 → 269)** |
+
+Observação: AUT vigente = 10 (base 9 + ADDED 1); FRE vigente = 7 (base 4 + ADDED 3). Com change aberta: AUT = 10 (RF-AUT-005 MODIFICADO, sem novo RF), FRE = 10 (+3 RF), total 104 RF. Testes: contagem a confirmar após implementação.
 
 ### 8.2 Códigos de erro (CodigoErro.java)
 
@@ -468,4 +481,5 @@ Observação: AUT=10 e FRE=7 totalizam 101 RF (antes estava 99 por erro de conta
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

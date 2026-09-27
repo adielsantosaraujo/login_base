@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`; previsto da change `add-frontend-build` (aberta) |
 | Modelo/norma | Vision & Scope (Wiegers) + ISO/IEC/IEEE 29148 (StRS) |
 | Público | Todos, stakeholders |
-| Fontes | README.md; CLAUDE.md; 6 proposals e designs OpenSpec; pom.xml; docker-compose.yml; frontend/package.json |
+| Fontes | README.md; CLAUDE.md; 6 proposals e designs OpenSpec; pom.xml; docker-compose.yml; frontend/package.json; `openspec/changes/add-frontend-build/` (proposal, design, specs) |
 
 > Parte da [documentação do login_base](README.md). Visão e objetivos do sistema; stakeholders; escopo de produto.
 
@@ -44,6 +44,7 @@ Construir um **jogo de estratégia e construção de cidades baseado na web**, a
 | Interface moderna em Vue 3 + PrimeVue | change `add-vue-frontend` | Implementado |
 | Orquestração de desenvolvimento por subagentes | change `add-subagent-dev-skill` | Implementado |
 | Sistema de jogo completo: economia, construção, combate | change `add-city-builder-game` | Implementado (arquivado em 2026-09-27) |
+| Servir a SPA em produção pelo backend | change `add-frontend-build` | Em planejamento (change aberta, não implementada) |
 
 ## 5. Escopo da versão atual (baseline 454ae58)
 
@@ -52,9 +53,9 @@ Construir um **jogo de estratégia e construção de cidades baseado na web**, a
 | Capability | Status | Descrição |
 |---|---|---|
 | `access-control-data` | Vigente | Tabelas `usuarios`, `perfis`, `permissoes`, `usuario_rel_perfis`, `perfis_rel_permissoes`, `sessoes` com auditoria |
-| `user-authentication` | Vigente + delta | Login por e-mail ou celular + senha; sessão HTTP; logout; admin inicial; proteção de rotas; CSRF para form e SPA |
+| `user-authentication` | Vigente + delta | Login por e-mail ou celular + senha; sessão HTTP; logout; admin inicial; proteção de rotas; CSRF para form e SPA; delta `add-frontend-build`: serve SPA em `/` |
 | `docker-dev-environment` | Vigente | Profiles por serviço (`db`, `app`, `frontend`); Makefile; variáveis de ambiente; Compose com porta 5432/80/5173 |
-| `frontend-app` | Vigente + delta | Projeto Vue 3 + PrimeVue 5; licença PrimeUI; container Node 26/npm 12; recarga automática; página inicial do jogo; proxy dev; history mode (telas e polling de 5 s ficam em `game-frontend`) |
+| `frontend-app` | Vigente + delta | Projeto Vue 3 + PrimeVue 5; licença PrimeUI; container Node 26/npm 12; recarga automática; página inicial do jogo; proxy dev; history mode (telas e polling de 5 s ficam em `game-frontend`); delta `add-frontend-build`: build de produção integrado ao backend (`make build_front`) |
 | `subagent-dev-workflow` | Vigente | Orquestração por Opus/Sonnet/Haiku; sessão limpa; relatório de tokens; parallelismo |
 | `game-data` | Delta | 8 tabelas do jogo (vilas, prédios, canteiros, sementes, itens, unidades, ordens, batalhas); constraints; auditoria |
 | `game-village` | Delta | Criação automática de vila (estado inicial); sincronização lazy de produção; isolamento por usuário; catálogo de regras |
@@ -68,7 +69,8 @@ Construir um **jogo de estratégia e construção de cidades baseado na web**, a
 
 Nomenclatura:
 - **Vigente**: spec sincronizada em `openspec/specs/`.
-- **Delta**: spec + requisitos adicionados/modificados em `openspec/changes/archive/2026-09-27-add-city-builder-game/specs/` (change Concluída (arquivada em 2026-09-27)).
+- **Delta (arquivada)**: spec + requisitos adicionados/modificados em `openspec/changes/archive/2026-09-27-add-city-builder-game/specs/` (change `add-city-builder-game`, arquivada em 2026-09-27).
+- **Delta (aberta)**: spec + requisitos adicionados/modificados em `openspec/changes/add-frontend-build/specs/` (change `add-frontend-build`, aberta, não implementada).
 
 ## 6. Fora de escopo (Non-Goals)
 
@@ -98,6 +100,7 @@ Os seguintes itens foram explicitamente **excluídos** da versão atual e estão
 - **Usuário único** criado ao iniciar (admin); sem multitenancy de usuários finais.
 - Navegador moderno com suporte a **ES2020, WebSockets/polling** (Chrome/Firefox/Edge recentes).
 - Plataforma de deployment não definida (desenvolvimento local apenas).
+- **Previsto**: build de produção do frontend exigirá Docker (container com Node 26 + npm 12).
 
 ### Restrições técnicas
 
@@ -130,7 +133,7 @@ flowchart LR
 ```
 
 **Arquitetura em camadas:**
-- **Apresentação**: Thymeleaf (login) + SPA Vue 3 (jogo).
+- **Apresentação**: Thymeleaf (login) + SPA Vue 3 (jogo), servida via Vite em desenvolvimento (porta 5173) e previsto via Spring em produção (após `make build_front`).
 - **API REST**: controllers em `jogo.api` + controllers web para autenticação.
 - **Negócio**: serviços por domínio (`economia`, `construcao`, `fazenda`, `forja`, `quartel`, `masmorra`).
 - **Dados**: entidades JPA + repositórios com lock pessimista; Flyway + Postgres.
@@ -148,6 +151,7 @@ Detalhes em [Arquitetura (04-arquitetura.md)](04-arquitetura.md).
 | **Cobertura de código** | Todos os RF verificáveis por teste automatizado ou inspeção | 101 RF cobertos (matriz em `15-rastreabilidade.md`) |
 | **Build do frontend** | `npm run build` sem warnings | Não registrado nas changes |
 | **Ambiente reproduzível** | `make up` sobe os serviços dos profiles ativos (padrão: `db` e `frontend`; `app` fica `desativado`) sem erros | Sim |
+| **Previsto: Build de produção do frontend** | `make build_front` com exit 0; log em `build.log` | Previsto (change `add-frontend-build`, não implementada) |
 
 ---
 
@@ -155,4 +159,5 @@ Detalhes em [Arquitetura (04-arquitetura.md)](04-arquitetura.md).
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

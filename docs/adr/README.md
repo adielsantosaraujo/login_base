@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
 | Modelo/norma | MADR 4.0 (Markdown Any Decision Records) |
 | Público | arquitetos, desenvolvedores, revisores |
-| Fontes | `design.md` das changes OpenSpec; código-fonte |
+| Fontes | `design.md` das changes OpenSpec; código-fonte; `design.md` da change `add-frontend-build` |
 
 > Parte da [documentação do login_base](../README.md). Índice de todas as decisões arquiteturais significativas do projeto, registradas no formato MADR 4.0 para contexto, motivação e resultado. Cada arquivo é autocontido e linkável.
 
@@ -30,7 +30,7 @@
 | [0011](0011-senhas-delegating-encoder.md) | `DelegatingPasswordEncoder` (BCrypt) | 2026-09-24 | `add-user-authentication` | Vigente |
 | [0012](0012-registro-sessoes-tabela-propria.md) | Tabela `sessoes` com SHA-256 do ID (vs Spring Session JDBC) | 2026-09-24 | `add-user-authentication` | Vigente |
 | [0013](0013-admin-inicial-por-ambiente.md) | Admin criado por `ApplicationRunner` via `ADMIN_EMAIL`/`ADMIN_PASSWORD` | 2026-09-24 | `add-user-authentication` | Vigente |
-| [0014](0014-spa-mesma-origem-proxy-vite.md) | SPA na mesma origem via proxy do Vite | 2026-09-26 | `add-city-builder-game` | Vigente |
+| [0014](0014-spa-mesma-origem-proxy-vite.md) | SPA na mesma origem via proxy do Vite | 2026-09-26 | `add-city-builder-game` | Vigente (a ser complementada por 0023) |
 | [0015](0015-api-401-e-csrf-spa.md) | `/api/**` anônimo → 401; CSRF SPA via cookie + header | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0016](0016-catalogo-em-codigo.md) | Catálogo em enums/records Java (vs YAML) | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0017](0017-calculo-preguicoso-milesimos.md) | Cálculo lazy de produção; recursos em milésimos | 2026-09-26 | `add-city-builder-game` | Vigente |
@@ -39,6 +39,7 @@
 | [0020](0020-determinismo-clock-aleatorio.md) | Motor puro determinístico; Clock/Aleatorio injetáveis | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0021](0021-velocidade-configuravel.md) | `JOGO_VELOCIDADE` multiplica taxas e divide tempos | 2026-09-26 | `add-city-builder-game` | Vigente |
 | [0022](0022-testes-postgres-compose.md) | Testes de integração contra Postgres do compose (sem Testcontainers) | 2026-09-24 | `add-user-authentication` + `add-city-builder-game` | Vigente |
+| [0023](0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | `add-frontend-build` | Proposta |
 
 ---
 
@@ -155,4 +156,5 @@ Se nenhuma alternativa constar no design.md da change, escrever aqui:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Adiciona ADR 0023 (SPA servida pelo backend, proposta para change add-frontend-build) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (índice + template MADR 4.0) | Adiel, com apoio de agentes Claude |

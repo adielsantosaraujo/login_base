@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`, em atualização para change `add-frontend-build` (aberta) |
 | Modelo/norma | Referência REST em Markdown (estilo OpenAPI) |
 | Público | Desenvolvedores, QA |
-| Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `frontend/src/api/jogo.ts` |
+| Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `src/main/java/com/example/loginbase/web/PaginaController.java`, `frontend/src/api/jogo.ts`, `design.md` da change `add-frontend-build` |
 
 > Parte da [documentação do login_base](README.md). Especifica os endpoints da API REST do jogo, formatos de requisição/resposta, tratamento de erros, autenticação e CSRF.
 
@@ -16,9 +16,10 @@
 ## Índice
 
 1. [Autenticação e Sessões](#autenticação-e-sessões)
-2. [Endpoints de Jogo](#endpoints-de-jogo)
-3. [Modelo de Erros](#modelo-de-erros)
-4. [Códigos de Erro Específicos](#códigos-de-erro-específicos)
+2. [Rotas de Página (Não-API)](#rotas-de-página-não-api)
+3. [Endpoints de Jogo](#endpoints-de-jogo)
+4. [Modelo de Erros](#modelo-de-erros)
+5. [Códigos de Erro Específicos](#códigos-de-erro-específicos)
 
 ---
 
@@ -78,6 +79,100 @@
 Todos os endpoints `/api/**` verificam se o usuário está autenticado:
 - **Anônimo:** HTTP `401 Unauthorized` (sem corpo, sem redirecionamento)
 - **Autenticado:** Requisição prossegue com `Authentication` disponível
+
+---
+
+## Rotas de Página (Não-API)
+
+Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
+
+### GET /login
+
+**Método:** `GET`  
+**URL:** `/login`  
+**Autenticação:** Não requerida (pública)  
+**CSRF:** Não aplicável
+
+**Respostas:**
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | Página de login (template Thymeleaf) |
+
+**Comportamento:**
+- Retorna template `sistema/public/login.html` com formulário (campos `login`, `senha`, `_csrf`).
+- Token CSRF gerado automaticamente por Thymeleaf.
+
+---
+
+### GET / — Página Inicial / SPA (Previsto)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+
+**Método:** `GET`  
+**URL:** `/`  
+**Autenticação:** Requerida  
+**CSRF:** Não aplicável (GET)
+
+**Respostas:**
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | SPA servida (template `sistema/seguro/index.html`) |
+| `302` | Anônimo redirecionado para `/login` |
+
+**Comportamento:**
+- **Atual**: Template Thymeleaf "Seja bem vindo" (sem logout button).
+- **Previsto**: Devolve a view `sistema/seguro/index.html` (a SPA). Usuário anônimo é redirecionado para `/login` pelo `SecurityFilterChain`.
+
+---
+
+### GET /fazenda, /forja, /quartel, /masmorras, /batalhas/{id} — Rotas da SPA (Previsto)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+
+**Método:** `GET`  
+**URL:** `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}`  
+**Autenticação:** Requerida  
+**CSRF:** Não aplicável (GET)
+
+**Respostas:**
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | SPA servida (template `sistema/seguro/index.html`) — fallback do history mode |
+| `302` | Anônimo redirecionado para `/login` |
+
+**Comportamento:**
+- Mapeadas em `PaginaController` com lista explícita de rotas.
+- Retornam a mesma view `sistema/seguro/index.html` (index da SPA).
+- O frontend Vue Router reconhece a rota original e navega internamente.
+- Usuário anônimo é redirecionado para `/login`.
+
+**Nota:** Um F5 (reload) do navegador numa rota interna (ex.: `/fazenda`) será servido pelo backend, que devolve `index.html` + assets de `/app/**`. O frontend carrega e navega para a rota original.
+
+---
+
+### GET /app/** — Assets da SPA (Previsto)
+
+> **Previsto — change [add-frontend-build](../openspec/changes/add-frontend-build/) (aberta, não implementado).**
+
+**Método:** `GET`  
+**URL:** `/app/**` (ex.: `/app/assets/main.js`, `/app/assets/index-<hash>.css`)  
+**Autenticação:** Não requerida (pública)  
+**CSRF:** Não aplicável
+
+**Respostas:**
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | Asset encontrado (JavaScript, CSS, imagens da SPA) |
+| `404` | Asset não encontrado |
+
+**Comportamento:**
+- Assets servidos pelo handler estático padrão do Spring Boot (resources em `src/main/resources/static/app/`).
+- Não requerem autenticação (públicos).
+- Evita que o request cache salve um asset como destino pós-login.
 
 ---
 
@@ -852,4 +947,5 @@ Os três controllers do jogo são anotados com `@Transactional` na classe (GET e
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Adiciona seção "Rotas de página (não-API)" para change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

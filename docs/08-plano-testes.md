@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Status | Vigente — baseline do commit `454ae58`; previsto da change `add-frontend-build` (aberta) |
 | Modelo/norma | ISO/IEC/IEEE 29119-3 (Test Plan + Test Strategy) |
 | Público | QA, desenvolvedores |
-| Fontes | `src/test/java/**`, `target/surefire-reports/`, `pom.xml`, `frontend/package.json`, design.md §20 |
+| Fontes | `src/test/java/**`, `target/surefire-reports/`, `pom.xml`, `frontend/package.json`, design.md §20; `openspec/changes/add-frontend-build/` (proposal, design, specs) |
 
 > Parte da [documentação do login_base](README.md). Descreve a estratégia, níveis e inventário de testes automatizados; aborda lacunas de CI e cobertura; inclui roteiro manual de integração e como executar a suíte.
 
@@ -21,6 +21,7 @@
 - **Integração banco de dados**: migrações Flyway, persistência com Hibernate, operações sob concorrência com lock pessimista.
 - **APIs do jogo**: vila, construção, fazenda, forja, quartel, masmorra, combate, loot.
 - **Segurança**: autenticação por formulário, CSRF, sessão HTTP, gestão de usuários.
+- **Previsto (add-frontend-build):** rotas de página e `/app/**` cobertos por novos testes em `AutenticacaoWebMvcTest` (template de teste em `src/test/resources/templates/sistema/seguro/index.html`); `make build_front` só com verificação manual (task 4.1). Contagem de testes a confirmar após implementação.
 
 ### Fora de escopo
 
@@ -28,6 +29,7 @@
 - **Segurança automatizada**: sem SAST, sem varredura de dependências.
 - **Frontend**: sem testes unitários ou E2E automatizados; apenas `npm run build` com `vue-tsc` para checagem de tipos.
 - **CI/CD**: sem pipeline (sem `.github/workflows/`, sem outro servidor de CI).
+- **Previsto (build_front)**: Script `make build_front` roda `vue-tsc -b && vite build` em container; sem testes automatizados, validação manual em task 4.1.
 
 ---
 
@@ -115,7 +117,7 @@ make down_v
 | `seguranca.SessoesAbertasRunnerTest` | Unitário | 1 | RF-AUT-008 (startup cleanup) |
 | `seguranca.UsuarioDetailsServiceTest` | Unitário | 10 | RF-AUT-003 (autoridades, perfil) |
 | `web.ApiSegurancaWebMvcTest` | `@WebMvcTest` | 5 | RNF-SEG-001 (401 em `/api/**`), RNF-SEG-002 (CSRF) |
-| `web.AutenticacaoWebMvcTest` | `@WebMvcTest` | 18 | RF-AUT-001..006 (login, logout, formulário) |
+| `web.AutenticacaoWebMvcTest` | `@WebMvcTest` | 18 | RF-AUT-001..006 (login, logout, formulário); **previsto**: `/fazenda` autenticado → 200 + view; `/forja` anônimo → redirect `/login`; `/app/assets/qualquer.js` anônimo → ≠ 302; ajuste de `usuarioAutenticadoVeSejaBemVindo`; + RF-AUT-005 (modificado) |
 
 **Suporte (não são testes)**:
 - `jogo.suporte.AleatorioSequencia`: implementação determinística de `Aleatorio` com sequência pré-definida.
@@ -205,7 +207,7 @@ make up
 ### Build e checagem frontend
 
 ```bash
-# Dentro do container frontend
+# Build de desenvolvimento (Vite, dentro do container)
 docker compose exec frontend npm run build
 
 # Ou localmente (requer Node 26 + npm 12)
@@ -213,6 +215,10 @@ cd frontend
 npm install --no-audit --no-fund
 npm run build
 cd ..
+
+# Build de produção integrado ao backend (PREVISTO — change aberta add-frontend-build)
+make build_front
+# Log registrado em build.log; assets copiados para static/app/ e index.html para template
 ```
 
 ### Validação OpenSpec
@@ -327,6 +333,17 @@ JOGO_VELOCIDADE=60 make up
 - Sem erros HTTP 500; erros 422/409/404 mostrados em Toast (se houver ações inválidas).
 - Navegação fluida; frontend comunica com backend por polling 5 s.
 
+### Roteiro manual: Variante opcional — SPA servida pelo backend (PREVISTO — change aberta add-frontend-build)
+
+Após implementação da change `add-frontend-build`, teste a SPA servida direto pelo backend (sem proxy Vite):
+
+1. Executar `make build_front` (gera `static/app/` e template).
+2. Levantar app + db (sem frontend dev): `make up PROFILE_APP=local PROFILE_FRONTEND=desativado`.
+3. Acessar `http://localhost/` → redirecionado para `/login`.
+4. Login → redireciona para `/` → SPA carrega (rotas `/fazenda`, `/forja`, etc. funcionam com recarga F5).
+5. Verificações: assets em `/app/assets/...` carregam sem erro 404; log sem 500; funcionalidade idêntica ao dev.
+6. **Obs. D-16**: app em container pode não responder na porta 80; verificar saúde com `curl http://localhost/login -v` (esperado: 200 ou redirect).
+
 ---
 
 ## 9. Critérios de entrada, saída e suspensão
@@ -341,6 +358,7 @@ JOGO_VELOCIDADE=60 make up
 - `npm run build` sem erros (frontend).
 - Cenário manual 8.2 completável em ~3 minutos.
 - Nenhum erro 500 em logs.
+- **Previsto (change add-frontend-build)**: `make build_front` com exit 0; `git status` limpo (sem `build.log`, `static/app/`, template).
 
 ### Critério de suspensão
 - Postgres não sobe: verificar `docker ps`, portas, volume.
@@ -359,6 +377,8 @@ JOGO_VELOCIDADE=60 make up
 | **Sem testes de frontend** | Componentes Vue não têm verificação automática. | Adicionar Vitest (fora de escopo). |
 | **Sem Testcontainers** | Testes dependem de banco local/container; não portável para CI. | Adicionar Testcontainers + TC (roadmap, risco de performance). |
 | **Sem rate limiting nos testes** | Login bruteforce não testado. | Adicionar rate limit ao backend e teste correspondente. |
+| **HTML gerado (previsto)** | Template `sistema/seguro/index.html` gerado por `make build_front` não é versionado; testes usam template mínimo de teste. | Documentar em guia (task 4.1); validação manual em cenário E2E. |
+| **Build_front sem teste automatizado (previsto)** | Script `build_front.py` não tem teste; falhas de build descobertas apenas manualmente. | Validação manual em task 4.1; roadmap: adicionar teste de integração em CI/CD. |
 
 ---
 
@@ -374,4 +394,5 @@ Cada RF tem pelo menos uma verificação (automatizada ou manual); RNF aparecem 
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |
