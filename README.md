@@ -132,8 +132,8 @@ serviço `app` no `docker-compose.yml`. O usuário é criado apenas se
 
 ### URLs de acesso
 
-- **`http://localhost:8080/login`**: tela de login (usuário anônimo).
-- **`http://localhost:8080/`**: página inicial protegida, exibindo
+- **`http://localhost/login`**: tela de login (usuário anônimo).
+- **`http://localhost/`**: página inicial protegida, exibindo
   "Seja bem vindo" (requer autenticação).
 
 Logout via `POST /logout`.
@@ -253,8 +253,8 @@ A vila é criada automaticamente no primeiro acesso.
 
 ### Configuração de variáveis
 
-**`BACKEND_URL`** (padrão `http://localhost:8080`): URL do backend usada pelo frontend. 
-Em container Docker (padrão `docker-compose.yml`), é `http://host.docker.internal:8080`.
+**`BACKEND_URL`** (padrão `http://localhost`): URL do backend usada pelo frontend. 
+Em container Docker (padrão `docker-compose.yml`), é `http://host.docker.internal`.
 
 **`JOGO_VELOCIDADE`** (padrão `1`): multiplicador de velocidade do jogo. 
 Inteiro ≥ 1. Aumente para testes manuais (ex.: `60` = tudo 60× mais rápido). 
@@ -312,17 +312,17 @@ make up
 # Login (salva cookie de sessão e XSRF)
 curl -b cookies.txt -c cookies.txt \
   -d 'login=user@example.com&senha=senha' \
-  http://localhost:8080/login
+  http://localhost/login
 
 # Consultar vila
-curl -b cookies.txt http://localhost:8080/api/jogo/vila
+curl -b cookies.txt http://localhost/api/jogo/vila
 
 # Forjar uma arma
 curl -b cookies.txt -X POST \
-  -H "X-XSRF-TOKEN: $(curl -s -b cookies.txt http://localhost:8080/api/jogo/catalogo | jq -r '.xsrfToken' 2>/dev/null || echo '')" \
+  -H "X-XSRF-TOKEN: $(curl -s -b cookies.txt http://localhost/api/jogo/catalogo | jq -r '.xsrfToken' 2>/dev/null || echo '')" \
   -H "Content-Type: application/json" \
   -d '{"modelo": "ESPADA", "nivel": 1, "quantidade": 1}' \
-  http://localhost:8080/api/jogo/forja/ordens
+  http://localhost/api/jogo/forja/ordens
 ```
 
 ### Notas de desenvolvimento

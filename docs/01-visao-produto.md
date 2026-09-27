@@ -53,7 +53,7 @@ Construir um **jogo de estratégia e construção de cidades baseado na web**, a
 |---|---|---|
 | `access-control-data` | Vigente | Tabelas `usuarios`, `perfis`, `permissoes`, `usuario_rel_perfis`, `perfis_rel_permissoes`, `sessoes` com auditoria |
 | `user-authentication` | Vigente + delta | Login por e-mail ou celular + senha; sessão HTTP; logout; admin inicial; proteção de rotas; CSRF para form e SPA |
-| `docker-dev-environment` | Vigente | Profiles por serviço (`db`, `app`, `frontend`); Makefile; variáveis de ambiente; Compose com porta 5432/8080/5173 |
+| `docker-dev-environment` | Vigente | Profiles por serviço (`db`, `app`, `frontend`); Makefile; variáveis de ambiente; Compose com porta 5432/80/5173 |
 | `frontend-app` | Vigente + delta | Projeto Vue 3 + PrimeVue 5; licença PrimeUI; container Node 26/npm 12; recarga automática; página inicial do jogo; proxy dev; history mode (telas e polling de 5 s ficam em `game-frontend`) |
 | `subagent-dev-workflow` | Vigente | Orquestração por Opus/Sonnet/Haiku; sessão limpa; relatório de tokens; parallelismo |
 | `game-data` | Delta | 8 tabelas do jogo (vilas, prédios, canteiros, sementes, itens, unidades, ordens, batalhas); constraints; auditoria |
@@ -121,7 +121,7 @@ Os seguintes itens foram explicitamente **excluídos** da versão atual e estão
 
 ```mermaid
 flowchart LR
-    A["Jogador / Admin<br/>(navegador)"] -->|HTTP/HTTPS| B["Sistema login_base<br/>[Spring Boot Java 25]<br/>porta 8080"]
+    A["Jogador / Admin<br/>(navegador)"] -->|HTTP/HTTPS| B["Sistema login_base<br/>[Spring Boot Java 25]<br/>porta 80"]
     C["Frontend Vue 3<br/>[Vite Node 26]<br/>porta 5173"] -->|proxy dev<br/>/api, /login| B
     A -->|acessa| C
     B -->|SQL| D["PostgreSQL 17<br/>porta 5432<br/>volume db-data"]

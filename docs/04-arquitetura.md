@@ -139,7 +139,7 @@ graph TB
     
     subgraph DevStack["Stack de Desenvolvimento"]
         ViteDev["Vite Dev Server<br/>[Container: Node 26, npm 12]<br/>http://localhost:5173"]
-        IDEApp["IDE (IntelliJ)<br/>[Aplicação Spring Boot]<br/>http://localhost:8080"]
+        IDEApp["IDE (IntelliJ)<br/>[Aplicação Spring Boot]<br/>http://localhost:80"]
         Compose["Docker Compose<br/>[Orquestrador]<br/>Postgres :5432, frontend :5173"]
     end
     
@@ -163,7 +163,7 @@ graph TB
 
 **Legenda**: 
 - **Navegador** acessa a SPA pelo Vite em porta 5173.
-- **Vite Dev Server** faz proxy de `/api`, `/login`, `/logout` para o backend em 8080 (mesma origem, sem CORS).
+- **Vite Dev Server** faz proxy de `/api`, `/login`, `/logout` para o backend na porta 80 (mesma origem, sem CORS).
 - **Spring Boot (IDE ou container)** conecta ao PostgreSQL.
 - **Docker Compose** orquestra os contêineres (db, frontend, app opcional).
 
@@ -172,7 +172,7 @@ graph TB
 | Serviço | Porta | Imagem | Volume |
 |---|---|---|---|
 | `db` | 5432 | `postgres:17-trixie` | `db-data` |
-| `app` | 8080 | Build multi-stage (Maven + JRE alpine) | — |
+| `app` | 80 | Build multi-stage (Maven + JRE alpine) | — |
 | `frontend` | 5173 | `node:26-trixie-slim` | `frontend-node-modules` (dev) |
 
 ---
@@ -408,7 +408,7 @@ graph TB
 sequenceDiagram
     participant Nav as Navegador
     participant Vite as Vite :5173
-    participant App as Spring Boot :8080
+    participant App as Spring Boot :80
     participant DB as PostgreSQL
     
     Nav->>Vite: GET /login (via proxy)
@@ -442,7 +442,7 @@ sequenceDiagram
 sequenceDiagram
     participant UI as Frontend (Vue)
     participant Vite as Vite :5173
-    participant App as Spring Boot :8080
+    participant App as Spring Boot :80
     participant DB as PostgreSQL
     
     UI->>Vite: POST /api/jogo/predios/CENTRO_VILA/melhorar<br/>(header: X-XSRF-TOKEN)
@@ -474,7 +474,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant UI as Frontend (BatalhaView)
-    participant App as Spring Boot :8080
+    participant App as Spring Boot :80
     participant DB as PostgreSQL
     
     UI->>App: POST /api/jogo/batalhas/{id}/acoes<br/>({tipo: MOVER, turno: 1, combatenteId: J1, x: 2, y: 5})
@@ -505,7 +505,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant UI as Frontend
-    participant App as Spring Boot
+    participant App as Spring Boot :80
     participant DB as PostgreSQL
     
     UI->>App: POST /api/jogo/predios/FORJA/melhorar

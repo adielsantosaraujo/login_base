@@ -69,7 +69,7 @@ Sistema web monolítico Spring Boot com autenticação stateful (sessão HTTP), 
 
 | Classe | Permissões | Acesso |
 |---|---|---|
-| **Jogador autenticado** | Leitura/escrita de própria vila; combate; jogo | SPA (porta 5173 / proxy via 8080) |
+| **Jogador autenticado** | Leitura/escrita de própria vila; combate; jogo | SPA (porta 5173 / proxy via 80) |
 | **Admin inicial** | Idem jogador (no escopo atual; futuro: gestão de usuários) | SPA |
 | **Visitante anônimo** | Leitura de página de login; nenhum acesso ao jogo | Thymeleaf `/login` |
 
@@ -123,7 +123,7 @@ Fonte: [`openspec/specs/user-authentication/spec.md`](../openspec/specs/user-aut
 | RF-AUT-002 | Login aceita e-mail (normalizado minúsculo) **ou celular** (11 dígitos, normalizado só números) + senha | Obrigatório | Teste + inspeção: `NormalizacaoContato` | 3 | Vigente |
 | RF-AUT-003 | Perfis vigentes e permissões carregados como autoridades Spring (`ROLE_<nome>`, não usadas em rotas | Obrigatório | Inspeção: `UsuarioDetailsService` + `UserDetails` | 1 | Vigente |
 | RF-AUT-004 | Proteção de rotas: qualquer rota requer autenticação, exceto `/login` e estáticos; `/api/**` anônimo → 401 **sem request cache**, sem redirecionamento | Obrigatório | Teste: `ApiSegurancaWebMvcTest` | 2 | **MODIFICADO** |
-| RF-AUT-005 | Página inicial segura em `/` exibindo "Seja bem-vindo" (Thymeleaf) quando acessada diretamente em 8080 | Obrigatório | Demonstração | 1 | Vigente |
+| RF-AUT-005 | Página inicial segura em `/` exibindo "Seja bem-vindo" (Thymeleaf) quando acessada diretamente na porta 80 | Obrigatório | Demonstração | 1 | Vigente |
 | RF-AUT-006 | Logout via POST `/logout` com CSRF; redirect para `/login?logout` com mensagem "Você saiu do sistema." | Obrigatório | Teste: `AutenticacaoWebMvcTest` | 2 | Vigente |
 | RF-AUT-007 | Sessão HTTP com `JSESSIONID` cookie `HttpOnly`, `SameSite=Lax`, `Secure` (configurável por `SESSION_COOKIE_SECURE`); timeout 30 min por `SESSION_TIMEOUT`; ID trocado ao login | Obrigatório | Teste: `SessaoServiceTest` | 2 | Vigente |
 | RF-AUT-008 | Cada autenticação registrada em tabela `sessoes` com IP, User-Agent, data/hora, fecha em logout/expiração/startup | Obrigatório | Teste: `SessaoServiceTest` | 1 | Vigente |

@@ -2,7 +2,7 @@ import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
 
 const usePolling = process.env.VITE_USE_POLLING === 'true'
-const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:8080'
+const backendUrl = process.env.BACKEND_URL ?? 'http://localhost'
 
 // Caminhos servidos pelo backend Spring Boot: API do jogo, login/logout
 // Thymeleaf e recursos estáticos públicos. `changeOrigin: false` preserva o

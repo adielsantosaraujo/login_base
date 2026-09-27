@@ -35,13 +35,13 @@
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  app (opcional)                                          │  │
 │  │  Maven 3.9 → JRE 25 (multi-stage)                       │  │
-│  │  - Porta: 8080:8080 (mapeada)                           │  │
+│  │  - Porta: 80:80 (mapeada)                               │  │
 │  │  - Profile: PROFILE_APP (padrão: desativado)            │  │
 │  │  - Lê: DB_HOST, ADMIN_EMAIL, ADMIN_PASSWORD, etc.       │  │
 │  │  - (Backend roda na IDE; este container é opcional)     │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                          ↑                                       │
-│                   (TCP 8080)                                     │
+│                    (TCP 80)                                      │
 │                          ↑                                       │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  frontend                                                │  │
@@ -132,7 +132,7 @@ PROFILE_FRONTEND=local                      # Serviço frontend
 
 # Frontend e Vite
 VITE_PRIMEUI_LICENSE=                       # Licença PrimeUI (vazio = aviso)
-BACKEND_URL=http://localhost:8080           # Backend URL (IDE); no container: http://host.docker.internal:8080
+BACKEND_URL=http://localhost                # Backend URL (IDE); no container: http://host.docker.internal
 
 # Admin inicial
 ADMIN_EMAIL=admin@loginbase.local           # E-mail admin
@@ -373,12 +373,12 @@ VITE_PRIMEUI_LICENSE=seu-token-aqui
 cat .env | grep BACKEND_URL
 
 # 2. Se backend roda na IDE:
-#    BACKEND_URL=http://localhost:8080 (correto)
+#    BACKEND_URL=http://localhost (correto)
 # 3. Se backend roda no container:
-#    BACKEND_URL=http://host.docker.internal:8080 (correto; definido automaticamente)
+#    BACKEND_URL=http://host.docker.internal (correto; definido automaticamente)
 
 # 4. Testar conectividade do container frontend
-docker compose exec frontend curl -v http://host.docker.internal:8080/login
+docker compose exec frontend curl -v http://host.docker.internal/login
 
 # 5. Se 502/timeout: backend pode estar desligado
 docker compose ps | grep app
@@ -386,7 +386,7 @@ docker compose ps | grep app
 
 **Ação**:
 
-- Backend na IDE: verificar se `LoginBaseApplication` está rodando (console deve exibir "Tomcat started on port 8080").
+- Backend na IDE: verificar se `LoginBaseApplication` está rodando (console deve exibir "Tomcat started on port 80").
 - Backend no container: `docker compose logs app` (checar erros).
 - Vite proxy config: ver `frontend/vite.config.ts` (rotas `/api`, `/login`, `/logout`, etc. devem ter `target: backendUrl`).
 
@@ -412,7 +412,7 @@ cat src/main/resources/application.properties | grep session
 SESSION_TIMEOUT=4h
 ```
 
-### Problema: Porta 8080 já está em uso
+### Problema: Porta 80 já está em uso
 
 **Causa**: IDE e container `app` tentando bind na mesma porta; ou outra aplicação.
 
@@ -420,16 +420,18 @@ SESSION_TIMEOUT=4h
 
 ```bash
 # 1. Parar backend na IDE (Ctrl+C)
-# 2. Verificar processos em 8080
-lsof -i :8080  # macOS/Linux
-netstat -ano | findstr 8080  # Windows (PowerShell)
+# 2. Verificar processos em 80
+lsof -i :80  # macOS/Linux
+netstat -ano | findstr 80  # Windows (PowerShell)
 
 # 3. Se quiser rodar app no container mesmo assim:
 # Não recomendado: ide + container juntos é incompat
 # Opção: usar container em outra porta (editar docker-compose.yml)
 ports:
-  - "8081:8080"  # container em 8081, forward para 8080 interno
+  - "8081:80"  # container em 8081, forward para 80 interno
 ```
+
+**Nota sobre privilégios de porta 80:** no Linux, WSL e macOS, a porta 80 requer privilégio elevado (root/sudo) ou configuração especial (ex.: `setcap`). No Windows, pode ser usada normalmente. Se não conseguir rodar na porta 80 sem privilégios, veja as alternativas em [docs/09-guia-desenvolvedor.md](09-guia-desenvolvedor.md#rodar-o-backend-na-ide) (seção sobre rodar backend na IDE).
 
 ### Problema: Hot reload não funciona (Vue/TypeScript não atualiza ao editar)
 

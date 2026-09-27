@@ -62,7 +62,7 @@ flowchart LR
 - Usuário criado no banco com e-mail ou celular, senha BCrypt, perfil vigente.
 - Sessão HTTP não existe ou expirou.
 
-**Gatilho**: Visitante acessa `http://localhost:5173` (ou 8080 backend) sem autenticação.
+**Gatilho**: Visitante acessa `http://localhost:5173` (ou backend na porta 80) sem autenticação.
 
 **Fluxo principal**:
 1. Sistema exibe formulário de login (Thymeleaf `/login`).

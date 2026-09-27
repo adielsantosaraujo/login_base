@@ -94,8 +94,14 @@ docker ps
 1. Abrir projeto: File → Open → `pom.xml`.
 2. Maven sincroniza dependências.
 3. Executar: Run → Run 'LoginBaseApplication' (ícone verde de play).
-4. Aguardar: "Tomcat started on port(s): 8080 with context path '/'".
+4. Aguardar: "Tomcat started on port(s): 80 with context path '/'".
 5. Acessar: `http://localhost:5173` no navegador.
+
+**Nota sobre privilégios de porta 80:** no Linux, WSL e macOS, rodar a aplicação na porta 80 exige privilégio elevado (root ou sudo) ou uma configuração especial (ex.: `setcap`), pois portas < 1024 são reservadas. Alternativas:
+- Rodar com `sudo ./mvnw spring-boot:run` (rápido, mas sem recomendação para dev).
+- Configurar `setcap` no JDK: `sudo setcap cap_net_bind_service=+ep $(which java)` (permanente, mais seguro).
+- Usar uma porta alta em dev (ex.: 8080) editando `server.port=8080` em `application.properties` localmente (não comitar).
+- No Windows, não há restrição; a porta 80 pode ser usada normalmente.
 
 **Configurar variáveis de ambiente na IDE:**
 - Run → Edit Configurations → LoginBaseApplication.
@@ -216,8 +222,8 @@ Por padrão, o backend roda na IDE (mais rápido e fácil de debugar). Para roda
 # Subir db, app (container) e frontend
 PROFILE_APP=local make up
 
-# Backend acessível em http://localhost:8080 do host
-# (container mapeia porta 8080)
+# Backend acessível em http://localhost do host
+# (container mapeia porta 80)
 
 # Verificar logs
 make logs_front  # Ctrl+C para sair
@@ -576,7 +582,7 @@ Lidas de `.env` (e passadas ao Docker):
 | `SESSION_COOKIE_SECURE` | `false` | Spring | Cookie seguro (true apenas em HTTPS) |
 | `VITE_PRIMEUI_LICENSE` | — | compose/frontend | Chave licença PrimeUI (vazio = aviso no console) |
 | `VITE_USE_POLLING` | `true` | compose | Usar polling em dev (fixo para WSL) |
-| `BACKEND_URL` | `http://localhost:8080` | compose/Vite | URL backend (compose: `http://host.docker.internal:8080`) |
+| `BACKEND_URL` | `http://localhost` | compose/Vite | URL backend (compose: `http://host.docker.internal`) |
 
 ---
 

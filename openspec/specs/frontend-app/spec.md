@@ -56,11 +56,11 @@ A aplicação SHALL exibir na rota raiz (`/`) a tela da vila do usuário autenti
 - **THEN** a API retorna 401 e o navegador é redirecionado para `/login`
 
 ### Requirement: Proxy de desenvolvimento para o backend
-O servidor de desenvolvimento do Vite MUST encaminhar requisições a endpoints do backend para a URL configurada em `BACKEND_URL`, preservando o `Host` original da requisição para que os redirects do Spring Security retornem para o domínio do Vite. Caminhos cobertos: `/api`, `/login`, `/logout`, `/css`, `/js`, `/images`. O valor padrão de `BACKEND_URL` é `http://localhost:8080` para desenvolvimento local; em container, usa-se `http://host.docker.internal:8080`. O proxy MUST permitir que a SPA compartilhe cookies de sessão HTTP com o backend.
+O servidor de desenvolvimento do Vite MUST encaminhar requisições a endpoints do backend para a URL configurada em `BACKEND_URL`, preservando o `Host` original da requisição para que os redirects do Spring Security retornem para o domínio do Vite. Caminhos cobertos: `/api`, `/login`, `/logout`, `/css`, `/js`, `/images`. O valor padrão de `BACKEND_URL` é `http://localhost` para desenvolvimento local; em container, usa-se `http://host.docker.internal`. O proxy MUST permitir que a SPA compartilhe cookies de sessão HTTP com o backend.
 
 #### Scenario: Proxy de API
 - **WHEN** a SPA em `http://localhost:5173` chama `fetch('/api/jogo/vila')`
-- **THEN** a requisição é encaminhada para `http://localhost:8080/api/jogo/vila` com o cookie de sessão intacto
+- **THEN** a requisição é encaminhada para `http://localhost/api/jogo/vila` com o cookie de sessão intacto
 - **AND** a resposta volta para a SPA
 
 #### Scenario: Proxy de login
@@ -68,7 +68,7 @@ O servidor de desenvolvimento do Vite MUST encaminhar requisições a endpoints 
 - **THEN** a página Thymeleaf do backend é entregue via proxy
 
 #### Scenario: Proxy em container
-- **WHEN** o serviço `frontend` está rodando em container com `BACKEND_URL=http://host.docker.internal:8080`
+- **WHEN** o serviço `frontend` está rodando em container com `BACKEND_URL=http://host.docker.internal`
 - **THEN** requisições são encaminhadas para o backend rodando no host
 
 ### Requirement: Roteamento no modo history

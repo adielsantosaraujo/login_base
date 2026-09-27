@@ -297,7 +297,7 @@ Matriz bidirecional RF → código → testes → verificação. Documento [15-r
 Requisito não-funcional. Aspectos: autenticação (login/sessão), autorização (rotas protegidas), confidencialidade (HTTPS em produção, senha hash), integridade (CSRF), não-repúdio (auditoria). Documento: [07-seguranca.md](07-seguranca.md).
 
 ### SPA
-Single Page Application. Frontend Vue 3 servido em dev pelo Vite dev server na porta 5173, com proxy para backend na 8080. Roteamento em history mode (sem hash). Não usa Pinia; estado em composable `useVila`.
+Single Page Application. Frontend Vue 3 servido em dev pelo Vite dev server na porta 5173, com proxy para backend na porta 80. Roteamento em history mode (sem hash). Não usa Pinia; estado em composable `useVila`.
 
 ### Sprint
 Iteração de desenvolvimento (não usado aqui; apenas OpenSpec changes).
