@@ -23,6 +23,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-login_base}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@loginbase.local}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      JOGO_VELOCIDADE: ${JOGO_VELOCIDADE:-1}
     ports:
       - "8080:8080"
 
@@ -32,6 +33,10 @@ services:
     environment:
       VITE_PRIMEUI_LICENSE: ${VITE_PRIMEUI_LICENSE:-}
       VITE_USE_POLLING: "true"
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8080}
+      JOGO_VELOCIDADE: ${JOGO_VELOCIDADE:-1}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "5173:5173"
     volumes:

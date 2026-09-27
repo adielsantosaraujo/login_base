@@ -1,0 +1,28 @@
+package com.example.loginbase.jogo;
+
+/**
+ * Códigos de erro de regras de jogo, usados por {@link RegraJogoException} e
+ * mapeados pelo {@code ErroApiHandler} para respostas de erro da API.
+ */
+public enum CodigoErro {
+
+	RECURSOS_INSUFICIENTES,
+	FILA_OCUPADA,
+	NIVEL_MAXIMO,
+	REQUISITO_NAO_ATENDIDO,
+	CANTEIRO_INEXISTENTE,
+	SEMENTE_INDISPONIVEL,
+	ITEM_INDISPONIVEL,
+	CAPACIDADE_EXERCITO,
+	MASMORRA_BLOQUEADA,
+	BATALHA_EM_ANDAMENTO,
+	UNIDADE_INDISPONIVEL,
+	ESQUADRAO_INVALIDO,
+	ACAO_INVALIDA,
+	BATALHA_ENCERRADA,
+	TURNO_DESATUALIZADO,
+	CONFLITO,
+	NAO_ENCONTRADO,
+	REQUISICAO_INVALIDA
+
+}

@@ -241,6 +241,98 @@ volume e deixe o container reinstalar tudo na próxima subida:
 docker volume rm login_base_frontend-node-modules
 ```
 
+## Jogo
+
+Sistema de construção de vila com gerenciamento de recursos, prédios, tropas e combate tático em masmorras.
+
+### Abrindo o jogo
+
+Após subir o ambiente com `make up`, acesse **`http://localhost:5173`** no navegador. 
+O jogo exige autenticação — faça login com credenciais de um usuário cadastrado. 
+A vila é criada automaticamente no primeiro acesso.
+
+### Configuração de variáveis
+
+**`BACKEND_URL`** (padrão `http://localhost:8080`): URL do backend usada pelo frontend. 
+Em container Docker (padrão `docker-compose.yml`), é `http://host.docker.internal:8080`.
+
+**`JOGO_VELOCIDADE`** (padrão `1`): multiplicador de velocidade do jogo. 
+Inteiro ≥ 1. Aumente para testes manuais (ex.: `60` = tudo 60× mais rápido). 
+Altere no `.env` ou na linha de comando: `JOGO_VELOCIDADE=10 make up`.
+
+### Estrutura do jogo
+
+Uma vila possui:
+
+- **Recursos**: comida, madeira, pedra, ferro (produzidos/armazenados com limite de capacidade).
+- **Prédios** (um de cada tipo):
+  - `CENTRO_VILA`: limita nível máximo dos outros.
+  - `ARMAZEM`: aumenta capacidade de armazenamento (nível N = 500 × 2^(N−1) por recurso).
+  - `FAZENDA`, `SERRARIA`, `PEDREIRA`, `MINA_FERRO`: aumentam produção de recursos.
+  - `FORJA`: cria armas (`ESPADA`, `LANCA`, `ARCO`) e armaduras (`ARMADURA_COURO`, `ARMADURA_FERRO`).
+  - `QUARTEL`: treina tropas (`SOLDADO`, `ARQUEIRO`, `LANCEIRO`).
+- **Canteiros** (até 5 por nível de fazenda): plantam cultivos (`TRIGO`, `MILHO`, `BATATA`, `ABOBORA_DOURADA`) que produzem comida.
+- **Batalhas em masmorras**: 5 níveis com inimigos; vitória libera próximo nível; combate tático em turno (mover, atacar, defender).
+
+### Fluxo de jogo
+
+1. Login com e-mail + senha na tela Thymeleaf.
+2. Vila criada automaticamente com recursos iniciais.
+3. Melhorar prédios para aumentar capacidade e liberar novos.
+4. Forjar armas e armaduras.
+5. Treinar tropas (requerem arma e armadura).
+6. Entrar em masmorra com até 4 unidades.
+7. Combate tático: cada turno, mover ou atacar ou defender (defesa dobrada). Inimigos atacam no turno deles (IA determinística).
+8. Vitória: loot (recursos, sementes, itens) e nível liberado. Derrota: reversível.
+
+### Endpoints da API
+
+Todos requerem autenticação (sesão + cookie `JSESSIONID`). POST requerem token CSRF em header `X-XSRF-TOKEN` (lido do cookie `XSRF-TOKEN`).
+
+| Verbo | Rota | Descrição |
+|---|---|---|
+| `GET` | `/api/jogo/catalogo` | Tabelas de custos, cultivos, tropas, inimigos, masmorras. |
+| `GET` | `/api/jogo/vila` | Estado atual (recursos, prédios, ordens, canteiros, itens, unidades). |
+| `POST` | `/api/jogo/predios/{tipo}/melhorar` | Melhora um prédio. |
+| `POST` | `/api/jogo/canteiros/{posicao}/plantar` | Planta cultivo em canteiro. Body: `{ "cultivo": "MILHO" }`. |
+| `POST` | `/api/jogo/forja/ordens` | Cria ordem de forja. Body: `{ "modelo": "ESPADA", "nivel": 2, "quantidade": 1 }`. |
+| `POST` | `/api/jogo/quartel/ordens` | Cria ordem de treino. Body: `{ "tipo": "SOLDADO", "armaId": 1, "armaduraId": 2 }`. |
+| `POST` | `/api/jogo/masmorras/{nivel}/batalhas` | Inicia batalha. Retorna `201`. Body: `{ "unidadeIds": [3, 4] }`. |
+| `GET` | `/api/jogo/batalhas/{id}` | Consulta batalha. |
+| `POST` | `/api/jogo/batalhas/{id}/acoes` | Executa ação de combate. Body: `{ "tipo": "MOVER", "turno": 1, "combatenteId": "J1", "x": 2, "y": 5 }`. |
+
+Erros retornam `422` (violação de regra) ou `409` (conflito — ex.: turno desatualizado, lock otimista).
+
+### Exemplo de uso (cURL)
+
+```bash
+# Subir ambiente
+make up
+
+# Login (salva cookie de sessão e XSRF)
+curl -b cookies.txt -c cookies.txt \
+  -d 'login=user@example.com&senha=senha' \
+  http://localhost:8080/login
+
+# Consultar vila
+curl -b cookies.txt http://localhost:8080/api/jogo/vila
+
+# Forjar uma arma
+curl -b cookies.txt -X POST \
+  -H "X-XSRF-TOKEN: $(curl -s -b cookies.txt http://localhost:8080/api/jogo/catalogo | jq -r '.xsrfToken' 2>/dev/null || echo '')" \
+  -H "Content-Type: application/json" \
+  -d '{"modelo": "ESPADA", "nivel": 1, "quantidade": 1}' \
+  http://localhost:8080/api/jogo/forja/ordens
+```
+
+### Notas de desenvolvimento
+
+- **Frontend**: Vue 3 + TypeScript + Vite + PrimeVue 5 em `frontend/`.
+- **Backend**: Spring Boot 4.1 + Java 25 em `src/main/java/com/example/loginbase/jogo/`.
+- **Banco**: Postgres. Schema em `src/main/resources/db/migration/V3__jogo.sql`.
+- **Testes**: Puros (JUnit 5 + AssertJ) e com Spring (`@DataJpaTest`, `@WebMvcTest`). Rodam contra Postgres do compose.
+- **Rotas do frontend**: `/` (vila), `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/:id`.
+
 ## Build manual (sem Docker)
 
 ```bash
