@@ -1026,3 +1026,20 @@ Nota: linha 35 sem uso reportado (n/d) — o agente encerrou por limite de uso d
 Progresso da change: 25/25 tasks concluídas.
 
 Sessão principal: medida até o início da criação do relatório; o consumo posterior (incluindo o agente do relatório) não é contabilizado.
+
+## Archive e sincronização de specs — 2026-09-27
+
+| # | Agente (description) | Função | Modelo | Status | Tool uses | Duração | Tokens |
+|---|----------------------|--------|--------|--------|-----------|---------|--------|
+| 1 | Sincronizar specs do jogo | documento | haiku | ✅ concluído | 36 | 5m 55s | 90.013 |
+
+### 1 — Sincronizar specs do jogo
+
+**Harness**
+- ~/.claude/CLAUDE.md
+- CLAUDE.md
+
+**Negócio**
+- openspec/changes/archive/2026-09-27-add-city-builder-game/specs/*/spec.md (11 delta specs)
+- openspec/specs/frontend-app/spec.md
+- openspec/specs/user-authentication/spec.md
