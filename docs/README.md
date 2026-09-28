@@ -83,7 +83,7 @@ Requisitos, casos de uso, testes, rastreabilidade.
 2. [03 — Casos de uso](03-casos-de-uso.md) (15 min): UC-01…UC-12 com fluxos e histórias Gherkin.
 3. [08 — Plano de testes](08-plano-testes.md) (15 min): Estratégia, inventário de testes, última execução (239 testes).
 4. [15 — Rastreabilidade](15-rastreabilidade.md) (15 min): RF → teste; lacunas de cobertura (UIJ, FRE, AMB, PRC são manual/build).
-5. [12 — GDD](12-gdd.md) §9 (Combate) e §10 (Loot): Regras de negócio críticas para teste.
+5. [12 — GDD](12-gdd.md): [§9 (Combate)](12-gdd/12.9-gdd-combate-tatico.md) e [§10 (Loot)](12-gdd/12.10-gdd-loot-de-masmorra.md): Regras de negócio críticas para teste.
 
 **Tempo total:** ~1 hora.
 

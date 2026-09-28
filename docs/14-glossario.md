@@ -70,7 +70,7 @@ Resultado de batalha quando: (1) todas as unidades do jogador morrem, (2) 30 tur
 Valor de HP reduzido de um combatente após um ataque. Calculado como `max(1, ataque_atacante - defesa_efetiva_alvo)`. Sempre ≥1. Método: `MotorCombate.aplicarAtaque()`.
 
 ### Equilíbrio/Balanceamento
-Ajuste de números (custos, tempos, atributos) para manter jogo justo e progressão suave. Ver [12-gdd.md](12-gdd.md) §14 para exemplos numéricos.
+Ajuste de números (custos, tempos, atributos) para manter jogo justo e progressão suave. Ver [GDD §14 — Exemplos numéricos](12-gdd/12.14-gdd-exemplos-numericos.md).
 
 ### Esquadrão
 Seleção de até 4 unidades para uma batalha. Ordem fixa (J1, J2, J3, J4 = ID na ordem de seleção). Persiste durante a batalha. Classe: `IniciarBatalhaRequest.unidadeIds`.
