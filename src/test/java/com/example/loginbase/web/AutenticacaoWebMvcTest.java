@@ -274,6 +274,20 @@ class AutenticacaoWebMvcTest {
 	}
 
 	@Test
+	void usuarioAutenticadoAcessaDetalheUnidade() throws Exception {
+		mockMvc.perform(get("/quartel/unidades/1").with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/seguro/index"));
+	}
+
+	@Test
+	void visitanteAnonimoAcessaDetalheUnidade_redireciona() throws Exception {
+		mockMvc.perform(get("/quartel/unidades/1"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/login"));
+	}
+
+	@Test
 	void visitanteAnonimoRequisitaAsset_naoRedireciona() throws Exception {
 		// GET /app/assets/qualquer.js deve retornar 404 (não existe), não 302 (redirect)
 		mockMvc.perform(get("/app/assets/qualquer.js"))

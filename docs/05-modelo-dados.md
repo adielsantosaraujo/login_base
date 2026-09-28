@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` |
+| Versão | 1.1.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + change `add-soldier-names-batch-slots` implementada |
 | Modelo/norma | ER + dicionário de dados |
 | Público | Desenvolvedores, DBAs |
-| Fontes | `src/main/resources/db/migration/V1__controle_acesso.sql`, `V2__perfil_admin.sql`, `V3__jogo.sql`; `src/main/java/com/example/loginbase/jogo/dominio/*.java` |
+| Fontes | `src/main/resources/db/migration/V1__controle_acesso.sql`, `V2__perfil_admin.sql`, `V3__jogo.sql`, `V4__unidade_nome_e_lote_treino.sql`; `src/main/java/com/example/loginbase/jogo/dominio/*.java` |
 
 > Parte da [documentação do login_base](README.md). Apresenta o esquema do banco de dados, dicionário de tabelas, enumerações, estruturas JSON de batalhas e regras de integridade.
 
@@ -167,6 +167,7 @@ erDiagram
         int nivel "1..5"
         string origem "20 chars, OrigemItem enum"
         string status "20 chars, StatusItem enum"
+        bigint ordem_id FK "nullable, FK para jogo_ordens.id"
         timestamptz criado_em
         string criado_por
         timestamptz alterado_em
@@ -177,6 +178,9 @@ erDiagram
         bigint id PK
         bigint vila_id FK
         string tipo "20 chars, TipoTropa"
+        string nome "60 chars, NOT NULL"
+        string sobrenome "60 chars, NOT NULL"
+        int ordinal_nome "NOT NULL, >= 1, UNIQUE (vila_id, nome, sobrenome, ordinal_nome)"
         bigint arma_item_id FK "unique"
         bigint armadura_item_id FK "unique"
         string status "20 chars, StatusUnidade"
@@ -186,6 +190,19 @@ erDiagram
         string alterado_por
     }
 
+    JOGO_CONTADORES_NOME {
+        bigint id PK
+        bigint vila_id FK
+        string nome "60 chars"
+        string sobrenome "60 chars"
+        int ultimo_ordinal "NOT NULL, >= 1"
+        timestamptz criado_em
+        string criado_por
+        timestamptz alterado_em
+        string alterado_por
+        "UNIQUE (vila_id, nome, sobrenome)"
+    }
+
     JOGO_ORDENS {
         bigint id PK
         bigint vila_id FK
@@ -193,8 +210,6 @@ erDiagram
         string alvo "30 chars, identificador de alvo"
         int nivel "nullable, 1..5 ou nível de prédio"
         int quantidade "default=1, >= 1"
-        bigint arma_item_id FK "nullable"
-        bigint armadura_item_id FK "nullable"
         timestamptz iniciada_em
         timestamptz conclui_em
         timestamptz criado_em
@@ -469,6 +484,7 @@ erDiagram
 | `nivel` | `int` | NOT NULL, CHECK `BETWEEN 1 AND 5` | Nível de qualidade (1..5) |
 | `origem` | `varchar(20)` | NOT NULL, enum: `OrigemItem` | FORJA, MASMORRA |
 | `status` | `varchar(20)` | NOT NULL, enum: `StatusItem` | DISPONIVEL, RESERVADO, EQUIPADO |
+| `ordem_id` | `bigint` | FK → `jogo_ordens.id`, nullable | Ordem de treino que reservou este item (V4+) |
 | `criado_em` | `timestamptz` | NOT NULL | Marca de criação |
 | `criado_por` | `varchar(150)` | NOT NULL | Quem criou |
 | `alterado_em` | `timestamptz` | NOT NULL | Última alteração |
@@ -476,19 +492,22 @@ erDiagram
 
 **Índices:**
 - Primária: `pk_jogo_itens`
-- Comum: `ix_jogo_itens_vila`
+- Comum: `ix_jogo_itens_vila`, `ix_jogo_itens_ordem` (V4+)
 
 ---
 
 #### T12. `jogo_unidades`
 
-**Propósito:** Tropas treináveis no quartel, cada uma com arma e armadura equipadas.
+**Propósito:** Tropas treináveis no quartel, cada uma com arma e armadura equipadas e nome identificador.
 
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-------------|-----------|
 | `id` | `bigint` | PK, identity | Identificador único |
 | `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
 | `tipo` | `varchar(20)` | NOT NULL, enum: `TipoTropa` | SOLDADO, ARQUEIRO, LANCEIRO |
+| `nome` | `varchar(60)` | NOT NULL | Primeiro nome, sorteado no treino (V4+) |
+| `sobrenome` | `varchar(60)` | NOT NULL | Sobrenome, sorteado no treino (V4+) |
+| `ordinal_nome` | `int` | NOT NULL, CHECK `>= 1` | Sufixo ordinal para nomes duplicados (1, 2, 3…); único com (vila_id, nome, sobrenome) (V4+) |
 | `arma_item_id` | `bigint` | FK → `jogo_itens.id`, NOT NULL, UK | Arma equipada |
 | `armadura_item_id` | `bigint` | FK → `jogo_itens.id`, NOT NULL, UK | Armadura equipada |
 | `status` | `varchar(20)` | NOT NULL, enum: `StatusUnidade` | DISPONIVEL, EM_MASMORRA |
@@ -500,9 +519,9 @@ erDiagram
 **Índices:**
 - Primária: `pk_jogo_unidades`
 - Comum: `ix_jogo_unidades_vila`
-- Únicas: `(arma_item_id)`, `(armadura_item_id)` — cada item pode estar equipado em apenas uma unidade.
+- Únicas: `(arma_item_id)`, `(armadura_item_id)` — cada item pode estar equipado em apenas uma unidade; `(vila_id, nome, sobrenome, ordinal_nome)` (V4+) — ordinal único por vila e nome.
 
-**Observação:** Atributos de combate (HP, ataque, defesa, alcance, movimento) são derivados do tipo de tropa + equipamento.
+**Observação:** Atributos de combate (HP, ataque, defesa, alcance, movimento) são derivados do tipo de tropa + equipamento. `nomeExibicao` em `UnidadeDto` = `"$nome $sobrenome (N)"` se ordinal > 1, senão `"$nome $sobrenome"`.
 
 ---
 
@@ -515,11 +534,9 @@ erDiagram
 | `id` | `bigint` | PK, identity | Identificador único |
 | `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
 | `categoria` | `varchar(20)` | NOT NULL, enum: `CategoriaOrdem` | CONSTRUCAO, FORJA, TREINO |
-| `alvo` | `varchar(30)` | NOT NULL | Identificador do alvo (ex.: "FORJA" para tipo de prédio, "ESPADA" para modelo de item) |
-| `nivel` | `int` | nullable | Nível de construção/item (nulo para treino) |
+| `alvo` | `varchar(30)` | NOT NULL | Identificador do alvo (ex.: "FORJA" para tipo de prédio, "ESPADA" para modelo de item, "SOLDADO" para tipo de tropa) |
+| `nivel` | `int` | nullable | Nível de construção/item/arma (nulo para treino de unidades) |
 | `quantidade` | `int` | NOT NULL, DEFAULT 1 | Número de itens a forjar ou tropas a treinar |
-| `arma_item_id` | `bigint` | FK → `jogo_itens.id`, nullable | Item arma (treino) |
-| `armadura_item_id` | `bigint` | FK → `jogo_itens.id`, nullable | Item armadura (treino) |
 | `iniciada_em` | `timestamptz` | NOT NULL | Timestamp de início |
 | `conclui_em` | `timestamptz` | NOT NULL | Timestamp de conclusão estimada |
 | `criado_em` | `timestamptz` | NOT NULL | Marca de criação |
@@ -532,6 +549,34 @@ erDiagram
 **Índices:**
 - Primária: `pk_jogo_ordens`
 - Comum: `ix_jogo_ordens_vila`
+
+**Mudança em V4**: Colunas `arma_item_id` e `armadura_item_id` removidas. Associação de itens a ordens movida para coluna `jogo_itens.ordem_id` (FK bidirecional).
+
+---
+
+#### T13A. `jogo_contadores_nome` (V4+)
+
+**Propósito:** Contagem de ordinais por nome/sobrenome (sufixo para nomes duplicados). Uma linha por vila/nome/sobrenome, nunca decrementada.
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-------------|-----------|
+| `id` | `bigint` | PK, identity | Identificador único |
+| `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
+| `nome` | `varchar(60)` | NOT NULL | Primeiro nome |
+| `sobrenome` | `varchar(60)` | NOT NULL | Sobrenome |
+| `ultimo_ordinal` | `int` | NOT NULL, CHECK `>= 1` | Maior ordinal já atribuído a este nome/sobrenome nesta vila |
+| `criado_em` | `timestamptz` | NOT NULL | Marca de criação |
+| `criado_por` | `varchar(150)` | NOT NULL | Quem criou (ex.: `sistema`) |
+| `alterado_em` | `timestamptz` | NOT NULL | Última alteração |
+| `alterado_por` | `varchar(150)` | NOT NULL | Quem alterou |
+
+**Constraint único:** `(vila_id, nome, sobrenome)` — um contador por vila e nome.
+
+**Índices:**
+- Primária: `pk_jogo_contadores_nome`
+- Comum: `ix_jogo_contadores_nome_vila`
+
+**Observação:** A morte de uma unidade apaga-a de `jogo_unidades`, mas não afeta o contador. Isso preserva a história de nomes na vila. Unidades pré-V4 não têm histórico de contagem; migração V4 semeia contadores com `count(*) sobre unidades vivas por nome`.
 
 ---
 
@@ -563,6 +608,32 @@ erDiagram
 - Parcial (única): `ux_jogo_batalhas_vila_em_andamento ON (vila_id) WHERE status = 'EM_ANDAMENTO'` — máximo uma batalha em andamento por vila.
 
 **Observação:** `estado` e `loot` são JSON para flexibilidade na evolução do formato de batalha.
+
+---
+
+### Notas sobre Migration V4 (Treino em Lote, Nomes e Sufixos)
+
+**Change:** [`add-soldier-names-batch-slots`](../openspec/changes/add-soldier-names-batch-slots/)
+
+**Migration:** [`V4__unidade_nome_e_lote_treino.sql`](/src/main/resources/db/migration/V4__unidade_nome_e_lote_treino.sql)
+
+#### Mudanças de Schema
+
+1. **Novos campos em `jogo_unidades`**: `nome`, `sobrenome`, `ordinal_nome` (NOT NULL, migração via backfill determinístico).
+2. **Nova tabela `jogo_contadores_nome`**: Contadores persistidos por vila/nome/sobrenome (semear com `count(*)` de unidades vivas).
+3. **Novo campo em `jogo_itens`**: `ordem_id` (FK, nullable) para associar itens a ordens de treino.
+4. **Remoção em `jogo_ordens`**: Colunas `arma_item_id` e `armadura_item_id` (dados movidos para `jogo_itens.ordem_id`).
+
+#### Arquivos de Nomes
+
+**Localização (V4+):** [`src/main/resources/jogo/nomes/`](/src/main/resources/jogo/nomes/)
+
+- `nome_pessoas.json`: Lista de primeiros nomes (ex.: `["Ana", "Pedro", "Maria", ...]`)
+- `sobrenome_pessoas.json`: Lista de sobrenomes (ex.: `["Silva", "Santos", "Oliveira", ...]`)
+
+**Origem:** Movidos de `docs/` via `git mv` na mudança `add-soldier-names-batch-slots`. Carregados como `ClassPathResource` na inicialização do bean `GeradorNomes`.
+
+**ADR Relacionado:** [ADR 0024 — Listas de nomes como recurso de classpath](adr/0024-listas-nomes-classpath.md)
 
 ---
 

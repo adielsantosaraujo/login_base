@@ -19,12 +19,14 @@ import com.example.loginbase.jogo.economia.EstadoVila;
 import com.example.loginbase.jogo.economia.VilaService;
 import com.example.loginbase.jogo.fazenda.FazendaService;
 import com.example.loginbase.jogo.forja.ForjaService;
+import com.example.loginbase.jogo.quartel.EquipamentoService;
 import com.example.loginbase.jogo.quartel.QuartelService;
 
 /**
- * API REST das ações de vila (construção, plantio, forja, treino de tropas):
- * ver design.md, seção 17, e specs game-buildings/game-farming/game-forge/
- * game-army. Cada ação delega a validação e execução da regra de jogo ao
+ * API REST das ações de vila (construção, plantio, forja, treino de tropas,
+ * troca de equipamento): ver design.md, seção 17, e specs
+ * game-buildings/game-farming/game-forge/game-army. Cada ação delega a
+ * validação e execução da regra de jogo ao
  * serviço correspondente (que lança {@link com.example.loginbase.jogo.RegraJogoException}
  * em caso de violação, mapeada para 422/409 por {@link ErroApiHandler}) e
  * devolve o estado atualizado da vila ({@link VilaDto}), assim como
@@ -42,17 +44,19 @@ public class AcoesVilaController {
 	private final FazendaService fazendaService;
 	private final ForjaService forjaService;
 	private final QuartelService quartelService;
+	private final EquipamentoService equipamentoService;
 	private final VilaService vilaService;
 	private final JogoMapper jogoMapper;
 	private final Clock clock;
 
 	public AcoesVilaController(ConstrucaoService construcaoService, FazendaService fazendaService,
-			ForjaService forjaService, QuartelService quartelService, VilaService vilaService, JogoMapper jogoMapper,
-			Clock clock) {
+			ForjaService forjaService, QuartelService quartelService, EquipamentoService equipamentoService,
+			VilaService vilaService, JogoMapper jogoMapper, Clock clock) {
 		this.construcaoService = construcaoService;
 		this.fazendaService = fazendaService;
 		this.forjaService = forjaService;
 		this.quartelService = quartelService;
+		this.equipamentoService = equipamentoService;
 		this.vilaService = vilaService;
 		this.jogoMapper = jogoMapper;
 		this.clock = clock;
@@ -83,7 +87,16 @@ public class AcoesVilaController {
 	@PostMapping("/quartel/ordens")
 	public ResponseEntity<VilaDto> treinar(@Valid @RequestBody TreinarRequest req, Authentication auth) {
 		long usuarioId = UsuarioAtual.id(auth);
-		quartelService.treinar(usuarioId, req.tipo(), req.armaId(), req.armaduraId());
+		quartelService.treinar(usuarioId, req.tipo(), req.armaNivel(), req.armaduraModelo(), req.armaduraNivel(),
+				req.quantidade());
+		return ResponseEntity.ok(consultarVilaAtualizada(usuarioId));
+	}
+
+	@PostMapping("/unidades/{id}/equipamento")
+	public ResponseEntity<VilaDto> trocarEquipamento(@PathVariable long id,
+			@Valid @RequestBody TrocarEquipamentoRequest req, Authentication auth) {
+		long usuarioId = UsuarioAtual.id(auth);
+		equipamentoService.trocar(usuarioId, id, req.slot(), req.itemId());
 		return ResponseEntity.ok(consultarVilaAtualizada(usuarioId));
 	}
 

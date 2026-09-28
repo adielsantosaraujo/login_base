@@ -26,6 +26,20 @@ export type OrigemItem = 'FORJA' | 'MASMORRA'
 
 export type TipoTropa = 'SOLDADO' | 'ARQUEIRO' | 'LANCEIRO'
 
+// Slot de equipamento de uma unidade (ver SlotEquipamento.java): 9 slots em
+// ordem de exibição; só ARMA e ARMADURA têm persistência hoje, os demais
+// ficam sempre vazios (null) até extensão futura.
+export type SlotEquipamento =
+  | 'ARMA'
+  | 'ARMADURA'
+  | 'CABECA'
+  | 'BOTA'
+  | 'LUVA'
+  | 'COLAR'
+  | 'ANEL_1'
+  | 'ANEL_2'
+  | 'ANEL_3'
+
 // Só existem estes dois status (ver StatusUnidade.java): uma unidade nunca
 // fica "reservada" — ou está na vila, disponível para treino/batalha, ou
 // está em uma masmorra (batalha em andamento).
@@ -55,6 +69,7 @@ export type CodigoErro =
   | 'MASMORRA_BLOQUEADA'
   | 'BATALHA_EM_ANDAMENTO'
   | 'UNIDADE_INDISPONIVEL'
+  | 'UNIDADE_EM_MASMORRA'
   | 'ESQUADRAO_INVALIDO'
   | 'ACAO_INVALIDA'
   | 'BATALHA_ENCERRADA'
@@ -125,6 +140,14 @@ export interface ItemLootDto {
 
 export interface UnidadeDto {
   id: number
+  nome: string
+  sobrenome: string
+  // Sufixo de desambiguação entre unidades com mesmo nome+sobrenome na vila
+  // (ver design.md — D11); 1 quando não há duplicata.
+  ordinalNome: number
+  // Nome pronto para exibição, já com sufixo quando ordinalNome > 1 (ex.:
+  // "Ana Silva (2)"); o frontend não recalcula, só exibe.
+  nomeExibicao: string
   tipo: TipoTropa
   status: StatusUnidade
   hp: number
@@ -132,8 +155,9 @@ export interface UnidadeDto {
   defesa: number
   alcance: number
   movimento: number
-  armaId: number
-  armaduraId: number
+  // LinkedHashMap com os 9 slots, na ordem de SlotEquipamento; slots vazios
+  // vêm como null (ver design.md — D6).
+  equipamento: Record<SlotEquipamento, ItemDto | null>
 }
 
 export interface OrdemDto {
@@ -294,8 +318,15 @@ export interface ForjarRequest {
 
 export interface TreinarRequest {
   tipo: TipoTropa
-  armaId: number
-  armaduraId: number
+  armaNivel: number
+  armaduraModelo: ModeloItem
+  armaduraNivel: number
+  quantidade: number
+}
+
+export interface TrocarEquipamentoRequest {
+  slot: SlotEquipamento
+  itemId: number
 }
 
 export interface IniciarBatalhaRequest {

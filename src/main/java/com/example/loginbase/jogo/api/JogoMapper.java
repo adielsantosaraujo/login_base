@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import com.example.loginbase.jogo.catalogo.MapaMasmorra.Posicao;
 import com.example.loginbase.jogo.catalogo.Masmorra;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
 import com.example.loginbase.jogo.catalogo.ModeloItem.AtributosItem;
+import com.example.loginbase.jogo.catalogo.SlotEquipamento;
 import com.example.loginbase.jogo.catalogo.TipoInimigo;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
@@ -193,9 +195,21 @@ public class JogoMapper {
 		AtributosItem atributosArma = arma.getModelo().atributos(arma.getNivel());
 		AtributosItem atributosArmadura = armadura.getModelo().atributos(armadura.getNivel());
 
-		return new UnidadeDto(unidade.getId(), tipo, unidade.getStatus(), tipo.hp(), atributosArma.ataque(),
+		var equipamento = new LinkedHashMap<SlotEquipamento, ItemDto>();
+		for (SlotEquipamento slot : SlotEquipamento.values()) {
+			ItemDto item = null;
+			if (slot == SlotEquipamento.ARMA && unidade.getArmaItemId() != null) {
+				item = toItemDto(itensPorId.get(unidade.getArmaItemId()));
+			} else if (slot == SlotEquipamento.ARMADURA && unidade.getArmaduraItemId() != null) {
+				item = toItemDto(itensPorId.get(unidade.getArmaduraItemId()));
+			}
+			equipamento.put(slot, item);
+		}
+
+		return new UnidadeDto(unidade.getId(), unidade.getNome(), unidade.getSobrenome(), unidade.getOrdinalNome(),
+				unidade.nomeExibicao(), tipo, unidade.getStatus(), tipo.hp(), atributosArma.ataque(),
 				tipo.defesaBase() + atributosArmadura.defesa(), atributosArma.alcance(), tipo.movimento(),
-				unidade.getArmaItemId(), unidade.getArmaduraItemId());
+				equipamento);
 	}
 
 	private List<CustoDto> toCustoDto(com.example.loginbase.jogo.catalogo.Custo custo) {

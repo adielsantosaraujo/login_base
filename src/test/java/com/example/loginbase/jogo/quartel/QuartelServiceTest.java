@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -44,16 +45,17 @@ import com.example.loginbase.jogo.suporte.JogoTestConfig;
 import com.example.loginbase.jogo.suporte.RelogioAjustavel;
 
 /**
- * Testa {@link QuartelService}: validação de ordem de treino (quartel abaixo
- * do mínimo, arma/armadura inexistente, de modelo/categoria errada,
- * reservada ou de outra vila, fila ocupada, capacidade do exército e comida
- * insuficiente), reserva imediata de itens e débito de comida, e a conclusão
- * da ordem (via {@link AplicadorOrdens}, disparada por
- * {@link VilaService#sincronizar}) — mesma premissa de
- * {@code FazendaServiceTest} (Postgres real do {@code docker-compose},
- * {@code @Transactional(propagation = NOT_SUPPORTED)} porque
- * {@code VilaService} usa uma transação {@code REQUIRES_NEW} genuína para
- * criar a vila).
+ * Testa {@link QuartelService}: validação do treino em lote (quartel abaixo
+ * do mínimo, modelo de armadura de categoria errada, fila ocupada,
+ * capacidade do exército, armas/armaduras insuficientes — inclusive
+ * ignorando itens de outra vila — e comida insuficiente), reserva imediata
+ * das N menores armas/armaduras e débito de comida ao aceitar o lote, e a
+ * conclusão da ordem (via {@link AplicadorOrdens}, disparada por
+ * {@link VilaService#sincronizar}) criando as N unidades do lote — mesma
+ * premissa de {@code FazendaServiceTest} (Postgres real do
+ * {@code docker-compose}, {@code @Transactional(propagation = NOT_SUPPORTED)}
+ * porque {@code VilaService} usa uma transação {@code REQUIRES_NEW} genuína
+ * para criar a vila).
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -115,14 +117,22 @@ class QuartelServiceTest {
 		return vila;
 	}
 
-	private Item criarItem(Long vilaId, ModeloItem modelo, StatusItem status) {
+	private Item criarItem(Long vilaId, ModeloItem modelo, int nivel, StatusItem status) {
 		Item item = new Item();
 		item.setVilaId(vilaId);
 		item.setModelo(modelo);
-		item.setNivel(1);
+		item.setNivel(nivel);
 		item.setOrigem(OrigemItem.FORJA);
 		item.setStatus(status);
 		return itemRepository.saveAndFlush(item);
+	}
+
+	private List<Item> criarItens(Long vilaId, ModeloItem modelo, int nivel, StatusItem status, int quantidade) {
+		List<Item> itens = new ArrayList<>();
+		for (int i = 0; i < quantidade; i++) {
+			itens.add(criarItem(vilaId, modelo, nivel, status));
+		}
+		return itens;
 	}
 
 	private Unidade criarUnidade(Long vilaId, TipoTropa tipo, Long armaItemId, Long armaduraItemId) {
@@ -132,6 +142,11 @@ class QuartelServiceTest {
 		unidade.setArmaItemId(armaItemId);
 		unidade.setArmaduraItemId(armaduraItemId);
 		unidade.setStatus(StatusUnidade.DISPONIVEL);
+		// nome/sobrenome únicos por chamada (derivados do id da arma, sempre novo
+		// nesses testes) para não colidir com a unique constraint da vila.
+		unidade.setNome("Soldado" + armaItemId);
+		unidade.setSobrenome("Teste");
+		unidade.setOrdinalNome(1);
 		return unidadeRepository.saveAndFlush(unidade);
 	}
 
@@ -143,222 +158,255 @@ class QuartelServiceTest {
 	void quartelAbaixoDoMinimoRejeitaComRequisitoNaoAtendido() {
 		Usuario usuario = criarUsuario("quartel-baixo", "Ana");
 		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item arma = criarItem(vila.getId(), ModeloItem.ARCO, StatusItem.DISPONIVEL);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
+		criarItens(vila.getId(), ModeloItem.ARCO, 1, StatusItem.DISPONIVEL, 2);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 2);
 
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.ARQUEIRO, arma.getId(), armadura.getId()));
+		// ARQUEIRO exige quartel nível 2.
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.ARQUEIRO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 2));
 
 		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.REQUISITO_NAO_ATENDIDO);
 		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
 	}
 
 	@Test
-	void armaInexistenteRejeitaComItemIndisponivel() {
-		Usuario usuario = criarUsuario("arma-inexistente", "Bruno");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 999_999L, armadura.getId()));
-
-		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
-	}
-
-	@Test
-	void armaDeModeloErradoRejeitaComItemIndisponivel() {
-		Usuario usuario = criarUsuario("arma-modelo-errado", "Carla");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item arco = criarItem(vila.getId(), ModeloItem.ARCO, StatusItem.DISPONIVEL);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-
-		// SOLDADO exige ESPADA, não ARCO.
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, arco.getId(), armadura.getId()));
-
-		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
-	}
-
-	@Test
-	void armaReservadaRejeitaComItemIndisponivel() {
-		Usuario usuario = criarUsuario("arma-reservada", "Diego");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item espada = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.RESERVADO);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, espada.getId(), armadura.getId()));
-
-		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
-	}
-
-	@Test
-	void armaduraDeCategoriaErradaRejeitaComItemIndisponivel() {
+	void armaduraModeloDeCategoriaErradaRejeitaComItemIndisponivel() {
 		Usuario usuario = criarUsuario("armadura-categoria-errada", "Elisa");
 		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item espada = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item outraEspada = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 2);
 
-		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO,
-				espada.getId(), outraEspada.getId()));
-
-		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
-	}
-
-	@Test
-	void armaduraDeOutraVilaRejeitaComItemIndisponivel() {
-		Usuario usuario = criarUsuario("armadura-outra-vila", "Fabio");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-
-		Usuario outroUsuario = criarUsuario("armadura-outra-vila-dono", "Gustavo");
-		Vila outraVila = vilaService.obterParaAtualizacao(outroUsuario.getId());
-		Item armaduraDeOutraVila = criarItem(outraVila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-
-		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO,
-				arma.getId(), armaduraDeOutraVila.getId()));
+		// ESPADA é categoria ARMA, não ARMADURA.
+		RegraJogoException ex = assertRegra(
+				() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ESPADA, 1, 1));
 
 		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
+		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
 	}
 
 	@Test
 	void filaOcupadaRejeitaSegundaOrdemDeTreino() {
 		Usuario usuario = criarUsuario("fila-ocupada", "Helena");
 		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item arma1 = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item armadura1 = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, arma1.getId(), armadura1.getId());
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
+		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 1);
 
-		Item arma2 = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item armadura2 = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
 
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, arma2.getId(), armadura2.getId()));
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 1));
 
 		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.FILA_OCUPADA);
 		assertThat(ordemRepository.findByVilaId(vila.getId())).hasSize(1);
 	}
 
 	@Test
-	void capacidadeExercitoExcedidaRejeitaOrdem() {
+	void capacidadeExercitoExcedidaRejeitaLoteENadaMuda() {
 		Usuario usuario = criarUsuario("capacidade-excedida", "Ines");
-		// Quartel N1 -> capacidade 3. 3 unidades já ocupam todos os slots (as duas
-		// primeiras diretamente e a terceira simulando uma que veio de um treino já
-		// concluído), sem nenhuma ordem TREINO pendente.
+		// Quartel N1 -> capacidade 3. 3 unidades já ocupam todos os slots, sem
+		// nenhuma ordem TREINO pendente.
 		Vila vila = criarVilaComQuartel(usuario, 1);
 		for (int i = 0; i < 3; i++) {
-			Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.EQUIPADO);
-			Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.EQUIPADO);
+			Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.EQUIPADO);
+			Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.EQUIPADO);
 			criarUnidade(vila.getId(), TipoTropa.SOLDADO, arma.getId(), armadura.getId());
 		}
 
-		Item novaArma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item novaArmadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
+		List<Item> novasArmas = criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
 
-		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO,
-				novaArma.getId(), novaArmadura.getId()));
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 1));
 
 		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.CAPACIDADE_EXERCITO);
 		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
-		assertThat(itemRepository.findById(novaArma.getId()).orElseThrow().getStatus())
+		assertThat(itemRepository.findById(novasArmas.get(0).getId()).orElseThrow().getStatus())
 				.isEqualTo(StatusItem.DISPONIVEL);
 	}
 
 	@Test
-	void quartelNivel1Com2UnidadesAceitaTerceiroTreino() {
+	void quartelNivel1Com2UnidadesAceitaLoteDeUmAteCapacidade() {
 		Usuario usuario = criarUsuario("capacidade-limite", "Julia");
 		Vila vila = criarVilaComQuartel(usuario, 1);
 		for (int i = 0; i < 2; i++) {
-			Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.EQUIPADO);
-			Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.EQUIPADO);
+			Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.EQUIPADO);
+			Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.EQUIPADO);
 			criarUnidade(vila.getId(), TipoTropa.SOLDADO, arma.getId(), armadura.getId());
 		}
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
 
-		Item novaArma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item novaArmadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-
-		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, novaArma.getId(), novaArmadura.getId());
+		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 1);
 
 		assertThat(ordemRepository.findByVilaId(vila.getId())).hasSize(1);
+	}
+
+	@Test
+	void armasInsuficientesRejeitaComItemIndisponivelENadaMuda() {
+		Usuario usuario = criarUsuario("armas-insuficientes", "Bruno");
+		Vila vila = criarVilaComQuartel(usuario, 2);
+		long comidaInicial = vila.getComida();
+		List<Item> armas = criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 3);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 4);
+
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 4));
+
+		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
+		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
+		for (Item arma : armas) {
+			assertThat(itemRepository.findById(arma.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.DISPONIVEL);
+		}
+		assertThat(vilaService.obterParaAtualizacao(usuario.getId()).getComida()).isEqualTo(comidaInicial);
+	}
+
+	@Test
+	void armadurasInsuficientesRejeitaComItemIndisponivelENadaMuda() {
+		Usuario usuario = criarUsuario("armaduras-insuficientes", "Carla");
+		Vila vila = criarVilaComQuartel(usuario, 2);
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 4);
+		List<Item> armaduras = criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 3);
+
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 4));
+
+		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
+		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
+		for (Item armadura : armaduras) {
+			assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.DISPONIVEL);
+		}
+	}
+
+	@Test
+	void armaDeOutraVilaNaoContaParaDisponibilidade() {
+		Usuario usuario = criarUsuario("arma-outra-vila", "Fabio");
+		Vila vila = criarVilaComQuartel(usuario, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
+
+		Usuario outroUsuario = criarUsuario("arma-outra-vila-dono", "Gustavo");
+		Vila outraVila = vilaService.obterParaAtualizacao(outroUsuario.getId());
+		criarItens(outraVila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 5);
+
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1,
+				ModeloItem.ARMADURA_COURO, 1, 1));
+
+		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.ITEM_INDISPONIVEL);
 	}
 
 	@Test
 	void comidaInsuficienteRejeitaOrdemENaoAlteraItens() {
 		Usuario usuario = criarUsuario("comida-insuficiente", "Karla");
 		Vila vila = criarVilaComQuartel(usuario, 3);
-		vila.setComida(30_000L); // 30 comida (em milésimos); LANCEIRO exige 60.
+		vila.setComida(100_000L); // 100 comida; lote de 2 LANCEIRO custa 120 (60 cada).
 		vilaRepository.saveAndFlush(vila);
 
-		Item lanca = criarItem(vila.getId(), ModeloItem.LANCA, StatusItem.DISPONIVEL);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_FERRO, StatusItem.DISPONIVEL);
+		List<Item> lancas = criarItens(vila.getId(), ModeloItem.LANCA, 1, StatusItem.DISPONIVEL, 2);
+		List<Item> armaduras = criarItens(vila.getId(), ModeloItem.ARMADURA_FERRO, 1, StatusItem.DISPONIVEL, 2);
 
-		RegraJogoException ex = assertRegra(
-				() -> quartelService.treinar(usuario.getId(), TipoTropa.LANCEIRO, lanca.getId(), armadura.getId()));
+		RegraJogoException ex = assertRegra(() -> quartelService.treinar(usuario.getId(), TipoTropa.LANCEIRO, 1,
+				ModeloItem.ARMADURA_FERRO, 1, 2));
 
 		assertThat(ex.getCodigo()).isEqualTo(CodigoErro.RECURSOS_INSUFICIENTES);
-		assertThat(itemRepository.findById(lanca.getId()).orElseThrow().getStatus()).isEqualTo(StatusItem.DISPONIVEL);
-		assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
-				.isEqualTo(StatusItem.DISPONIVEL);
+		for (Item lanca : lancas) {
+			assertThat(itemRepository.findById(lanca.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.DISPONIVEL);
+		}
+		for (Item armadura : armaduras) {
+			assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.DISPONIVEL);
+		}
 		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
 	}
 
 	@Test
-	void treinarReservaArmaEArmaduraEDebitaComidaImediatamente() {
-		Usuario usuario = criarUsuario("reserva-debito", "Lucas");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		long comidaInicial = vila.getComida();
-		Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
+	void treinarLoteDeTresReservaItensEDebitaComidaImediatamente() {
+		Usuario usuario = criarUsuario("lote-valido", "Lucas");
+		Vila vila = criarVilaComQuartel(usuario, 2);
+		vila.setComida(200_000L); // 200 comida.
+		vilaRepository.saveAndFlush(vila);
 
-		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, arma.getId(), armadura.getId());
+		List<Item> armas = criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 3);
+		List<Item> armaduras = criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 4);
 
-		assertThat(itemRepository.findById(arma.getId()).orElseThrow().getStatus()).isEqualTo(StatusItem.RESERVADO);
-		assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
-				.isEqualTo(StatusItem.RESERVADO);
+		Ordem ordem = quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 3);
 
+		// SOLDADO custa 50 comida cada: 200 - 150 = 50.
 		Vila atualizada = vilaService.obterParaAtualizacao(usuario.getId());
-		// SOLDADO custa 50 comida (em milésimos: 50_000).
-		assertThat(atualizada.getComida()).isEqualTo(comidaInicial - 50_000L);
+		assertThat(atualizada.getComida()).isEqualTo(50_000L);
 
-		List<Ordem> ordens = ordemRepository.findByVilaId(vila.getId());
-		assertThat(ordens).hasSize(1);
-		Ordem ordem = ordens.get(0);
 		assertThat(ordem.getAlvo()).isEqualTo(TipoTropa.SOLDADO.name());
-		assertThat(ordem.getArmaItemId()).isEqualTo(arma.getId());
-		assertThat(ordem.getArmaduraItemId()).isEqualTo(armadura.getId());
-		assertThat(ordem.getConcluiEm()).isEqualTo(ordem.getIniciadaEm().plusSeconds(60));
+		assertThat(ordem.getQuantidade()).isEqualTo(3);
+		// SOLDADO leva 60s cada: ceil(60 * 3 / 1) = 180s.
+		assertThat(ordem.getConcluiEm()).isEqualTo(ordem.getIniciadaEm().plusSeconds(180));
+
+		for (Item arma : armas) {
+			Item recarregada = itemRepository.findById(arma.getId()).orElseThrow();
+			assertThat(recarregada.getStatus()).isEqualTo(StatusItem.RESERVADO);
+			assertThat(recarregada.getOrdemId()).isEqualTo(ordem.getId());
+		}
+		for (int i = 0; i < 3; i++) {
+			Item recarregada = itemRepository.findById(armaduras.get(i).getId()).orElseThrow();
+			assertThat(recarregada.getStatus()).isEqualTo(StatusItem.RESERVADO);
+			assertThat(recarregada.getOrdemId()).isEqualTo(ordem.getId());
+		}
+		// A 4ª armadura (não usada) permanece intocada.
+		Item armaduraSobra = itemRepository.findById(armaduras.get(3).getId()).orElseThrow();
+		assertThat(armaduraSobra.getStatus()).isEqualTo(StatusItem.DISPONIVEL);
+		assertThat(armaduraSobra.getOrdemId()).isNull();
+
 		assertThat(unidadeRepository.findByVilaId(vila.getId())).isEmpty();
 	}
 
 	@Test
-	void treinarUnidadeAoAvancarRelogioConcluiOrdemEEquipaItens() {
-		Usuario usuario = criarUsuario("conclusao-treino", "Marina");
-		Vila vila = criarVilaComQuartel(usuario, 1);
-		Item arma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item armadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
+	void treinarLoteAoAvancarRelogioConcluiOrdemECriaTresUnidadesComNomesSorteados() {
+		Usuario usuario = criarUsuario("lote-conclusao", "Marina");
+		Vila vila = criarVilaComQuartel(usuario, 2);
 
-		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, arma.getId(), armadura.getId());
+		List<Item> armas = criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 3);
+		List<Item> armaduras = criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 3);
 
-		relogio.avancar(Duration.ofSeconds(61));
+		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 3);
+
+		relogio.avancar(Duration.ofSeconds(181));
 		vilaService.obterParaAtualizacao(usuario.getId());
 
 		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
 
 		List<Unidade> unidades = unidadeRepository.findByVilaId(vila.getId());
-		assertThat(unidades).hasSize(1);
-		assertThat(unidades.get(0).getTipo()).isEqualTo(TipoTropa.SOLDADO);
-		assertThat(unidades.get(0).getStatus()).isEqualTo(StatusUnidade.DISPONIVEL);
-		assertThat(unidades.get(0).getArmaItemId()).isEqualTo(arma.getId());
-		assertThat(unidades.get(0).getArmaduraItemId()).isEqualTo(armadura.getId());
+		assertThat(unidades).hasSize(3);
+		assertThat(unidades).allSatisfy(unidade -> {
+			assertThat(unidade.getTipo()).isEqualTo(TipoTropa.SOLDADO);
+			assertThat(unidade.getStatus()).isEqualTo(StatusUnidade.DISPONIVEL);
+			assertThat(unidade.getOrdinalNome()).isEqualTo(1);
+			assertThat(unidade.getNome()).isNotBlank();
+			assertThat(unidade.getSobrenome()).isNotBlank();
+		});
 
-		assertThat(itemRepository.findById(arma.getId()).orElseThrow().getStatus()).isEqualTo(StatusItem.EQUIPADO);
-		assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
-				.isEqualTo(StatusItem.EQUIPADO);
+		// Cada unidade recebe exatamente 1 arma + 1 armadura do lote reservado.
+		List<Long> armaIdsEsperados = armas.stream().map(Item::getId).sorted().toList();
+		List<Long> armaduraIdsEsperados = armaduras.stream().map(Item::getId).sorted().toList();
+		List<Long> armaIdsObtidos = unidades.stream().map(Unidade::getArmaItemId).sorted().toList();
+		List<Long> armaduraIdsObtidos = unidades.stream().map(Unidade::getArmaduraItemId).sorted().toList();
+		assertThat(armaIdsObtidos).isEqualTo(armaIdsEsperados);
+		assertThat(armaduraIdsObtidos).isEqualTo(armaduraIdsEsperados);
+
+		for (Item arma : armas) {
+			Item recarregada = itemRepository.findById(arma.getId()).orElseThrow();
+			assertThat(recarregada.getStatus()).isEqualTo(StatusItem.EQUIPADO);
+			assertThat(recarregada.getOrdemId()).isNull();
+		}
+		for (Item armadura : armaduras) {
+			assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.EQUIPADO);
+		}
 
 		// Fila liberada: nova ordem de treino é aceita.
-		Item novaArma = criarItem(vila.getId(), ModeloItem.ESPADA, StatusItem.DISPONIVEL);
-		Item novaArmadura = criarItem(vila.getId(), ModeloItem.ARMADURA_COURO, StatusItem.DISPONIVEL);
-		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, novaArma.getId(), novaArmadura.getId());
+		criarItens(vila.getId(), ModeloItem.ESPADA, 1, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_COURO, 1, StatusItem.DISPONIVEL, 1);
+		quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 1);
 		assertThat(ordemRepository.findByVilaId(vila.getId())).hasSize(1);
 	}
 

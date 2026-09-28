@@ -23,12 +23,12 @@ import com.example.loginbase.jogo.catalogo.ModeloItem;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 
 /**
- * Testa o mapeamento JPA das 8 entidades do jogo contra o schema real de
- * {@code V3__jogo.sql} (Postgres do {@code docker-compose}, iniciado via
- * {@code make up}): grava/lê entidades, associa filhas à vila e verifica as
- * unique constraints. {@code replace = NONE} para usar o datasource real
- * (não substitui por um banco embarcado) e cada teste roda em transação com
- * rollback automático.
+ * Testa o mapeamento JPA das entidades do jogo contra o schema real de
+ * {@code V3__jogo.sql}/{@code V4__unidade_nome_e_lote_treino.sql} (Postgres
+ * do {@code docker-compose}, iniciado via {@code make up}): grava/lê
+ * entidades, associa filhas à vila e verifica as unique constraints.
+ * {@code replace = NONE} para usar o datasource real (não substitui por um
+ * banco embarcado) e cada teste roda em transação com rollback automático.
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -61,6 +61,9 @@ class RepositoriosJogoTest {
 
 	@Autowired
 	private BatalhaRepository batalhaRepository;
+
+	@Autowired
+	private ContadorNomeRepository contadorNomeRepository;
 
 	private Usuario criarUsuario(String email) {
 		Usuario usuario = new Usuario();
@@ -226,10 +229,139 @@ class RepositoriosJogoTest {
 		unidade.setArmaItemId(arma.getId());
 		unidade.setArmaduraItemId(armadura.getId());
 		unidade.setStatus(StatusUnidade.DISPONIVEL);
+		unidade.setNome("Ana");
+		unidade.setSobrenome("Silva");
+		unidade.setOrdinalNome(1);
 
 		Unidade salva = unidadeRepository.saveAndFlush(unidade);
 
 		assertThat(unidadeRepository.findById(salva.getId())).isPresent();
+	}
+
+	@Test
+	void deveGravarELerUnidadeComNomeESobrenome() {
+		Usuario usuario = criarUsuario("nome-unidade@teste.local");
+		Vila vila = criarVila(usuario.getId());
+
+		Item arma = new Item();
+		arma.setVilaId(vila.getId());
+		arma.setModelo(ModeloItem.ESPADA);
+		arma.setNivel(1);
+		arma.setOrigem(OrigemItem.FORJA);
+		arma.setStatus(StatusItem.EQUIPADO);
+		arma = itemRepository.saveAndFlush(arma);
+
+		Item armadura = new Item();
+		armadura.setVilaId(vila.getId());
+		armadura.setModelo(ModeloItem.ARMADURA_COURO);
+		armadura.setNivel(1);
+		armadura.setOrigem(OrigemItem.FORJA);
+		armadura.setStatus(StatusItem.EQUIPADO);
+		armadura = itemRepository.saveAndFlush(armadura);
+
+		Unidade unidade = new Unidade();
+		unidade.setVilaId(vila.getId());
+		unidade.setTipo(com.example.loginbase.jogo.catalogo.TipoTropa.SOLDADO);
+		unidade.setArmaItemId(arma.getId());
+		unidade.setArmaduraItemId(armadura.getId());
+		unidade.setStatus(StatusUnidade.DISPONIVEL);
+		unidade.setNome("Ana");
+		unidade.setSobrenome("Silva");
+		unidade.setOrdinalNome(1);
+		Unidade salva = unidadeRepository.saveAndFlush(unidade);
+
+		Optional<Unidade> encontrada = unidadeRepository.findById(salva.getId());
+		assertThat(encontrada).isPresent();
+		assertThat(encontrada.get().getNome()).isEqualTo("Ana");
+		assertThat(encontrada.get().getSobrenome()).isEqualTo("Silva");
+		assertThat(encontrada.get().getOrdinalNome()).isEqualTo(1);
+	}
+
+	@Test
+	void nomeExibicaoFormataComOuSemSufixoOrdinal() {
+		Unidade primeira = new Unidade();
+		primeira.setNome("Ana");
+		primeira.setSobrenome("Silva");
+		primeira.setOrdinalNome(1);
+		assertThat(primeira.nomeExibicao()).isEqualTo("Ana Silva");
+
+		Unidade segunda = new Unidade();
+		segunda.setNome("Ana");
+		segunda.setSobrenome("Silva");
+		segunda.setOrdinalNome(2);
+		assertThat(segunda.nomeExibicao()).isEqualTo("Ana Silva (2)");
+	}
+
+	@Test
+	void deveGravarItemComOrdemIdERecuperarPorOrdemId() {
+		Usuario usuario = criarUsuario("item-ordem@teste.local");
+		Vila vila = criarVila(usuario.getId());
+
+		Ordem ordem = new Ordem();
+		ordem.setVilaId(vila.getId());
+		ordem.setCategoria(CategoriaOrdem.TREINO);
+		ordem.setAlvo(com.example.loginbase.jogo.catalogo.TipoTropa.SOLDADO.name());
+		ordem.setQuantidade(1);
+		ordem.setIniciadaEm(Instant.now());
+		ordem.setConcluiEm(Instant.now().plusSeconds(60));
+		ordem = ordemRepository.saveAndFlush(ordem);
+
+		Item item = new Item();
+		item.setVilaId(vila.getId());
+		item.setModelo(ModeloItem.ESPADA);
+		item.setNivel(1);
+		item.setOrigem(OrigemItem.FORJA);
+		item.setStatus(StatusItem.RESERVADO);
+		item.setOrdemId(ordem.getId());
+		item = itemRepository.saveAndFlush(item);
+
+		Optional<Item> encontrado = itemRepository.findById(item.getId());
+		assertThat(encontrado).isPresent();
+		assertThat(encontrado.get().getOrdemId()).isEqualTo(ordem.getId());
+		assertThat(itemRepository.findByOrdemId(ordem.getId())).extracting(Item::getId)
+				.containsExactly(item.getId());
+		assertThat(itemRepository.findByOrdemIdOrderById(ordem.getId())).extracting(Item::getId)
+				.containsExactly(item.getId());
+	}
+
+	@Test
+	void deveGravarELerContadorNomePorVilaNomeESobrenome() {
+		Usuario usuario = criarUsuario("contador-nome@teste.local");
+		Vila vila = criarVila(usuario.getId());
+
+		ContadorNome contador = new ContadorNome();
+		contador.setVilaId(vila.getId());
+		contador.setNome("Ana");
+		contador.setSobrenome("Silva");
+		contador.setUltimoOrdinal(1);
+		contadorNomeRepository.saveAndFlush(contador);
+
+		Optional<ContadorNome> encontrado = contadorNomeRepository.findByVilaIdAndNomeAndSobrenome(vila.getId(), "Ana",
+				"Silva");
+		assertThat(encontrado).isPresent();
+		assertThat(encontrado.get().getUltimoOrdinal()).isEqualTo(1);
+	}
+
+	@Test
+	void deveRespeitarUniqueConstraintDeContadorNomePorVilaNomeESobrenome() {
+		Usuario usuario = criarUsuario("unique-contador-nome@teste.local");
+		Vila vila = criarVila(usuario.getId());
+
+		ContadorNome primeiro = new ContadorNome();
+		primeiro.setVilaId(vila.getId());
+		primeiro.setNome("Ana");
+		primeiro.setSobrenome("Silva");
+		primeiro.setUltimoOrdinal(1);
+		contadorNomeRepository.saveAndFlush(primeiro);
+
+		ContadorNome duplicado = new ContadorNome();
+		duplicado.setVilaId(vila.getId());
+		duplicado.setNome("Ana");
+		duplicado.setSobrenome("Silva");
+		duplicado.setUltimoOrdinal(2);
+
+		assertThatThrownBy(() -> contadorNomeRepository.saveAndFlush(duplicado))
+				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
 	@Test

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import com.example.loginbase.jogo.catalogo.Cultivo;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoTropa;
+import com.example.loginbase.jogo.config.AleatorioNomes;
 import com.example.loginbase.jogo.config.JogoProperties;
 import com.example.loginbase.jogo.dominio.Canteiro;
 import com.example.loginbase.jogo.dominio.CanteiroRepository;
@@ -43,6 +45,9 @@ import com.example.loginbase.jogo.dominio.Unidade;
 import com.example.loginbase.jogo.dominio.UnidadeRepository;
 import com.example.loginbase.jogo.dominio.Vila;
 import com.example.loginbase.jogo.dominio.VilaRepository;
+import com.example.loginbase.jogo.quartel.GeradorNomes;
+import com.example.loginbase.jogo.quartel.NumeradorNomes;
+import com.example.loginbase.jogo.suporte.AleatorioSequencia;
 import com.example.loginbase.jogo.suporte.JogoTestConfig;
 import com.example.loginbase.jogo.suporte.RelogioAjustavel;
 
@@ -105,6 +110,9 @@ class VilaServiceTest {
 
 	@Autowired
 	private RelogioAjustavel relogio;
+
+	@Autowired
+	private NumeradorNomes numeradorNomes;
 
 	/**
 	 * @param prefixoEmail identificador curto do cenário (ex.: {@code "criacao"}); um sufixo
@@ -288,11 +296,14 @@ class VilaServiceTest {
 		ordem.setCategoria(CategoriaOrdem.TREINO);
 		ordem.setAlvo(TipoTropa.SOLDADO.name());
 		ordem.setQuantidade(1);
-		ordem.setArmaItemId(arma.getId());
-		ordem.setArmaduraItemId(armadura.getId());
 		ordem.setIniciadaEm(agora);
 		ordem.setConcluiEm(agora.plusSeconds(60));
-		ordemRepository.saveAndFlush(ordem);
+		ordem = ordemRepository.saveAndFlush(ordem);
+
+		arma.setOrdemId(ordem.getId());
+		itemRepository.saveAndFlush(arma);
+		armadura.setOrdemId(ordem.getId());
+		itemRepository.saveAndFlush(armadura);
 
 		relogio.avancar(Duration.ofMinutes(2));
 		vilaService.obterParaAtualizacao(usuario.getId());
@@ -305,6 +316,155 @@ class VilaServiceTest {
 		assertThat(itemRepository.findById(arma.getId()).orElseThrow().getStatus()).isEqualTo(StatusItem.EQUIPADO);
 		assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
 				.isEqualTo(StatusItem.EQUIPADO);
+	}
+
+	@Test
+	void ordemDeTreinoEmLoteVencidaCriaVariasUnidadesEEquipaItens() {
+		Usuario usuario = criarUsuario("ordem-treino-lote", "Julia");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+
+		List<Item> armas = new ArrayList<>();
+		List<Item> armaduras = new ArrayList<>();
+		for (int i = 0; i < 3; i++) {
+			Item arma = new Item();
+			arma.setVilaId(vila.getId());
+			arma.setModelo(ModeloItem.ESPADA);
+			arma.setNivel(1);
+			arma.setOrigem(OrigemItem.FORJA);
+			arma.setStatus(StatusItem.DISPONIVEL);
+			armas.add(itemRepository.saveAndFlush(arma));
+
+			Item armadura = new Item();
+			armadura.setVilaId(vila.getId());
+			armadura.setModelo(ModeloItem.ARMADURA_COURO);
+			armadura.setNivel(1);
+			armadura.setOrigem(OrigemItem.FORJA);
+			armadura.setStatus(StatusItem.DISPONIVEL);
+			armaduras.add(itemRepository.saveAndFlush(armadura));
+		}
+
+		Instant agora = relogio.instant();
+		Ordem ordem = new Ordem();
+		ordem.setVilaId(vila.getId());
+		ordem.setCategoria(CategoriaOrdem.TREINO);
+		ordem.setAlvo(TipoTropa.SOLDADO.name());
+		ordem.setQuantidade(3);
+		ordem.setIniciadaEm(agora);
+		ordem.setConcluiEm(agora.plusSeconds(180));
+		ordem = ordemRepository.saveAndFlush(ordem);
+
+		for (Item arma : armas) {
+			arma.setOrdemId(ordem.getId());
+			itemRepository.saveAndFlush(arma);
+		}
+		for (Item armadura : armaduras) {
+			armadura.setOrdemId(ordem.getId());
+			itemRepository.saveAndFlush(armadura);
+		}
+
+		relogio.avancar(Duration.ofMinutes(4));
+		vilaService.obterParaAtualizacao(usuario.getId());
+
+		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
+
+		List<Unidade> unidades = unidadeRepository.findByVilaId(vila.getId());
+		assertThat(unidades).hasSize(3);
+		assertThat(unidades).allSatisfy(unidade -> {
+			assertThat(unidade.getTipo()).isEqualTo(TipoTropa.SOLDADO);
+			assertThat(unidade.getStatus()).isEqualTo(StatusUnidade.DISPONIVEL);
+			assertThat(unidade.getOrdinalNome()).isEqualTo(1);
+		});
+
+		List<Long> armaIdsEsperados = armas.stream().map(Item::getId).sorted().toList();
+		List<Long> armaIdsObtidos = unidades.stream().map(Unidade::getArmaItemId).sorted().toList();
+		assertThat(armaIdsObtidos).isEqualTo(armaIdsEsperados);
+
+		for (Item arma : armas) {
+			assertThat(itemRepository.findById(arma.getId()).orElseThrow().getStatus()).isEqualTo(StatusItem.EQUIPADO);
+		}
+		for (Item armadura : armaduras) {
+			assertThat(itemRepository.findById(armadura.getId()).orElseThrow().getStatus())
+					.isEqualTo(StatusItem.EQUIPADO);
+		}
+	}
+
+	@Test
+	void mesmoParNoLoteRecebeOrdinaisEmOrdemDeIdDaArma() {
+		Usuario usuario = criarUsuario("ordinal-lote", "Karen");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+
+		Item arma1 = new Item();
+		arma1.setVilaId(vila.getId());
+		arma1.setModelo(ModeloItem.ESPADA);
+		arma1.setNivel(1);
+		arma1.setOrigem(OrigemItem.FORJA);
+		arma1.setStatus(StatusItem.DISPONIVEL);
+		arma1 = itemRepository.saveAndFlush(arma1);
+
+		Item armadura1 = new Item();
+		armadura1.setVilaId(vila.getId());
+		armadura1.setModelo(ModeloItem.ARMADURA_COURO);
+		armadura1.setNivel(1);
+		armadura1.setOrigem(OrigemItem.FORJA);
+		armadura1.setStatus(StatusItem.DISPONIVEL);
+		armadura1 = itemRepository.saveAndFlush(armadura1);
+
+		Item arma2 = new Item();
+		arma2.setVilaId(vila.getId());
+		arma2.setModelo(ModeloItem.ESPADA);
+		arma2.setNivel(1);
+		arma2.setOrigem(OrigemItem.FORJA);
+		arma2.setStatus(StatusItem.DISPONIVEL);
+		arma2 = itemRepository.saveAndFlush(arma2);
+
+		Item armadura2 = new Item();
+		armadura2.setVilaId(vila.getId());
+		armadura2.setModelo(ModeloItem.ARMADURA_COURO);
+		armadura2.setNivel(1);
+		armadura2.setOrigem(OrigemItem.FORJA);
+		armadura2.setStatus(StatusItem.DISPONIVEL);
+		armadura2 = itemRepository.saveAndFlush(armadura2);
+
+		Instant agora = relogio.instant();
+		Ordem ordem = new Ordem();
+		ordem.setVilaId(vila.getId());
+		ordem.setCategoria(CategoriaOrdem.TREINO);
+		ordem.setAlvo(TipoTropa.SOLDADO.name());
+		ordem.setQuantidade(2);
+		ordem.setIniciadaEm(agora);
+		ordem.setConcluiEm(agora.plusSeconds(120));
+		ordem = ordemRepository.saveAndFlush(ordem);
+
+		for (Item item : List.of(arma1, armadura1, arma2, armadura2)) {
+			item.setOrdemId(ordem.getId());
+			itemRepository.saveAndFlush(item);
+		}
+
+		// Aplicador próprio com sorteio determinístico (índice 0 duas vezes):
+		// força o mesmo par nome-sobrenome nas duas unidades do lote, para
+		// validar a ordem dos ordinais (arma de menor id primeiro, design.md
+		// D11), sem depender do GeradorNomes aleatório compartilhado pelo
+		// contexto Spring do teste.
+		GeradorNomes geradorNomesFixo = new GeradorNomes(new AleatorioNomes(new AleatorioSequencia(0, 0, 0, 0)));
+		AplicadorOrdens aplicadorComNomesFixos = new AplicadorOrdens(predioRepository, canteiroRepository,
+				itemRepository, unidadeRepository, geradorNomesFixo, numeradorNomes);
+		aplicadorComNomesFixos.aplicar(ordem, vila);
+
+		long arma1Id = arma1.getId();
+		long arma2Id = arma2.getId();
+		Unidade unidadeArmaMenorId = unidadeRepository.findByVilaId(vila.getId()).stream()
+				.filter(unidade -> unidade.getArmaItemId().equals(arma1Id))
+				.findFirst()
+				.orElseThrow();
+		Unidade unidadeArmaMaiorId = unidadeRepository.findByVilaId(vila.getId()).stream()
+				.filter(unidade -> unidade.getArmaItemId().equals(arma2Id))
+				.findFirst()
+				.orElseThrow();
+
+		assertThat(unidadeArmaMenorId.getNome()).isEqualTo(unidadeArmaMaiorId.getNome());
+		assertThat(unidadeArmaMenorId.getSobrenome()).isEqualTo(unidadeArmaMaiorId.getSobrenome());
+		assertThat(unidadeArmaMenorId.getOrdinalNome()).isEqualTo(1);
+		assertThat(unidadeArmaMaiorId.getOrdinalNome()).isEqualTo(2);
 	}
 
 	@Test

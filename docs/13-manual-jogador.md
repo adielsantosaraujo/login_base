@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
 | Modelo/norma | Diátaxis (tutorial + how-to) |
 | Público | jogador final (linguagem acessível) |
 | Fontes | `frontend/src/views/*.vue`; `src/main/resources/templates/sistema/public/login.html`; `jogo/CodigoErro.java`; `openspec/changes/archive/2026-09-27-add-city-builder-game/design.md` §3–§11 |
@@ -84,15 +84,36 @@ Você vai precisar de armas e tropas para vencer a masmorra. A Forja exige Mina 
    - Quantidade: 1.
    - Clique em **Forjar**.
 
-### Passo 6: Treine um Soldado no Quartel
+### Passo 6: Treine Soldados em Lote no Quartel
 
 1. **Vá para "Quartel".**
-2. **Treine 1 Soldado:**
-   - A tela mostra "Treinar Soldado".
-   - Selecione a Espada N1 que você forjou.
-   - Selecione a Armadura de Couro N1.
-   - Clique em **Treinar**.
-3. **Aguarde a conclusão** (60 segundos).
+2. **Configura o treino:**
+   - Selecione o tipo: **SOLDADO**.
+   - Selecione o **Nível da Arma**: 1 (Espada N1 exigida para Soldado).
+   - Selecione o **Modelo de Armadura**: "Couro" (recomendado) ou "Ferro".
+   - Selecione o **Nível da Armadura**: 1.
+   - **Quantidade**: Digite "1" para começar com 1 unidade.
+   - Dica: Clique em **"Máx."** para calcular o máximo que você pode treinar (com os recursos atuais).
+3. **Clique em "Treinar".**
+4. **Aguarde a conclusão** (60 segundos por unidade, ajustado pela velocidade do jogo).
+
+### Passo 6A: Conheça os Nomes das Suas Tropas
+
+Cada soldado recebe um **nome** e **sobrenome** ao ser treinado:
+- Exemplo: "Ana Silva", "Pedro Santos", "Maria Oliveira".
+- **Nomes repetidos**: Se você treina outro "Ana Silva", ela será exibida como **"Ana Silva (2)"**, a próxima como **"Ana Silva (3)"** (sufixo ordinal).
+- A contagem de nomes é **histórica e por vila**: mesmo que um soldado morra, o contador não volta (preserva a história da sua vila).
+
+### Passo 6B: Veja os Detalhes de um Soldado
+
+1. **Na lista de soldados do Quartel**, clique no **nome** de qualquer soldado.
+2. **Abre a tela de detalhe** com:
+   - **Nome exibido** (com sufixo se repetido): ex., "Ana Silva (2)".
+   - **Atributos**: HP, Ataque, Defesa, Alcance, Movimento.
+   - **9 Slots de Equipamento**: 
+     - ARMA e ARMADURA (preenchidos com o que você selecionou).
+     - CABEÇA, BOTA, LUVA, COLAR, ANEL_1, ANEL_2, ANEL_3 (vazios no futuro).
+   - **Botão "Trocar"** em cada slot preenchido (Arma e Armadura) para substituir por outro item `DISPONIVEL` (exceto em masmorra).
 
 ### Passo 7: Entre na Masmorra 1
 

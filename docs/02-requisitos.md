@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` com change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
 | Modelo/norma | ISO/IEC/IEEE 29148:2018 (SRS) + ISO/IEC 25010:2023 (RNF) |
 | Público | Desenvolvedores, QA, revisores |
-| Fontes | 16 arquivos de spec OpenSpec (7 changes implementadas); designs das changes; código em jogo/; jogo/CodigoErro.java; `openspec/changes/add-frontend-build/` (proposal, design, specs, implementada) |
+| Fontes | 16 arquivos de spec OpenSpec (8 changes implementadas); designs das changes; código em jogo/; jogo/CodigoErro.java; `openspec/changes/add-soldier-names-batch-slots/` (proposal, design, specs, implementada) |
 
 > Parte da [documentação do login_base](README.md). Requisitos funcionais, não funcionais e regras de negócio do sistema.
 
@@ -156,9 +156,9 @@ Fonte: [`openspec/specs/frontend-app/spec.md`](../openspec/specs/frontend-app/sp
 | RF-FRE-005 | Página inicial do jogo exibindo vila (substitui "Página inicial de boas-vindas") | Obrigatório | Demonstração: `/` → vila | 1 | **ADICIONADO** + **REMOVIDO** (página de boas-vindas) |
 | RF-FRE-006 | Proxy de desenvolvimento para backend: `/api`, `/login`, `/logout`, `/css`, `/js`, `/images` → `BACKEND_URL` | Obrigatório | Inspeção: vite.config.ts | 1 | **ADICIONADO** |
 | RF-FRE-007 | Roteamento em history mode (não hash); rotas: `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/:id` | Obrigatório | Demonstração + inspeção: router/index.ts | 1 | **ADICIONADO** |
-| RF-FRE-008 | **ADICIONADO (add-frontend-build)**: Build de produção integrado ao backend via script Python `scripts/build_front.py`; comando `make build_front` executa via Docker Compose, valida saída, copia assets para `static/app/` e `index.html` para template | Obrigatório | Demonstração: `make build_front` exit 0 | 3 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
-| RF-FRE-009 | **ADICIONADO (add-frontend-build)**: Rotas da SPA servidas pelo backend (história do browser permite recarregar página interna `/fazenda` diretamente) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 2 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
-| RF-FRE-010 | **ADICIONADO (add-frontend-build)**: Assets do frontend públicos em `/app/**` (acessíveis sem autenticação) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 1 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/changes/add-frontend-build/specs/frontend-app/spec.md) |
+| RF-FRE-008 | **ADICIONADO (add-frontend-build)**: Build de produção integrado ao backend via script Python `scripts/build_front.py`; comando `make build_front` executa via Docker Compose, valida saída, copia assets para `static/app/` e `index.html` para template | Obrigatório | Demonstração: `make build_front` exit 0 | 3 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/specs/frontend-app/spec.md) |
+| RF-FRE-009 | **ADICIONADO (add-frontend-build)**: Rotas da SPA servidas pelo backend (história do browser permite recarregar página interna `/fazenda` diretamente) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 2 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/specs/frontend-app/spec.md) |
+| RF-FRE-010 | **ADICIONADO (add-frontend-build)**: Assets do frontend públicos em `/app/**` (acessíveis sem autenticação) | Obrigatório | Teste: `AutenticacaoWebMvcTest` modificado | 1 | **ADICIONADO (add-frontend-build)**: [spec delta](../openspec/specs/frontend-app/spec.md) |
 
 ### 3.5 Workflow de Desenvolvimento (PRC)
 
@@ -247,11 +247,16 @@ Fonte: delta [`openspec/specs/game-army/spec.md`](../openspec/specs/game-army/sp
 | ID | Requisito | Prioridade | Verificação | Cenários |
 |---|---|---|---|---|
 | RF-EXE-001 | 3 tipos de tropa (SOLDADO, ARQUEIRO, LANCEIRO) com atributos derivados de arma+armadura (HP, ataque, defesa, alcance, movimento) | Obrigatório | Teste: `QuartelServiceTest` | 2 |
-| RF-EXE-002 | Treino consome arma e armadura no início; validação de disponibilidade | Obrigatório | Teste: `QuartelServiceTest` | 1 |
-| RF-EXE-003 | Validação: tipo válido, armaId ≥1, armaduraId ≥1, itens existem, não reservados | Obrigatório | Teste: `QuartelServiceTest` | 1 |
+| RF-EXE-002 | Treino consome armas e armaduras (quantidade N) reservadas no início; validação de disponibilidade e compatibilidade | Obrigatório | Teste: `QuartelServiceTest` | 1 |
+| RF-EXE-003 | Validação: tipo válido, armaNível 1–5, armaduraModelo/Nível válidos, quantidade 1–15, itens suficientes, não reservados/equipados | Obrigatório | Teste: `QuartelServiceTest` | 2 |
 | RF-EXE-004 | Tropas liberadas (acesso) conforme nível do quartel | Obrigatório | Teste: `QuartelServiceTest` | 1 |
-| RF-EXE-005 | Capacidade do exército escalonada (N = nível quartel, cap = `3×N`); nova tropa rejeita se no máximo | Obrigatório | Teste: `QuartelServiceTest` | 1 |
+| RF-EXE-005 | Capacidade do exército escalonada: cap = `3 × nível_quartel − unidades_vivas − Σ quantidade_ordens_TREINO`; nova ordem rejeita se quantidade > capacidade | Obrigatório | Teste: `QuartelServiceTest` | 2 |
 | RF-EXE-006 | Uma ordem de treino por vez (`CategoriaOrdem.TREINO`); fila de 1 | Obrigatório | Teste: `QuartelServiceTest` | 1 |
+| RF-EXE-007 | Nomes e sobrenomes: par sorteado ao treino, sufixo ordinal para duplicatas (`"Ana Silva (2)"`); contagem por vila, histórica (inclui mortas pré-V4); ordinal único com (vila_id, nome, sobrenome) | Obrigatório | Teste: `NumeradorNomesTest`, `VilaServiceTest` | 2 |
+| RF-EXE-008 | Treino em lote: quantidade (1–15) selecionada; nível arma/armadura e modelo configuráveis; botão "Máx." calcula máximo treinável; validações e rejeição 422 se insuficiente | Obrigatório | Teste: `QuartelServiceTest`, demonstração frontend | 2 |
+| RF-EXE-009 | Tela de detalhe (`/quartel/unidades/{id}`): exibição de 9 slots de equipamento (ARMA, ARMADURA, CABECA, BOTA, LUVA, COLAR, ANEL_1/2/3); troca de Arma/Armadura em slots preenchidos; slots futuros vazios; bloqueado em masmorra; nome clicável na lista abre detalhe | Obrigatório | Teste: `AcoesVilaControllerWebMvcTest`, demonstração frontend | 2 |
+| RF-EXE-010 | Sufixo ordinal para nomes repetidos: contagem por vila/nome, histórica, ordem determinística no lote; `NumeradorNomes.proximoOrdinal()` incrementa contador persistido; sem decremento em morte | Obrigatório | Teste: `NumeradorNomesTest`, `VilaServiceTest` | 1 |
+| RF-EXE-011 | Troca de Arma/Armadura: POST `/api/jogo/unidades/{id}/equipamento` {slot, itemId}; item antigo → DISPONIVEL, novo → EQUIPADO; bloqueado se `EM_MASMORRA` (422 UNIDADE_EM_MASMORRA); arma/armadura obrigatórias (sem desequipar) | Obrigatório | Teste: `EquipamentoServiceTest`, `AcoesVilaControllerWebMvcTest` | 2 |
 
 ### 3.12 Masmorras (COM)
 
@@ -364,8 +369,10 @@ Fonte: delta [`openspec/specs/game-frontend/spec.md`](../openspec/specs/game-fro
 
 1. Tropas liberadas conforme nível do quartel (ex.: LANCEIRO requer quartel ≥3).
 2. Atributos derivados: HP/ataque/defesa/alcance do tipo + modificadores da arma/armadura.
-3. Capacidade exército = `3 × nível quartel`; exceder = rejeição.
-4. Treino consome 1 arma + 1 armadura (validação de disponibilidade).
+3. Capacidade exército = `3 × nível quartel − unidades_vivas − Σ quantidade_ordens_TREINO_em_andamento`; exceder = rejeição 422 CAPACIDADE_EXERCITO.
+4. Treino em lote: N armas (modelo exigido pelo tipo, nível exato) + N armaduras (modelo/nível exato) reservadas no início; quantidade 1–15.
+5. Nomes: cada unidade recebe nome + sobrenome sorteados de listas; nomes duplicados ganham sufixo ordinal ("Ana Silva (2)"); contagem por vila, histórica (não decrementa com morte).
+6. Troca de equipamento (Arma/Armadura): POST `/api/jogo/unidades/{id}/equipamento`; proibida se `EM_MASMORRA`; item antigo → DISPONIVEL, novo → EQUIPADO; sem desequipar.
 
 ### RN-COM: Combate
 

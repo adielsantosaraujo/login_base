@@ -32,11 +32,15 @@ import com.example.loginbase.jogo.RecursoNaoEncontradoException;
 import com.example.loginbase.jogo.RegraJogoException;
 import com.example.loginbase.jogo.catalogo.Cultivo;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
+import com.example.loginbase.jogo.catalogo.SlotEquipamento;
 import com.example.loginbase.jogo.catalogo.TipoTropa;
 import com.example.loginbase.jogo.config.Aleatorio;
+import com.example.loginbase.jogo.config.AleatorioNomes;
+import com.example.loginbase.jogo.config.AleatorioPadrao;
 import com.example.loginbase.jogo.config.JogoProperties;
 import com.example.loginbase.jogo.dominio.Batalha;
 import com.example.loginbase.jogo.dominio.BatalhaRepository;
+import com.example.loginbase.jogo.dominio.ContadorNomeRepository;
 import com.example.loginbase.jogo.dominio.EstoqueSemente;
 import com.example.loginbase.jogo.dominio.EstoqueSementeRepository;
 import com.example.loginbase.jogo.dominio.Item;
@@ -55,6 +59,9 @@ import com.example.loginbase.jogo.masmorra.combate.AcaoCombate;
 import com.example.loginbase.jogo.masmorra.combate.Combatente;
 import com.example.loginbase.jogo.masmorra.combate.EstadoBatalha;
 import com.example.loginbase.jogo.masmorra.combate.Posicao;
+import com.example.loginbase.jogo.quartel.EquipamentoService;
+import com.example.loginbase.jogo.quartel.GeradorNomes;
+import com.example.loginbase.jogo.quartel.NumeradorNomes;
 import com.example.loginbase.jogo.suporte.RelogioAjustavel;
 
 /**
@@ -87,7 +94,8 @@ import com.example.loginbase.jogo.suporte.RelogioAjustavel;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @Import({ AuditoriaConfig.class, UsuarioAuditorAware.class, MasmorraServiceTest.MasmorraTestConfig.class,
-		JogoProperties.class, VilaService.class, AplicadorOrdens.class, MasmorraService.class })
+		JogoProperties.class, VilaService.class, AplicadorOrdens.class, MasmorraService.class,
+		EquipamentoService.class })
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class MasmorraServiceTest {
 
@@ -102,6 +110,24 @@ class MasmorraServiceTest {
 		@Bean
 		AleatorioControlavel aleatorio() {
 			return new AleatorioControlavel();
+		}
+
+		// AplicadorOrdens (importado abaixo) depende de GeradorNomes desde a task
+		// 2.1 e de NumeradorNomes desde a task 2.5; este teste não exercita a
+		// conclusão de treino, mas o contexto Spring precisa dos beans para subir.
+		@Bean
+		AleatorioNomes aleatorioNomes() {
+			return new AleatorioNomes(new AleatorioPadrao());
+		}
+
+		@Bean
+		GeradorNomes geradorNomes(AleatorioNomes aleatorioNomes) {
+			return new GeradorNomes(aleatorioNomes);
+		}
+
+		@Bean
+		NumeradorNomes numeradorNomes(ContadorNomeRepository contadorNomeRepository) {
+			return new NumeradorNomes(contadorNomeRepository);
 		}
 
 	}
@@ -136,6 +162,9 @@ class MasmorraServiceTest {
 
 	@Autowired
 	private MasmorraService masmorraService;
+
+	@Autowired
+	private EquipamentoService equipamentoService;
 
 	@Autowired
 	private VilaService vilaService;
@@ -190,6 +219,11 @@ class MasmorraServiceTest {
 		unidade.setArmaItemId(arma.getId());
 		unidade.setArmaduraItemId(armadura.getId());
 		unidade.setStatus(StatusUnidade.DISPONIVEL);
+		// nome/sobrenome únicos por chamada (derivados do id da arma, sempre novo
+		// nesses testes) para não colidir com a unique constraint da vila.
+		unidade.setNome("Soldado" + arma.getId());
+		unidade.setSobrenome("Teste");
+		unidade.setOrdinalNome(1);
 		return unidadeRepository.saveAndFlush(unidade);
 	}
 
@@ -438,6 +472,117 @@ class MasmorraServiceTest {
 				.isInstanceOf(RegraJogoException.class)
 				.extracting(e -> ((RegraJogoException) e).getCodigo())
 				.isEqualTo(CodigoErro.BATALHA_ENCERRADA);
+	}
+
+	/**
+	 * Cobre a iteração por {@link com.example.loginbase.jogo.catalogo.SlotEquipamento}
+	 * (task 2.3): com duas unidades mortas, os itens dos dois slots com dados
+	 * (arma e armadura) de cada uma são destruídos, e a passagem pelos 7
+	 * slots futuros (ainda sem persistência) não lança erro.
+	 */
+	@Test
+	void agirNaDerrotaDestroiItensDeTodosOsSlotsOcupadosDoEsquadraoSemErroNosSlotsFuturos() {
+		Usuario usuario = criarUsuario("derrota-slots", "Sonia");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		Unidade u1 = criarUnidadeDisponivel(vila.getId(), TipoTropa.SOLDADO, ModeloItem.ESPADA,
+				ModeloItem.ARMADURA_COURO, 1);
+		Unidade u2 = criarUnidadeDisponivel(vila.getId(), TipoTropa.ARQUEIRO, ModeloItem.ARCO,
+				ModeloItem.ARMADURA_COURO, 1);
+		Long armaId1 = u1.getArmaItemId();
+		Long armaduraId1 = u1.getArmaduraItemId();
+		Long armaId2 = u2.getArmaItemId();
+		Long armaduraId2 = u2.getArmaduraItemId();
+
+		Batalha batalha = masmorraService.iniciar(usuario.getId(), 1, List.of(u1.getId(), u2.getId()));
+		EstadoBatalha original = lerEstado(batalha);
+		Combatente j1Original = original.buscar("J1").orElseThrow();
+		Combatente j2Original = original.buscar("J2").orElseThrow();
+		Combatente i1Original = original.buscar("I1").orElseThrow();
+		Combatente i2Original = original.buscar("I2").orElseThrow();
+
+		// J1 e J2 a um golpe do fim (1 HP cada); I1 e I2 (goblins, alcance 1)
+		// posicionados um adjacente a cada um, cada qual mirando o jogador
+		// mais próximo (regra de escolherAlvo) — um único encerrarTurno mata
+		// as duas unidades do jogador de uma vez.
+		Combatente j1QuaseMorto = new Combatente(j1Original.id(), j1Original.lado(), j1Original.tipoOuUnidade(),
+				new Posicao(0, 0), 1, j1Original.hpMax(), j1Original.ataque(), j1Original.defesa(),
+				j1Original.alcance(), j1Original.movimento(), false, false, false, true);
+		Combatente j2QuaseMorto = new Combatente(j2Original.id(), j2Original.lado(), j2Original.tipoOuUnidade(),
+				new Posicao(0, 3), 1, j2Original.hpMax(), j2Original.ataque(), j2Original.defesa(),
+				j2Original.alcance(), j2Original.movimento(), false, false, false, true);
+		Combatente i1Pronto = new Combatente(i1Original.id(), i1Original.lado(), i1Original.tipoOuUnidade(),
+				new Posicao(0, 1), i1Original.hpMax(), i1Original.hpMax(), i1Original.ataque(), i1Original.defesa(),
+				i1Original.alcance(), i1Original.movimento(), false, false, false, true);
+		Combatente i2Pronto = new Combatente(i2Original.id(), i2Original.lado(), i2Original.tipoOuUnidade(),
+				new Posicao(0, 2), i2Original.hpMax(), i2Original.hpMax(), i2Original.ataque(), i2Original.defesa(),
+				i2Original.alcance(), i2Original.movimento(), false, false, false, true);
+		EstadoBatalha estadoPronto = new EstadoBatalha(List.of(j1QuaseMorto, j2QuaseMorto, i1Pronto, i2Pronto), 1, 30,
+				original.mapa(), EstadoBatalha.Resultado.NULO, original.log());
+		definirEstado(batalha, estadoPronto);
+
+		Batalha resultado = masmorraService.agir(usuario.getId(), batalha.getId(), AcaoCombate.encerrarTurno(1));
+
+		assertThat(resultado.getStatus()).isEqualTo(StatusBatalha.DERROTA);
+
+		assertThat(unidadeRepository.findById(u1.getId())).isEmpty();
+		assertThat(unidadeRepository.findById(u2.getId())).isEmpty();
+		assertThat(itemRepository.findById(armaId1)).isEmpty();
+		assertThat(itemRepository.findById(armaduraId1)).isEmpty();
+		assertThat(itemRepository.findById(armaId2)).isEmpty();
+		assertThat(itemRepository.findById(armaduraId2)).isEmpty();
+	}
+
+	/**
+	 * Cobre a spec game-army — Requirement: Troca de equipamento, cenário
+	 * "Morte após troca" (task 2.6): a unidade troca a arma antes de entrar na
+	 * masmorra; ao morrer, a arma nova (agora equipada) é destruída, mas a
+	 * arma antiga — já {@code DISPONIVEL} desde a troca — permanece intocada
+	 * no inventário.
+	 */
+	@Test
+	void agirNaDerrotaAposTrocaDeEquipamentoDestroiApenasOItemNovoEMantemOAntigoDisponivel() {
+		Usuario usuario = criarUsuario("derrota-apos-troca", "Tania");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		Unidade unidade = criarUnidadeDisponivel(vila.getId(), TipoTropa.SOLDADO, ModeloItem.ESPADA,
+				ModeloItem.ARMADURA_COURO, 1);
+		Long armaAntigaId = unidade.getArmaItemId();
+		Long armaduraId = unidade.getArmaduraItemId();
+
+		Item armaNova = new Item();
+		armaNova.setVilaId(vila.getId());
+		armaNova.setModelo(ModeloItem.ESPADA);
+		armaNova.setNivel(2);
+		armaNova.setOrigem(OrigemItem.FORJA);
+		armaNova.setStatus(StatusItem.DISPONIVEL);
+		armaNova = itemRepository.saveAndFlush(armaNova);
+		Long armaNovaId = armaNova.getId();
+
+		equipamentoService.trocar(usuario.getId(), unidade.getId(), SlotEquipamento.ARMA, armaNovaId);
+		assertThat(itemRepository.findById(armaAntigaId).orElseThrow().getStatus()).isEqualTo(StatusItem.DISPONIVEL);
+		assertThat(unidadeRepository.findById(unidade.getId()).orElseThrow().getArmaItemId()).isEqualTo(armaNovaId);
+
+		Batalha batalha = masmorraService.iniciar(usuario.getId(), 1, List.of(unidade.getId()));
+		EstadoBatalha original = lerEstado(batalha);
+		Combatente j1Original = original.buscar("J1").orElseThrow();
+		Combatente i1Original = original.buscar("I1").orElseThrow();
+
+		Combatente j1QuaseMorto = new Combatente(j1Original.id(), j1Original.lado(), j1Original.tipoOuUnidade(),
+				new Posicao(0, 0), 1, j1Original.hpMax(), j1Original.ataque(), j1Original.defesa(),
+				j1Original.alcance(), j1Original.movimento(), false, false, false, true);
+		Combatente i1Pronto = new Combatente(i1Original.id(), i1Original.lado(), i1Original.tipoOuUnidade(),
+				new Posicao(0, 1), i1Original.hpMax(), i1Original.hpMax(), i1Original.ataque(), i1Original.defesa(),
+				i1Original.alcance(), i1Original.movimento(), false, false, false, true);
+		EstadoBatalha estadoPronto = new EstadoBatalha(List.of(j1QuaseMorto, i1Pronto), 1, 30, original.mapa(),
+				EstadoBatalha.Resultado.NULO, original.log());
+		definirEstado(batalha, estadoPronto);
+
+		Batalha resultado = masmorraService.agir(usuario.getId(), batalha.getId(), AcaoCombate.encerrarTurno(1));
+
+		assertThat(resultado.getStatus()).isEqualTo(StatusBatalha.DERROTA);
+		assertThat(unidadeRepository.findById(unidade.getId())).isEmpty();
+		assertThat(itemRepository.findById(armaNovaId)).isEmpty();
+		assertThat(itemRepository.findById(armaduraId)).isEmpty();
+		assertThat(itemRepository.findById(armaAntigaId).orElseThrow().getStatus()).isEqualTo(StatusItem.DISPONIVEL);
 	}
 
 	// ---- isolamento por usuário (404) ----

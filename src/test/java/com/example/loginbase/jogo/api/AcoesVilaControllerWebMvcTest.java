@@ -33,6 +33,7 @@ import com.example.loginbase.jogo.CodigoErro;
 import com.example.loginbase.jogo.RegraJogoException;
 import com.example.loginbase.jogo.catalogo.Cultivo;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
+import com.example.loginbase.jogo.catalogo.SlotEquipamento;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoTropa;
 import com.example.loginbase.jogo.config.JogoProperties;
@@ -43,6 +44,7 @@ import com.example.loginbase.jogo.economia.EstadoVila;
 import com.example.loginbase.jogo.economia.VilaService;
 import com.example.loginbase.jogo.fazenda.FazendaService;
 import com.example.loginbase.jogo.forja.ForjaService;
+import com.example.loginbase.jogo.quartel.EquipamentoService;
 import com.example.loginbase.jogo.quartel.QuartelService;
 import com.example.loginbase.seguranca.RegistroSessaoSuccessHandler;
 import com.example.loginbase.seguranca.SecurityConfig;
@@ -83,6 +85,9 @@ class AcoesVilaControllerWebMvcTest {
 
 	@MockitoBean
 	private QuartelService quartelService;
+
+	@MockitoBean
+	private EquipamentoService equipamentoService;
 
 	@MockitoBean
 	private VilaService vilaService;
@@ -161,11 +166,23 @@ class AcoesVilaControllerWebMvcTest {
 	void postTreinarComCsrfChamaServicoERetorna200() throws Exception {
 		mockMvc.perform(post("/api/jogo/quartel/ordens").with(user("ana@exemplo.com")).with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"tipo\":\"SOLDADO\",\"armaId\":1,\"armaduraId\":2}"))
+				.content("{\"tipo\":\"SOLDADO\",\"armaNivel\":1,\"armaduraModelo\":\"ARMADURA_COURO\","
+						+ "\"armaduraNivel\":1,\"quantidade\":3}"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.nome", is("Vila de Ana")));
 
-		verify(quartelService).treinar(1L, TipoTropa.SOLDADO, 1L, 2L);
+		verify(quartelService).treinar(1L, TipoTropa.SOLDADO, 1, ModeloItem.ARMADURA_COURO, 1, 3);
+	}
+
+	@Test
+	void postTrocarEquipamentoComCsrfChamaServicoERetorna200() throws Exception {
+		mockMvc.perform(post("/api/jogo/unidades/{id}/equipamento", 5).with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"slot\":\"ARMA\",\"itemId\":7}"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nome", is("Vila de Ana")));
+
+		verify(equipamentoService).trocar(1L, 5L, SlotEquipamento.ARMA, 7L);
 	}
 
 	// --------------------------------------------- corpo inválido → 400 --
@@ -198,10 +215,39 @@ class AcoesVilaControllerWebMvcTest {
 	}
 
 	@Test
-	void postTreinarComArmaIdZeroRecebe400() throws Exception {
+	void postTreinarComQuantidadeZeroRecebe400() throws Exception {
 		mockMvc.perform(post("/api/jogo/quartel/ordens").with(user("ana@exemplo.com")).with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"tipo\":\"SOLDADO\",\"armaId\":0,\"armaduraId\":2}"))
+				.content("{\"tipo\":\"SOLDADO\",\"armaNivel\":1,\"armaduraModelo\":\"ARMADURA_COURO\","
+						+ "\"armaduraNivel\":1,\"quantidade\":0}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
+	}
+
+	@Test
+	void postTreinarComQuantidadeDezesseisRecebe400() throws Exception {
+		mockMvc.perform(post("/api/jogo/quartel/ordens").with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"tipo\":\"SOLDADO\",\"armaNivel\":1,\"armaduraModelo\":\"ARMADURA_COURO\","
+						+ "\"armaduraNivel\":1,\"quantidade\":16}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
+	}
+
+	@Test
+	void postTrocarEquipamentoComItemIdNuloRecebe400() throws Exception {
+		mockMvc.perform(post("/api/jogo/unidades/{id}/equipamento", 5).with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"slot\":\"ARMA\"}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
+	}
+
+	@Test
+	void postTrocarEquipamentoComSlotInvalidoRecebe400() throws Exception {
+		mockMvc.perform(post("/api/jogo/unidades/{id}/equipamento", 5).with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"slot\":\"INEXISTENTE\",\"itemId\":7}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
 	}
@@ -229,6 +275,19 @@ class AcoesVilaControllerWebMvcTest {
 				.content("{\"modelo\":\"ESPADA\",\"nivel\":2,\"quantidade\":1}"))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.codigo", is("TURNO_DESATUALIZADO")));
+	}
+
+	@Test
+	void regraJogoExceptionUnidadeEmMasmorraRecebe422() throws Exception {
+		doThrow(new RegraJogoException(CodigoErro.UNIDADE_EM_MASMORRA,
+				"A unidade está em uma masmorra; troque o equipamento quando ela voltar."))
+				.when(equipamentoService).trocar(anyLong(), anyLong(), any(), anyLong());
+
+		mockMvc.perform(post("/api/jogo/unidades/{id}/equipamento", 5).with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"slot\":\"ARMA\",\"itemId\":7}"))
+				.andExpect(status().isUnprocessableEntity())
+				.andExpect(jsonPath("$.codigo", is("UNIDADE_EM_MASMORRA")));
 	}
 
 	// -------------------------------------------------------------- dados --

@@ -9,7 +9,9 @@ import type {
   IniciarBatalhaRequest,
   ModeloItem,
   PlantarRequest,
+  SlotEquipamento,
   TreinarRequest,
+  TrocarEquipamentoRequest,
   TipoPredio,
   TipoTropa,
   Cultivo,
@@ -47,9 +49,24 @@ export const jogoAPI = {
     })
   },
 
-  async treinar(tipo: TipoTropa, armaId: number, armaduraId: number): Promise<VilaDto> {
-    const corpo: TreinarRequest = { tipo, armaId, armaduraId }
+  async treinar(
+    tipo: TipoTropa,
+    armaNivel: number,
+    armaduraModelo: ModeloItem,
+    armaduraNivel: number,
+    quantidade: number,
+  ): Promise<VilaDto> {
+    const corpo: TreinarRequest = { tipo, armaNivel, armaduraModelo, armaduraNivel, quantidade }
     return request('/api/jogo/quartel/ordens', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(corpo),
+    })
+  },
+
+  async trocarEquipamento(unidadeId: number, slot: SlotEquipamento, itemId: number): Promise<VilaDto> {
+    const corpo: TrocarEquipamentoRequest = { slot, itemId }
+    return request(`/api/jogo/unidades/${unidadeId}/equipamento`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(corpo),

@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` com change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
 | Modelo/norma | RTM bidirecional (ISO/IEC/IEEE 29119-1) |
 | Público | QA, revisores, arquitetos |
 
@@ -157,16 +157,21 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-FOR-005` | Entrega na conclusão (Item criado com status DISPONIVEL) | game-forge | jogo 4.3 | ForjaService.aplicarOrdemForja(), Item.status | ForjaServiceTest | Automatizado |
 | `RF-FOR-006` | Validação da ordem (recursos, pré-requisitos, nível máximo) | game-forge | jogo 4.3 | ForjaService.forjar() | ForjaServiceTest | Automatizado |
 
-### EXE — Game Army (6 RF, delta jogo)
+### EXE — Game Army (11 RF; 6 da spec base + 5 adicionados em add-soldier-names-batch-slots)
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
 | `RF-EXE-001` | Tipos de tropa e atributos derivados (3: SOLDADO/ARQUEIRO/LANCEIRO; HP = 30/22/40, ataque/defesa/alcance/movimento) | game-army | jogo 1.3, 4.4 | TipoTropa enum, atributos em design | CatalogoTest, QuartelServiceTest | Automatizado |
-| `RF-EXE-002` | Treino consome arma e armadura | game-army | jogo 4.4 | QuartelService.treinar() | QuartelServiceTest (12) | Automatizado |
-| `RF-EXE-003` | Validação dos itens (arma/armadura existem e estão DISPONIVEL) | game-army | jogo 4.4 | QuartelService.treinar() | QuartelServiceTest | Automatizado |
+| `RF-EXE-002` | Treino em lote consome N armas (modelo/nível exato, DISPONIVEL) + N armaduras (modelo/nível, DISPONIVEL); reservadas no início com ordem_id | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | QuartelService.treinar(), ItemRepository | QuartelServiceTest, VilaServiceTest | Automatizado |
+| `RF-EXE-003` | Validação: tipo válido, armaNível 1–5, armaduraModelo/Nível, quantidade 1–15, itens suficientes, capacidade, comida | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | QuartelService.treinar() + validações | QuartelServiceTest | Automatizado |
 | `RF-EXE-004` | Tropas liberadas pelo nível do quartel (N1=SOLDADO, N2=+ARQUEIRO, N3=+LANCEIRO) | game-army | jogo 1.3, 4.4 | TipoTropa.nivelMinimoQuartel, validação | QuartelServiceTest, CatalogoTest | Automatizado |
-| `RF-EXE-005` | Capacidade do exército (3 × N unidades, N = nível QUARTEL) | game-army | jogo 4.4 | TipoPredio.capacidadeExercito(nivel), validação | QuartelServiceTest | Automatizado |
+| `RF-EXE-005` | Capacidade do exército: cap = 3 × N − unidades_vivas − Σ quantidade_ordens_TREINO; rejeita se quantidade > capacidade | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | TipoPredio.capacidadeExercito(nivel), QuartelService | QuartelServiceTest, VilaServiceTest | Automatizado |
 | `RF-EXE-006` | Uma ordem de treino por vez (fila de 1) | game-army | jogo 4.4 | OrdemRepository (unique vila+TREINO), FILA_OCUPADA | QuartelServiceTest | Automatizado |
+| `RF-EXE-007` | Nomes e sufixo ordinal: cada unidade com nome+sobrenome sorteados; duplicatas → sufixo (2), (3)…; contagem por vila, histórica | add-soldier-names-batch-slots | jogo 4.2, 4.3 | GeradorNomes, NumeradorNomes, Unidade.nomeExibicao | NumeradorNomesTest, VilaServiceTest | Automatizado |
+| `RF-EXE-008` | Treino em lote: quantidade 1–15 selecionada, nível arma/armadura e modelo configuráveis, botão "Máx." para máximo treinável | add-soldier-names-batch-slots | jogo 3.4, 4.2 | TreinarRequest, frontend QuartelView | QuartelServiceTest, demonstração | Automatizado + Manual |
+| `RF-EXE-009` | Detalhe da unidade (`/quartel/unidades/{id}`): 9 slots de equipamento (ARMA, ARMADURA, CABECA, BOTA, LUVA, COLAR, ANEL_1/2/3), troca em Arma/Armadura, bloqueado em masmorra | add-soldier-names-batch-slots | jogo 3.4, 4.3 | UnidadeDetalheView.vue, AcoesVilaController, EquipamentoService | AcoesVilaControllerWebMvcTest, demonstração | Automatizado + Manual |
+| `RF-EXE-010` | Sufixo ordinal determinístico: `NumeradorNomes.proximoOrdinal(vila_id, nome, sobrenome)` incrementa contador persistido; histórico (não decrementa com morte) | add-soldier-names-batch-slots | jogo 4.2, 4.3 | NumeradorNomes, jogo_contadores_nome table | NumeradorNomesTest, VilaServiceTest | Automatizado |
+| `RF-EXE-011` | Troca de Arma/Armadura: POST `/api/jogo/unidades/{id}/equipamento`; item antigo → DISPONIVEL, novo → EQUIPADO; bloqueado se EM_MASMORRA (422 UNIDADE_EM_MASMORRA); sem desequipar | add-soldier-names-batch-slots | jogo 4.3 | EquipamentoService, AcoesVilaController | EquipamentoServiceTest, AcoesVilaControllerWebMvcTest | Automatizado |
 
 ### COM — Game Dungeon Combat (10 RF, delta jogo)
 

@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
 | Modelo/norma | Referência REST em Markdown (estilo OpenAPI) |
 | Público | Desenvolvedores, QA |
 | Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `src/main/java/com/example/loginbase/web/PaginaController.java`, `frontend/src/api/jogo.ts` |
@@ -273,14 +273,41 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
     {
       "id": 201,
       "tipo": "SOLDADO",
+      "nome": "Ana",
+      "sobrenome": "Silva",
+      "ordinalNome": 2,
+      "nomeExibicao": "Ana Silva (2)",
       "status": "DISPONIVEL",
       "hp": 30,
       "ataque": 8,
       "defesa": 5,
       "alcance": 1,
       "movimento": 3,
-      "armaId": 101,
-      "armaduraId": 102
+      "equipamento": {
+        "ARMA": {
+          "id": 101,
+          "modelo": "ESPADA",
+          "nivel": 2,
+          "ataque": 10,
+          "defesa": 0,
+          "alcance": 1
+        },
+        "ARMADURA": {
+          "id": 102,
+          "modelo": "ARMADURA_COURO",
+          "nivel": 2,
+          "ataque": 0,
+          "defesa": 2,
+          "alcance": 0
+        },
+        "CABECA": null,
+        "BOTA": null,
+        "LUVA": null,
+        "COLAR": null,
+        "ANEL_1": null,
+        "ANEL_2": null,
+        "ANEL_3": null
+      }
     }
   ],
   "capacidadeExercito": 9,
@@ -753,7 +780,7 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 
 ---
 
-### 9. Treinar Tropa
+### 9. Treinar Tropa em Lote
 
 **Método:** `POST`  
 **URL:** `/api/jogo/quartel/ordens`  
@@ -766,30 +793,90 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 ```json
 {
   "tipo": "SOLDADO",
-  "armaId": 101,
-  "armaduraId": 102
+  "armaNivel": 2,
+  "armaduraModelo": "ARMADURA_COURO",
+  "armaduraNivel": 2,
+  "quantidade": 3
 }
 ```
 
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-------------|-----------|
 | `tipo` | enum | `SOLDADO`, `ARQUEIRO`, `LANCEIRO` | Tipo de tropa |
-| `armaId` | long | >= 1 | ID da arma a equipar |
-| `armaduraId` | long | >= 1 | ID da armadura a equipar |
+| `armaNivel` | int | 1–5 | Nível da arma a equipar (ex.: 2 = ESPADA N2, LANCA N2 ou ARCO N2 conforme tipo) |
+| `armaduraModelo` | enum | `ARMADURA_COURO`, `ARMADURA_FERRO` | Modelo da armadura |
+| `armaduraNivel` | int | 1–5 | Nível da armadura |
+| `quantidade` | int | 1–15 | Número de unidades a treinar em lote |
+
+**Validações (422 se falhar):**
+- Quantidade entre 1 e 15
+- N armas de modelo exigido e nível exato disponíveis
+- N armaduras de modelo e nível exato disponíveis
+- Comida suficiente: `quantidade × comida_por_tipo`
+- Capacidade do exército: `quantidade ≤ capacidade_livre = 3 × nível_quartel − unidades_vivas − Σ quantidade_ordens_treino_em_andamento`
 
 **Respostas:**
 
 | Código | Descrição |
 |--------|-----------|
-| `200` | Ordem de treino criada |
-| `400` | Parâmetro inválido |
+| `200` | Ordem de treino em lote criada com sucesso |
+| `400` | Parâmetro inválido (corpo malformado, enum desconhecido) |
 | `401` | Não autenticado |
 | `403` | Token CSRF ausente ou inválido |
-| `404` | Vila, arma ou armadura não encontrada |
-| `409` | Fila ocupada, capacidade do exército atingida |
-| `422` | Item indisponível, nível de QUARTEL insuficiente, etc. |
+| `404` | Vila não encontrada |
+| `422` | Item indisponível (`ITEM_INDISPONIVEL`), capacidade atingida (`CAPACIDADE_EXERCITO`), recursos insuficientes (`RECURSOS_INSUFICIENTES`), quantidade inválida (`QUANTIDADE_INVALIDA`), etc. |
 
-**Response Body (200):** Estado completo da vila.
+**Response Body (200):** Estado completo da vila (`VilaDto` com novo `UnidadeDto`, ordem em fila).
+
+---
+
+### 10. Trocar Equipamento (Arma ou Armadura)
+
+**Método:** `POST`  
+**URL:** `/api/jogo/unidades/{id}/equipamento`  
+**Autenticação:** Requerida  
+**CSRF:** Requerido  
+**Content-Type:** `application/json`
+
+**Request Body:**
+
+```json
+{
+  "slot": "ARMA",
+  "itemId": 105
+}
+```
+
+| Campo | Tipo | Constraints | Descrição |
+|-------|------|-------------|-----------|
+| `slot` | enum | `ARMA`, `ARMADURA` | Slot de equipamento (slots futuros CABECA, BOTA, LUVA, COLAR, ANEL_1/2/3 retornam 422) |
+| `itemId` | long | > 0 | ID do item a equipar (deve estar `DISPONIVEL`) |
+
+**Validações (422 se falhar):**
+- Unidade existe e pertence à vila do usuário
+- Unidade não está `EM_MASMORRA` (422 `UNIDADE_EM_MASMORRA`)
+- Slot é `ARMA` ou `ARMADURA` (slots futuros 422 `ITEM_INDISPONIVEL`)
+- Item existe, é `DISPONIVEL`, e é compatível:
+  - ARMA: modelo == tipo de tropa exigido (ex.: SOLDADO exige ESPADA)
+  - ARMADURA: categoria == ARMADURA
+
+**Efeito:**
+- Item antigo equipado → status `DISPONIVEL` (desvinculado)
+- Novo item → status `EQUIPADO` (vinculado)
+- Atributos da unidade atualizados (derivados no `JogoMapper`)
+
+**Respostas:**
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | Equipamento trocado com sucesso |
+| `400` | Parâmetro inválido (corpo malformado) |
+| `401` | Não autenticado |
+| `403` | Token CSRF ausente ou inválido |
+| `404` | Unidade não encontrada (`NAO_ENCONTRADO`) |
+| `422` | Unidade em masmorra (`UNIDADE_EM_MASMORRA`), item indisponível (`ITEM_INDISPONIVEL`), slot futuro não suportado (`ITEM_INDISPONIVEL`) |
+
+**Response Body (200):** Estado completo da vila (`VilaDto` com `UnidadeDto` atualizada e equipamento novo).
 
 ---
 
@@ -872,6 +959,10 @@ BATALHA_EM_ANDAMENTO
 
 UNIDADE_INDISPONIVEL
   → Unidade não existe, não é da vila ou não está DISPONIVEL
+  → HTTP 422
+
+UNIDADE_EM_MASMORRA
+  → Tentativa de trocar equipamento com unidade participando de batalha
   → HTTP 422
 
 ESQUADRAO_INVALIDO

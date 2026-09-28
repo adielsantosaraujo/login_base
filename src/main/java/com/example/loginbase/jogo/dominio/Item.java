@@ -48,4 +48,7 @@ public class Item extends EntidadeAuditavel {
 	@Column(nullable = false, length = 20)
 	private StatusItem status;
 
+	@Column(name = "ordem_id")
+	private Long ordemId;
+
 }

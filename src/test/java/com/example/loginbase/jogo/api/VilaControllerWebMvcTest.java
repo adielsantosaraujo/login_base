@@ -126,13 +126,48 @@ class VilaControllerWebMvcTest {
 				.andExpect(jsonPath("$.canteiros[0].producaoComidaPorHora", is(20)))
 				.andExpect(jsonPath("$.sementes.TRIGO", is(2)))
 				.andExpect(jsonPath("$.itens[0].ataque", is(6)))
+				.andExpect(jsonPath("$.unidades[0].nome", is("Ana")))
+				.andExpect(jsonPath("$.unidades[0].sobrenome", is("Silva")))
+				.andExpect(jsonPath("$.unidades[0].ordinalNome", is(2)))
+				.andExpect(jsonPath("$.unidades[0].nomeExibicao", is("Ana Silva (2)")))
+				.andExpect(jsonPath("$.unidades[0].tipo", is("SOLDADO")))
+				.andExpect(jsonPath("$.unidades[0].status", is("DISPONIVEL")))
 				.andExpect(jsonPath("$.unidades[0].hp", is(30)))
 				.andExpect(jsonPath("$.unidades[0].ataque", is(6)))
 				.andExpect(jsonPath("$.unidades[0].defesa", is(3)))
 				.andExpect(jsonPath("$.unidades[0].alcance", is(1)))
 				.andExpect(jsonPath("$.unidades[0].movimento", is(3)))
+				.andExpect(jsonPath("$.unidades[0].equipamento", org.hamcrest.Matchers.aMapWithSize(9)))
+				.andExpect(jsonPath("$.unidades[0].equipamento.ARMA.modelo", is("ESPADA")))
+				.andExpect(jsonPath("$.unidades[0].equipamento.ARMADURA.modelo", is("ARMADURA_COURO")))
+				.andExpect(jsonPath("$.unidades[0].equipamento.CABECA").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.BOTA").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.LUVA").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.COLAR").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.ANEL_1").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.ANEL_2").doesNotExist())
+				.andExpect(jsonPath("$.unidades[0].equipamento.ANEL_3").doesNotExist())
 				.andExpect(jsonPath("$.capacidadeExercito", is(0)))
 				.andExpect(jsonPath("$.ordens[0].categoria", is("CONSTRUCAO")));
+	}
+
+	@Test
+	void equipamentoDaUnidadeVemEmOrdemDosSlots() throws Exception {
+		when(vilaService.consultar(1L)).thenReturn(estadoVilaValido());
+
+		String corpo = mockMvc.perform(get("/api/jogo/vila").with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+
+		String equipamento = corpo.substring(corpo.indexOf("\"equipamento\""));
+		List<String> ordemEsperada = List.of("ARMA", "ARMADURA", "CABECA", "BOTA", "LUVA", "COLAR", "ANEL_1",
+				"ANEL_2", "ANEL_3");
+		int posicaoAnterior = -1;
+		for (String slot : ordemEsperada) {
+			int posicao = equipamento.indexOf("\"" + slot + "\"");
+			org.assertj.core.api.Assertions.assertThat(posicao).isGreaterThan(posicaoAnterior);
+			posicaoAnterior = posicao;
+		}
 	}
 
 	@Test
@@ -243,6 +278,9 @@ class VilaControllerWebMvcTest {
 		soldado.setArmaItemId(100L);
 		soldado.setArmaduraItemId(101L);
 		soldado.setStatus(StatusUnidade.DISPONIVEL);
+		soldado.setNome("Ana");
+		soldado.setSobrenome("Silva");
+		soldado.setOrdinalNome(2);
 
 		Ordem ordemConstrucao = new Ordem();
 		ordemConstrucao.setId(300L);

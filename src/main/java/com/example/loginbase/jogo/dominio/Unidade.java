@@ -23,7 +23,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "jogo_unidades", uniqueConstraints = {
 		@UniqueConstraint(columnNames = "arma_item_id"),
-		@UniqueConstraint(columnNames = "armadura_item_id") })
+		@UniqueConstraint(columnNames = "armadura_item_id"),
+		@UniqueConstraint(columnNames = { "vila_id", "nome", "sobrenome", "ordinal_nome" }) })
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,5 +50,23 @@ public class Unidade extends EntidadeAuditavel {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 20)
 	private StatusUnidade status;
+
+	@Column(nullable = false, length = 60)
+	private String nome;
+
+	@Column(nullable = false, length = 60)
+	private String sobrenome;
+
+	@Column(name = "ordinal_nome", nullable = false)
+	private int ordinalNome;
+
+	/**
+	 * Nome de exibição: {@code "Nome Sobrenome"}, ou {@code "Nome Sobrenome (N)"}
+	 * quando {@link #ordinalNome} indicar um par nome/sobrenome duplicado na
+	 * vila (N a partir de 2).
+	 */
+	public String nomeExibicao() {
+		return ordinalNome == 1 ? nome + " " + sobrenome : nome + " " + sobrenome + " (" + ordinalNome + ")";
+	}
 
 }

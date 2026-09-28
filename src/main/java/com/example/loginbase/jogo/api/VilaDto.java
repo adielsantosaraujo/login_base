@@ -1,11 +1,13 @@
 package com.example.loginbase.jogo.api;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.example.loginbase.jogo.catalogo.Cultivo;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
+import com.example.loginbase.jogo.catalogo.SlotEquipamento;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
 import com.example.loginbase.jogo.catalogo.TipoTropa;
@@ -72,6 +74,10 @@ public record VilaDto(
 
 	public record UnidadeDto(
 			long id,
+			String nome,
+			String sobrenome,
+			int ordinalNome,
+			String nomeExibicao,
 			TipoTropa tipo,
 			StatusUnidade status,
 			int hp,
@@ -79,8 +85,7 @@ public record VilaDto(
 			int defesa,
 			int alcance,
 			int movimento,
-			long armaId,
-			long armaduraId) {
+			LinkedHashMap<SlotEquipamento, ItemDto> equipamento) {
 	}
 
 	public record OrdemDto(

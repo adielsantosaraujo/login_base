@@ -23,6 +23,7 @@ import com.example.loginbase.jogo.catalogo.Cultivo;
 import com.example.loginbase.jogo.catalogo.MapaMasmorra;
 import com.example.loginbase.jogo.catalogo.Masmorra;
 import com.example.loginbase.jogo.catalogo.ModeloItem;
+import com.example.loginbase.jogo.catalogo.SlotEquipamento;
 import com.example.loginbase.jogo.catalogo.TipoInimigo;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
@@ -300,8 +301,9 @@ public class MasmorraService {
 	 * Unidades do esquadrão (todas as {@code EM_MASMORRA} da vila — só pode
 	 * haver uma batalha ativa por vez) que ainda aparecem vivas no estado
 	 * final voltam a {@code DISPONIVEL} (HP cheio na próxima batalha, sem
-	 * persistência própria); as demais morreram e são excluídas com seus
-	 * itens de arma/armadura.
+	 * persistência própria); as demais morreram e são excluídas com os itens
+	 * que ocupam seus slots de equipamento no momento da morte (na prática,
+	 * arma e armadura atuais).
 	 */
 	private void atualizarEsquadraoAoFinal(Vila vila, EstadoBatalha novoEstado) {
 		Set<Long> sobreviventesIds = novoEstado.combatentesDoLado(Lado.JOGADOR).stream()
@@ -317,11 +319,28 @@ public class MasmorraService {
 				unidade.setStatus(StatusUnidade.DISPONIVEL);
 				unidadeRepository.save(unidade);
 			} else {
-				Long armaId = unidade.getArmaItemId();
-				Long armaduraId = unidade.getArmaduraItemId();
 				unidadeRepository.delete(unidade);
-				itemRepository.deleteById(armaId);
-				itemRepository.deleteById(armaduraId);
+				destruirItensEquipados(unidade);
+			}
+		}
+	}
+
+	/**
+	 * Apaga os itens que ocupam os slots de equipamento da unidade morta,
+	 * iterando {@link SlotEquipamento} — hoje só ARMA e ARMADURA têm
+	 * persistência ({@code armaItemId}/{@code armaduraItemId}, já refletindo
+	 * trocas feitas antes da morte); os demais slots (futuros) ficam sempre
+	 * vazios e são ignorados sem erro.
+	 */
+	private void destruirItensEquipados(Unidade unidade) {
+		for (SlotEquipamento slot : SlotEquipamento.values()) {
+			Long itemId = switch (slot) {
+				case ARMA -> unidade.getArmaItemId();
+				case ARMADURA -> unidade.getArmaduraItemId();
+				default -> null;
+			};
+			if (itemId != null) {
+				itemRepository.deleteById(itemId);
 			}
 		}
 	}

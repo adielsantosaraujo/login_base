@@ -15,7 +15,7 @@ public class PaginaController {
         return "sistema/public/login";
     }
 
-    @GetMapping({ "/", "/fazenda", "/forja", "/quartel", "/masmorras", "/batalhas/{id}" })
+    @GetMapping({ "/", "/fazenda", "/forja", "/quartel", "/quartel/unidades/{id}", "/masmorras", "/batalhas/{id}" })
     String index() {
         return "sistema/seguro/index";
     }

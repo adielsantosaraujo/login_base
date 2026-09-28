@@ -206,4 +206,31 @@ class CatalogoTest {
 		assertThatThrownBy(() -> CatalogoMasmorras.porNivel(6)).isInstanceOf(IllegalArgumentException.class);
 	}
 
+	@Test
+	void slotEquipamentoPossuiNoveValoresNaOrdemDeExibicao() {
+		assertThat(SlotEquipamento.values()).containsExactly(SlotEquipamento.ARMA, SlotEquipamento.ARMADURA,
+				SlotEquipamento.CABECA, SlotEquipamento.BOTA, SlotEquipamento.LUVA, SlotEquipamento.COLAR,
+				SlotEquipamento.ANEL_1, SlotEquipamento.ANEL_2, SlotEquipamento.ANEL_3);
+	}
+
+	@Test
+	void slotEquipamentoAceitaCategoriaCorreta() {
+		assertThat(SlotEquipamento.ARMA.getCategoriaAceita()).isEqualTo(CategoriaItem.ARMA);
+		assertThat(SlotEquipamento.ARMA.aceita(CategoriaItem.ARMA)).isTrue();
+		assertThat(SlotEquipamento.ARMA.aceita(CategoriaItem.ARMADURA)).isFalse();
+
+		assertThat(SlotEquipamento.ARMADURA.getCategoriaAceita()).isEqualTo(CategoriaItem.ARMADURA);
+		assertThat(SlotEquipamento.ARMADURA.aceita(CategoriaItem.ARMADURA)).isTrue();
+		assertThat(SlotEquipamento.ARMADURA.aceita(CategoriaItem.ARMA)).isFalse();
+
+		assertThat(SlotEquipamento.CABECA.getCategoriaAceita()).isNull();
+		assertThat(SlotEquipamento.CABECA.aceita(CategoriaItem.ARMA)).isFalse();
+		assertThat(SlotEquipamento.CABECA.aceita(CategoriaItem.ARMADURA)).isFalse();
+	}
+
+	@Test
+	void slotEquipamentoPossuiRotulosUnicos() {
+		assertThat(SlotEquipamento.values()).extracting(SlotEquipamento::getRotulo).doesNotHaveDuplicates();
+	}
+
 }

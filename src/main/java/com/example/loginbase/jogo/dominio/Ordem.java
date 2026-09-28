@@ -21,8 +21,9 @@ import lombok.Setter;
  * Ordem na fila de produção de uma vila: construção, forja ou treino. Uma
  * vila tem no máximo uma ordem pendente por {@link CategoriaOrdem} (fila de
  * 1). {@code alvo} guarda o nome do tipo/modelo alvo (ex.: {@code TipoPredio}
- * ou {@code ModeloItem}), e {@code nivel}/{@code armaItemId}/
- * {@code armaduraItemId} são usados conforme a categoria.
+ * ou {@code ModeloItem}), e {@code nivel} é usado conforme a categoria. Para
+ * ordens {@code TREINO}, os itens (arma/armadura) reservados são vinculados
+ * pela própria {@link Item#getOrdemId()} em vez de uma referência aqui.
  */
 @Entity
 @Table(name = "jogo_ordens", uniqueConstraints = @UniqueConstraint(columnNames = { "vila_id", "categoria" }))
@@ -50,12 +51,6 @@ public class Ordem extends EntidadeAuditavel {
 
 	@Column(nullable = false)
 	private int quantidade = 1;
-
-	@Column(name = "arma_item_id")
-	private Long armaItemId;
-
-	@Column(name = "armadura_item_id")
-	private Long armaduraItemId;
 
 	@Column(name = "iniciada_em", nullable = false)
 	private Instant iniciadaEm;

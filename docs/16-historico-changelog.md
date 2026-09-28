@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.3.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
 | Modelo/norma | Keep a Changelog 1.1 (adaptado por change OpenSpec) |
 | Público | todos |
 
@@ -23,6 +23,7 @@
 | 5 | add-user-authentication | Arquivada | 2026-09-25 | 4 | 17 | 20 | 1.254.764 |
 | 6 | add-city-builder-game | Arquivada (2026-09-27) | 2026-09-27 | 1 | 25 | 36 | 4.268.464 |
 | 7 | add-frontend-build | Implementada | 2026-09-27 | 1 | 6 | n/d | n/d |
+| 8 | add-soldier-names-batch-slots | Implementada | 2026-09-28 | 1 | 6 | n/d | n/d |
 
 ---
 
@@ -285,6 +286,52 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 | Git tags | Nenhuma | — | Sem release formal (alpha/beta/GA) |
 | Baseline docs | 1.0.0 | 2026-09-27 | Primeira documentação formal (change jogo arquivada) |
 | Docs + previsto (change 7) | 1.1.0 | 2026-09-27 | Atualização para add-frontend-build (aberta, não implementada) |
+| Docs + add-soldier-names-batch-slots (change 8) | 1.2.0 | 2026-09-28 | Atualização com mudanças de nomes, lote, detalhe, troca de equipamento |
+
+---
+
+### Change 8: add-soldier-names-batch-slots
+
+**Status:** Implementada · **Propósito:** Nomes identificadores (sorteados) para soldados, treino em lote, detalhe com 9 slots de equipamento, troca de itens
+
+**Commits:**
+
+| Hash | Data | Mensagem |
+|---|---|---|
+| (a documentar) | 2026-09-28 | Migração V4, novos campos em jogo_unidades/jogo_itens, endpoints de treino e equipamento, telas Vue |
+
+**Funcionalidades:**
+
+- **Adicionado:**
+  - **Nomes de soldados:** Campos `jogo_unidades.nome`, `sobrenome`, `ordinal_nome`; sorteio via `GeradorNomes` + `NumeradorNomes`; listas em `src/main/resources/jogo/nomes/`.
+  - **Sufixo ordinal:** `jogo_contadores_nome` table; contagem por vila/nome/sobrenome, histórica (não decrementa com morte); exibição "Ana Silva (2)".
+  - **Treino em lote:** Novo corpo `TreinarRequest` com `tipo`, `armaNível`, `armaduraModelo`, `armaduraNível`, `quantidade` (1–15); validações de capacidade, itens, comida.
+  - **Migration V4:** `V4__unidade_nome_e_lote_treino.sql` com backfill de nomes, ordinais, contador, novo `jogo_itens.ordem_id` FK, remoção de `jogo_ordens.arma_item_id/armadura_item_id`.
+  - **Tela de detalhe:** `/quartel/unidades/{id}` exibindo 9 slots (ARMA, ARMADURA, CABECA, BOTA, LUVA, COLAR, ANEL_1/2/3); troca em Arma/Armadura; bloqueado em masmorra.
+  - **Endpoint de troca:** POST `/api/jogo/unidades/{id}/equipamento` {slot, itemId}; item antigo → DISPONIVEL, novo → EQUIPADO; erro 422 `UNIDADE_EM_MASMORRA`.
+  - **Frontend:** Novo seletor de armaNível, armaduraModelo, armaduraNível, quantidade; botão "Máx."; tela UnidadeDetalheView.vue; troca em dialog.
+  - **ADR 0024:** Listas de nomes como recurso de classpath (decisão arquitetural registrada).
+  - **Documentação:** Atualização de 05-modelo-dados, 06-api-rest, 02-requisitos, 15-rastreabilidade, 13-manual-jogador, 16-historico-changelog; criação de ADR 0024.
+  - **Testes:** Novos testes em NumeradorNomesTest, EquipamentoServiceTest, atualização de QuartelServiceTest, VilaServiceTest, AcoesVilaControllerWebMvcTest.
+
+- **Modificado:**
+  - `TreinarRequest` (novo schema; legacy JSON não mais aceito).
+  - `UnidadeDto` (novo: nome, sobrenome, ordinalNome, nomeExibicao, equipamento map com 9 slots).
+  - `jogo_unidades`, `jogo_itens`, `jogo_ordens` (schema V4).
+  - `QuartelService.treinar()`, `AplicadorOrdens.aplicarTreino()`, `MasmorraService` (suporte a novos campos).
+
+- **BREAKING:**
+  - API POST `/api/jogo/quartel/ordens`: novo corpo `TreinarRequest` (sem `armaId`/`armaduraId`; com `armaNível`, etc.).
+  - `UnidadeDto` agora com 9 slots (clientes antigos que esperam `armaId`/`armaduraId` diretos falham).
+  - Banco V4: migration executa no startup (Flyway); sem rollback automático.
+
+- **Capabilities:**
+  - Novas: Nenhuma.
+  - Modificadas: `game-army` (RF-EXE-007 a 011 adicionadas, RF-EXE-002/003/005/009 alteradas).
+
+- **Estatísticas:**
+  - **6 tasks** (4.1–4.6; documentação técnica, verifica, etc.).
+  - **Relatório:** `openspec/changes/add-soldier-names-batch-slots/resumo_utilizacao_agentes.md` (em preparação).
 
 ---
 
@@ -336,6 +383,7 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change add-soldier-names-batch-slots implementada: nomes com sufixo ordinal, treino em lote, detalhe com 9 slots, troca de equipamento, ADR 0024 | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto, descreve funcionalidades entregues | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (jogo arquivada) | Adiel, com apoio de agentes Claude |
