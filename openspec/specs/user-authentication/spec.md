@@ -98,11 +98,15 @@ Toda rota da aplicação SHALL exigir autenticação, exceto a página de login,
 - **THEN** ele é redirecionado para `/` (página inicial), não para a API
 
 ### Requirement: Página inicial segura
-A aplicação SHALL servir em `GET /` uma página renderizada no servidor, acessível apenas a usuários autenticados, cujo conteúdo é apenas a mensagem "Seja bem vindo".
+A aplicação SHALL servir em `GET /` a página da SPA do frontend (o `index.html` gerado pelo build do frontend, entregue pela view Thymeleaf `sistema/seguro/index`), acessível apenas a usuários autenticados. O placeholder "Seja bem vindo" deixa de existir.
 
 #### Scenario: Usuário autenticado acessa a página inicial
 - **WHEN** um usuário autenticado acessa `GET /`
-- **THEN** a resposta é HTTP 200 e a página exibe "Seja bem vindo"
+- **THEN** a resposta é HTTP 200 com a view `sistema/seguro/index` (a SPA)
+
+#### Scenario: Visitante anônimo acessa a página inicial
+- **WHEN** um visitante não autenticado acessa `GET /`
+- **THEN** ele é redirecionado para `/login`
 
 ### Requirement: Logout
 A aplicação SHALL encerrar a autenticação com `POST /logout` (com token CSRF), invalidando a sessão HTTP, removendo o cookie de sessão e redirecionando para `/login?logout`.
