@@ -21,7 +21,7 @@ public enum TipoPredio {
 	FORJA(Custo.de(MADEIRA, 120, PEDRA, 100, FERRO, 40), 120),
 	QUARTEL(Custo.de(MADEIRA, 150, PEDRA, 120, FERRO, 40), 120);
 
-	public static final int NIVEL_MAXIMO = 5;
+	public static final int NIVEL_MAXIMO = 100;
 
 	private final Custo custoBase;
 	private final int tempoBaseSegundos;

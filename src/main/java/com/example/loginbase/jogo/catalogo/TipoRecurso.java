@@ -16,10 +16,10 @@ public enum TipoRecurso {
 	 * Capacidade de armazenamento por recurso (igual para todos) para o nível
 	 * informado do armazém: {@code 500 × 2^(nivel-1)}.
 	 *
-	 * @param nivelArmazem nível do armazém (1 a 5)
+	 * @param nivelArmazem nível do armazém (1 a 100)
 	 */
 	public static long capacidadeArmazem(int nivelArmazem) {
-		if (nivelArmazem < 1 || nivelArmazem > 5) {
+		if (nivelArmazem < 1 || nivelArmazem > 100) {
 			throw new IllegalArgumentException("Nível de armazém inválido: " + nivelArmazem);
 		}
 		return 500L << (nivelArmazem - 1);
