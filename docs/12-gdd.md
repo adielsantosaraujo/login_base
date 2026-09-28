@@ -71,4 +71,4 @@ flowchart TD
 |---|---|---|---|
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Seções 3–14 separadas em arquivos na pasta `12-gdd/`; este documento passa a ser o índice | Adiel, com apoio de agentes Claude |
-| 1.2.0 | 2026-09-27 | Nome e sobrenome sorteados na unidade; treino em lote com quantidade e botão "Máx."; tela de detalhe com 9 slots; JSONs de nomes movidos para `/src/main/resources/jogo/nomes/` (change [add-soldier-names-batch-slots](/openspec/changes/add-soldier-names-batch-slots/proposal.md)) | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-27 | Nome e sobrenome sorteados na unidade; sufixo "(N)" automático em nomes repetidos (primeira sem sufixo, contagem por vila e histórica); treino em lote com quantidade e botão "Máx."; tela de detalhe com 9 slots; troca de Arma/Armadura fora da masmorra por item compatível do inventário (item retirado volta a DISPONIVEL, sem desequipar); JSONs de nomes movidos para `/src/main/resources/jogo/nomes/` (change [add-soldier-names-batch-slots](/openspec/changes/add-soldier-names-batch-slots/proposal.md)) | Adiel, com apoio de agentes Claude |

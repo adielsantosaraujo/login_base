@@ -292,3 +292,12 @@ Sessão principal: medida até o início da criação do relatório; o consumo p
 | 4 | general-purpose | Haiku | Aplicar plano: tasks existentes e novas 2.5, 2.6, 3.4 | 102.881 |
 
 Total: 421.363 tokens.
+
+## Ajustes complementares — docs do GDD e correção das tasks 2.1/3.1 (2026-09-27)
+
+| # | Agente | Modelo | Tarefa | Tokens |
+|---|---|---|---|---|
+| 1 | general-purpose | Haiku | Corrigir tasks 2.1, 2.2 e 3.1 (códigos de erro, TreinarRequest, StatusUnidade) | 40.638 |
+| 2 | general-purpose | Haiku | Atualizar GDD 12.6, 12.11, 12.12, 12.13, 12.14 e changelog 12-gdd.md | 40.794 |
+
+Total: 81.432 tokens.
