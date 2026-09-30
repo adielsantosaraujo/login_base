@@ -54,9 +54,10 @@ public class ForjaService {
 	 * no {@code nivel} informado.
 	 *
 	 * @throws RegraJogoException com {@link CodigoErro#REQUISICAO_INVALIDA} se {@code nivel} ou
-	 *                            {@code quantidade} estiverem fora da faixa 1–5, com
+	 *                            {@code quantidade} estiverem fora da faixa (nível 1–23, quantidade 1–5), com
 	 *                            {@link CodigoErro#REQUISITO_NAO_ATENDIDO} se a FORJA estiver no
-	 *                            nível 0 ou {@code nivel} exceder o nível da FORJA, com
+	 *                            nível 0 ou {@code nivel} exceder o nível máximo forjável da FORJA
+	 *                            ({@link TipoPredio#nivelMaximoForjavel}), com
 	 *                            {@link CodigoErro#FILA_OCUPADA} se já houver uma ordem de forja
 	 *                            pendente, ou com {@link CodigoErro#RECURSOS_INSUFICIENTES} se a
 	 *                            vila não tiver o custo total da ordem
@@ -79,9 +80,11 @@ public class ForjaService {
 		if (nivelForja < 1) {
 			throw new RegraJogoException(CodigoErro.REQUISITO_NAO_ATENDIDO, "Forja não construída");
 		}
-		if (nivel > nivelForja) {
+		int nivelMaximoForjavel = TipoPredio.FORJA.nivelMaximoForjavel(nivelForja);
+		if (nivel > nivelMaximoForjavel) {
 			throw new RegraJogoException(CodigoErro.REQUISITO_NAO_ATENDIDO,
-					"Nível " + nivel + " maior que o nível da forja (" + nivelForja + ")");
+					"Nível " + nivel + " acima do nível máximo forjável (" + nivelMaximoForjavel
+							+ ") da forja nível " + nivelForja);
 		}
 
 		boolean filaOcupada = ordemRepository.findByVilaId(vila.getId()).stream()

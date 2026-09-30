@@ -101,7 +101,7 @@ public class JogoMapper {
 				.collect(Collectors.toMap(Predio::getTipo, Predio::getNivel));
 		List<Cultivo> cultivosCanteiros = estado.canteiros().stream().map(Canteiro::getCultivo).toList();
 
-		CalculadoraProducao calculadora = new CalculadoraProducao(velocidade);
+		CalculadoraProducao calculadora = new CalculadoraProducao(velocidade, jogoProperties.curvaNiveis());
 		Map<TipoRecurso, Long> taxaBasePorRecurso = calculadora.taxaHoraPorRecurso(niveisPredio, cultivosCanteiros);
 		Map<TipoRecurso, Long> producaoPorHora = new EnumMap<>(TipoRecurso.class);
 		for (TipoRecurso recurso : TipoRecurso.values()) {
@@ -109,7 +109,7 @@ public class JogoMapper {
 		}
 
 		int nivelArmazem = niveisPredio.getOrDefault(TipoPredio.ARMAZEM, 1);
-		long capacidadeUnidade = TipoRecurso.capacidadeArmazem(Math.max(1, nivelArmazem));
+		long capacidadeUnidade = TipoRecurso.capacidadeArmazem(Math.max(1, nivelArmazem), jogoProperties.curvaNiveis());
 		Map<TipoRecurso, Long> capacidade = new EnumMap<>(TipoRecurso.class);
 		for (TipoRecurso recurso : TipoRecurso.values()) {
 			capacidade.put(recurso, capacidadeUnidade);
@@ -144,6 +144,9 @@ public class JogoMapper {
 		int nivelQuartel = niveisPredio.getOrDefault(TipoPredio.QUARTEL, 0);
 		int capacidadeExercito = nivelQuartel <= 0 ? 0 : TipoPredio.QUARTEL.capacidadeExercito(nivelQuartel);
 
+		int nivelForja = niveisPredio.getOrDefault(TipoPredio.FORJA, 0);
+		int nivelMaximoForjavel = nivelForja <= 0 ? 0 : TipoPredio.FORJA.nivelMaximoForjavel(nivelForja);
+
 		List<OrdemDto> ordens = estado.ordens().stream()
 				.map(ordem -> new OrdemDto(ordem.getId(), ordem.getCategoria(), ordem.getAlvo(), ordem.getNivel(),
 						ordem.getQuantidade(), ordem.getIniciadaEm(), ordem.getConcluiEm()))
@@ -157,7 +160,7 @@ public class JogoMapper {
 
 		return new VilaDto(agora, vila.getNome(), recursos, capacidade, producaoPorHora,
 				vila.getMasmorraNivelLiberado(), batalhaAtivaId, predios, canteiros, sementes, itens, unidades,
-				capacidadeExercito, ordens);
+				capacidadeExercito, nivelMaximoForjavel, ordens);
 	}
 
 	private PredioDto toPredioDto(Predio predio, List<Ordem> ordens, Instant agora, int velocidade) {
@@ -167,7 +170,7 @@ public class JogoMapper {
 		ProximoNivelDto proximoNivel = null;
 		if (nivel < TipoPredio.NIVEL_MAXIMO) {
 			int proximoNivelNumero = nivel + 1;
-			proximoNivel = new ProximoNivelDto(proximoNivelNumero, toCustoDto(tipo.custo(proximoNivelNumero)),
+			proximoNivel = new ProximoNivelDto(proximoNivelNumero, toCustoDto(tipo.custo(proximoNivelNumero, jogoProperties.curvaNiveis())),
 					aplicarVelocidade(tipo.tempoSegundos(proximoNivelNumero), velocidade));
 		}
 
@@ -324,7 +327,7 @@ public class JogoMapper {
 		for (TipoPredio tipo : TipoPredio.values()) {
 			List<ProximoNivelDto> niveis = new ArrayList<>();
 			for (int nivel = 1; nivel <= TipoPredio.NIVEL_MAXIMO; nivel++) {
-				niveis.add(new ProximoNivelDto(nivel, toCustoDto(tipo.custo(nivel)),
+				niveis.add(new ProximoNivelDto(nivel, toCustoDto(tipo.custo(nivel, jogoProperties.curvaNiveis())),
 						aplicarVelocidade(tipo.tempoSegundos(nivel), velocidade)));
 			}
 			predios.put(tipo, niveis);

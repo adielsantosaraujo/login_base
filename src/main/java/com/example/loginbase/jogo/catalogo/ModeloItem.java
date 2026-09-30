@@ -6,7 +6,7 @@ import static com.example.loginbase.jogo.catalogo.TipoRecurso.MADEIRA;
 
 /**
  * Modelos de item (armas e armaduras), forjáveis na Forja com nível próprio
- * (L, 1 a 5) e status {@code DISPONIVEL}, {@code RESERVADO} ou
+ * (L, 1 a 23) e status {@code DISPONIVEL}, {@code RESERVADO} ou
  * {@code EQUIPADO}. Origem: {@code FORJA} ou {@code MASMORRA}.
  */
 public enum ModeloItem {
@@ -17,7 +17,7 @@ public enum ModeloItem {
 	ARMADURA_COURO(CategoriaItem.ARMADURA, Custo.de(COMIDA, 20, MADEIRA, 10, FERRO, 5), 45),
 	ARMADURA_FERRO(CategoriaItem.ARMADURA, Custo.de(MADEIRA, 10, FERRO, 40), 90);
 
-	public static final int NIVEL_MAXIMO = 5;
+	public static final int NIVEL_MAXIMO = 23;
 	public static final int QUANTIDADE_MAXIMA_ORDEM = 5;
 
 	private final CategoriaItem categoria;

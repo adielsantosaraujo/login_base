@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.3.0 |
+| Versão | 1.4.0 |
 | Data | 2026-09-28 |
-| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Keep a Changelog 1.1 (adaptado por change OpenSpec) |
 | Público | todos |
 
@@ -24,6 +24,7 @@
 | 6 | add-city-builder-game | Arquivada (2026-09-27) | 2026-09-27 | 1 | 25 | 36 | 4.268.464 |
 | 7 | add-frontend-build | Implementada | 2026-09-27 | 1 | 6 | n/d | n/d |
 | 8 | add-soldier-names-batch-slots | Implementada | 2026-09-28 | 1 | 6 | n/d | n/d |
+| 9 | raise-building-max-level-100 | Implementada | 2026-09-28 | n/d | 5 | n/d | n/d |
 
 ---
 
@@ -265,6 +266,52 @@
 
 ---
 
+### Change 9: raise-building-max-level-100
+
+**Status:** Implementada · **Propósito:** Estender limite máximo de nível de prédios de 5 para 100, com fórmulas escaláveis e expoente configurável
+
+**Commits:**
+
+| Hash | Data | Mensagem |
+|---|---|---|
+| (a documentar) | 2026-09-28 | Implementa custo/capacidade/tempo em duas faixas, canteiros escalonados, nível forjável por faixa, migração V5 de constraints |
+
+**Funcionalidades:**
+
+- **Adicionado:**
+  - **Nível máximo de prédio:** estendido de 5 para **100** (`TipoPredio.NIVEL_MAXIMO = 100`).
+  - **Fórmulas de custo (duas faixas):** Níveis 1–5 inalterados (`base × 1,5^(N−1)`); níveis 6–100: `round_half_up(base × 1,5^4 × (N/5)^p)` onde p = `JOGO_EXPOENTE_CURVA`.
+  - **Capacidade do armazém (duas faixas):** Níveis 1–5 inalterados (`500 × 2^(N−1)`); níveis 6–100: `round_half_up(8000 × (N/5)^p)`.
+  - **Expoente configurável:** `JOGO_EXPOENTE_CURVA` (padrão 1,5, faixa 1,0–2,0, múltiplo de 0,25); validado na inicialização via `CurvaNiveis`.
+  - **Tempo de construção (duas faixas):** Níveis 1–5 inalterados (`tempoBase × 2^(N−1)`); níveis 6–100 linear: `ceil(tempoBase × 16 × N / 5)`.
+  - **Canteiros da fazenda (escalonados):** Níveis 1–5 = N canteiros; níveis 6–100 = `5 + ⌊(N−5)/5⌋` (24 no nível 100). Criação condicional em `AplicadorOrdens`.
+  - **Nível máximo forjável (por faixas):** N ≤ 10 → itens até N; 11 ≤ N ≤ 50 → `10 + ⌊(N−10)/5⌋`; 51 ≤ N ≤ 100 → `18 + ⌊(N−50)/10⌋` (23 no nível 100). Campo `nivelMaximoForjavel` em `VilaDto`.
+  - **Produção sem overflow:** `Math.multiplyExact` em `CalculadoraProducao.produzirAte` com saturação na capacidade.
+  - **Banco (V5):** Nova migração `V5__niveis_estendidos.sql` alterando constraints (prédio 0–100, canteiro 1–24, item 1–23). Reversão da edição do V3 (volta a 0–5).
+  - **ADR 0025:** Novo documento registrando decisão sobre curva de progressão configurável.
+  - **Documentação:** Atualização de docs 01, 02, 03, 04, 05, 06, 08, 09, 10, 12*, 13, 14, 15, 16 (este), 17, README.md, índice de ADRs.
+
+- **Modificado:**
+  - `TipoPredio`, `TipoRecurso`, `Custo`, `ModeloItem` (fórmulas com duas faixas e CurvaNiveis).
+  - `JogoProperties` (nova propriedade `expoenteCurva`, novo método `curvaNiveis()`).
+  - `ConstrucaoService`, `FazendaService`, `ForjaService`, `VilaService`, `CalculadoraProducao`, `AplicadorOrdens`, `MasmorraService`, `GeradorLoot`.
+  - `ForjaView.vue`, `QuartelView.vue` (limitadores por nível máximo forjável, quartel lista níveis do inventário).
+
+- **BREAKING:**
+  - `GET /api/jogo/catalogo` passa a trazer 100 níveis por prédio (8×100 = 800 entradas); contrato muda.
+  - `ModeloItem.NIVEL_MAXIMO` muda de 5 para 23.
+  - `VilaDto` ganha campo `nivelMaximoForjavel`.
+
+- **Capabilities:**
+  - Modificadas (7): `game-buildings`, `game-village`, `game-farming`, `game-forge`, `game-army`, `game-data`, `game-frontend`.
+
+- **Estatísticas:**
+  - **5 tasks** (1.1–5.1; fórmulas/ADR, GDD/itens, requisitos, dados/operação, manual/glossário/histórico/README).
+  - **Progresso:** 5/5 tasks concluídas (100%).
+  - **Testes:** Validação de overflow, fórmulas com p ∈ {1,0; 1,25; 1,5; 1,75; 2,0}, viabilidade de custos/capacidades.
+
+---
+
 ## 3. Commits sem Change OpenSpec
 
 Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolução posterior:
@@ -383,6 +430,7 @@ Alguns commits evolutivos ocorreram fora do ciclo formal de change ou como evolu
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.4.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: prédios até nível 100, fórmulas em duas faixas, canteiros até 24, nível forjável por faixa, expoente configurável, ADR 0025 | Adiel, com apoio de agentes Claude |
 | 1.3.0 | 2026-09-28 | Change add-soldier-names-batch-slots implementada: nomes com sufixo ordinal, treino em lote, detalhe com 9 slots, troca de equipamento, ADR 0024 | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto, descreve funcionalidades entregues | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |

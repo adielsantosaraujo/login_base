@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-09-28 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-soldier-names-batch-slots` implementada |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | ER + dicionário de dados |
 | Público | Desenvolvedores, DBAs |
-| Fontes | `src/main/resources/db/migration/V1__controle_acesso.sql`, `V2__perfil_admin.sql`, `V3__jogo.sql`, `V4__unidade_nome_e_lote_treino.sql`; `src/main/java/com/example/loginbase/jogo/dominio/*.java` |
+| Fontes | `src/main/resources/db/migration/V1__controle_acesso.sql`, `V2__perfil_admin.sql`, `V3__jogo.sql`, `V4__unidade_nome_e_lote_treino.sql`, `V5__niveis_estendidos.sql`; `src/main/java/com/example/loginbase/jogo/dominio/*.java` |
 
 > Parte da [documentação do login_base](README.md). Apresenta o esquema do banco de dados, dicionário de tabelas, enumerações, estruturas JSON de batalhas e regras de integridade.
 
@@ -407,7 +407,7 @@ erDiagram
 | `id` | `bigint` | PK, identity | Identificador único |
 | `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
 | `tipo` | `varchar(30)` | NOT NULL, enum: `TipoPredio` | CENTRO_VILA, ARMAZEM, FAZENDA, SERRARIA, PEDREIRA, MINA_FERRO, FORJA, QUARTEL |
-| `nivel` | `int` | NOT NULL, CHECK `BETWEEN 0 AND 5` | Nível de evolução (0 = não construído, 1..5 = construído) |
+| `nivel` | `int` | NOT NULL, CHECK `BETWEEN 0 AND 100` | Nível de evolução (0 = não construído, 1..100 = construído) |
 | `criado_em` | `timestamptz` | NOT NULL | Marca de criação |
 | `criado_por` | `varchar(150)` | NOT NULL | Quem criou |
 | `alterado_em` | `timestamptz` | NOT NULL | Última alteração |
@@ -429,7 +429,7 @@ erDiagram
 |-------|------|-------------|-----------|
 | `id` | `bigint` | PK, identity | Identificador único |
 | `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
-| `posicao` | `int` | NOT NULL, CHECK `BETWEEN 1 AND 5` | Número do canteiro (1..5) |
+| `posicao` | `int` | NOT NULL, CHECK `BETWEEN 1 AND 24` | Número do canteiro (1..24) |
 | `cultivo` | `varchar(30)` | NOT NULL, enum: `Cultivo` | TRIGO, MILHO, BATATA, ABOBORA_DOURADA |
 | `plantado_em` | `timestamptz` | NOT NULL | Quando o cultivo atual foi plantado (não há colheita; a produção é contínua) |
 | `criado_em` | `timestamptz` | NOT NULL | Marca de criação |
@@ -443,7 +443,7 @@ erDiagram
 - Primária: `pk_jogo_canteiros`
 - Comum: `ix_jogo_canteiros_vila`
 
-**Observação:** Número de canteiros disponíveis = nível da FAZENDA.
+**Observação:** Número de canteiros disponíveis = N para N ≤ 5, ou 5 + ⌊(N−5)/5⌋ para N > 5 (máximo 24 em N100).
 
 ---
 
@@ -481,7 +481,7 @@ erDiagram
 | `id` | `bigint` | PK, identity | Identificador único |
 | `vila_id` | `bigint` | FK → `jogo_vilas.id`, NOT NULL | Qual vila |
 | `modelo` | `varchar(30)` | NOT NULL, enum: `ModeloItem` | ESPADA, LANCA, ARCO, ARMADURA_COURO, ARMADURA_FERRO |
-| `nivel` | `int` | NOT NULL, CHECK `BETWEEN 1 AND 5` | Nível de qualidade (1..5) |
+| `nivel` | `int` | NOT NULL, CHECK `BETWEEN 1 AND 23` | Nível de qualidade (1..23) |
 | `origem` | `varchar(20)` | NOT NULL, enum: `OrigemItem` | FORJA, MASMORRA |
 | `status` | `varchar(20)` | NOT NULL, enum: `StatusItem` | DISPONIVEL, RESERVADO, EQUIPADO |
 | `ordem_id` | `bigint` | FK → `jogo_ordens.id`, nullable | Ordem de treino que reservou este item (V4+) |
@@ -611,6 +611,27 @@ erDiagram
 
 ---
 
+### Notas sobre Migration V5 (Níveis estendidos até 100)
+
+**Change:** [`raise-building-max-level-100`](../openspec/changes/raise-building-max-level-100/)
+
+**Migration:** [`V5__niveis_estendidos.sql`](/src/main/resources/db/migration/V5__niveis_estendidos.sql)
+
+#### Mudanças de Schema
+
+1. **Constraint `ck_jogo_predios_nivel`**: `0..5` → `0..100` (prédios podem subir até 100).
+2. **Constraint `ck_jogo_canteiros_posicao`**: `1..5` → `1..24` (máximo 24 canteiros em N100).
+3. **Constraint `ck_jogo_itens_nivel`**: `1..5` → `1..23` (itens forjáveis até nível 23).
+4. **Nenhuma migração de dados**: as faixas apenas se ampliam, registros existentes permanecem válidos.
+
+#### Nota Operacional — Banco de Desenvolvimento
+
+O arquivo `V3__jogo.sql` foi editado no commit anterior (19ebb28) para incluir a constraint `0..100` em prédios. Ao reverter o arquivo para seu conteúdo de 19ebb28^ (com constraint `0..5`), o Flyway acusará checksum divergente no banco de desenvolvimento.
+
+**Procedimento:** Não executar `flyway repair` (reescreve histórico). Em vez disso, o usuário deve limpar manualmente o banco de desenvolvimento (usando comandos diretos no Postgres ou limpando o volume Docker com `make down_v`) **antes** de executar a aplicação ou os testes. O Flyway então reaplicará todas as migrações a partir do zero: V1 → V2 → V3 (com constraint `0..5`) → V4 → V5 (com constraint `0..100`).
+
+---
+
 ### Notas sobre Migration V4 (Treino em Lote, Nomes e Sufixos)
 
 **Change:** [`add-soldier-names-batch-slots`](../openspec/changes/add-soldier-names-batch-slots/)
@@ -678,7 +699,11 @@ PEDRA
 FERRO
 ```
 
-**Capacidade por nível de ARMAZEM:** `500 × 2^(nível-1)` unidades por recurso (× 1000 em milésimos)
+**Capacidade por nível de ARMAZEM:** 
+- Nível 1–5: `500 × 2^(nível-1)` unidades por recurso
+- Nível 6–100: `round_half_up(8000 × (nível/5)^p)` unidades por recurso, onde `p` é o expoente configurado (padrão 1,5)
+
+(× 1000 em milésimos)
 
 ---
 
@@ -704,7 +729,7 @@ ARMADURA_COURO
 ARMADURA_FERRO
 ```
 
-**Nível máximo:** 5
+**Nível máximo:** 23
 
 ---
 
@@ -909,6 +934,8 @@ Isso permite rastreamento completo de quem criou/alterou cada registro e quando.
 - `/src/main/resources/db/migration/V1__controle_acesso.sql`
 - `/src/main/resources/db/migration/V2__perfil_admin.sql`
 - `/src/main/resources/db/migration/V3__jogo.sql`
+- `/src/main/resources/db/migration/V4__unidade_nome_e_lote_treino.sql`
+- `/src/main/resources/db/migration/V5__niveis_estendidos.sql`
 - `/src/main/java/com/example/loginbase/jogo/catalogo/` — Enums e constantes
 - `/src/main/java/com/example/loginbase/jogo/dominio/` — Entidades JPA
 
@@ -918,4 +945,6 @@ Isso permite rastreamento completo de quem criou/alterou cada registro e quando.
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.2.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: níveis até 100, canteiros até 24, itens até nível 23, capacidade em duas faixas, V5 com nota operacional | Adiel, com apoio de agentes Claude |
+| 1.1.0 | 2026-09-27 | Change add-soldier-names-batch-slots implementada: nomes, sufixos, treino em lote | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

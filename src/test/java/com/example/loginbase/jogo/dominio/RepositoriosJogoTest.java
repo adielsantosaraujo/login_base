@@ -24,7 +24,7 @@ import com.example.loginbase.jogo.catalogo.TipoPredio;
 
 /**
  * Testa o mapeamento JPA das entidades do jogo contra o schema real de
- * {@code V3__jogo.sql}/{@code V4__unidade_nome_e_lote_treino.sql} (Postgres
+ * {@code V3__jogo.sql}/{@code V4__unidade_nome_e_lote_treino.sql}/{@code V5__niveis_estendidos.sql} (Postgres
  * do {@code docker-compose}, iniciado via {@code make up}): grava/lê
  * entidades, associa filhas à vila e verifica as unique constraints.
  * {@code replace = NONE} para usar o datasource real (não substitui por um
@@ -171,6 +171,84 @@ class RepositoriosJogoTest {
 		duplicado.setNivel(2);
 
 		assertThatThrownBy(() -> predioRepository.saveAndFlush(duplicado))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	private Predio novoPredio(Vila vila, int nivel) {
+		Predio predio = new Predio();
+		predio.setVilaId(vila.getId());
+		predio.setTipo(TipoPredio.SERRARIA);
+		predio.setNivel(nivel);
+		return predio;
+	}
+
+	private Canteiro novoCanteiro(Vila vila, int posicao) {
+		Canteiro canteiro = new Canteiro();
+		canteiro.setVilaId(vila.getId());
+		canteiro.setPosicao(posicao);
+		canteiro.setCultivo(Cultivo.TRIGO);
+		canteiro.setPlantadoEm(Instant.now());
+		return canteiro;
+	}
+
+	private Item novoItem(Vila vila, int nivel) {
+		Item item = new Item();
+		item.setVilaId(vila.getId());
+		item.setModelo(ModeloItem.ESPADA);
+		item.setNivel(nivel);
+		item.setOrigem(OrigemItem.FORJA);
+		item.setStatus(StatusItem.DISPONIVEL);
+		return item;
+	}
+
+	@Test
+	void deveAceitarPredioNoNivelCem() {
+		Vila vila = criarVila(criarUsuario("predio-100@teste.local").getId());
+
+		Predio salvo = predioRepository.saveAndFlush(novoPredio(vila, 100));
+
+		assertThat(salvo.getNivel()).isEqualTo(100);
+	}
+
+	@Test
+	void deveRejeitarPredioNoNivelCentoEUm() {
+		Vila vila = criarVila(criarUsuario("predio-101@teste.local").getId());
+
+		assertThatThrownBy(() -> predioRepository.saveAndFlush(novoPredio(vila, 101)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void deveAceitarCanteiroNaPosicaoVinteEQuatro() {
+		Vila vila = criarVila(criarUsuario("canteiro-24@teste.local").getId());
+
+		Canteiro salvo = canteiroRepository.saveAndFlush(novoCanteiro(vila, 24));
+
+		assertThat(salvo.getPosicao()).isEqualTo(24);
+	}
+
+	@Test
+	void deveRejeitarCanteiroNaPosicaoVinteECinco() {
+		Vila vila = criarVila(criarUsuario("canteiro-25@teste.local").getId());
+
+		assertThatThrownBy(() -> canteiroRepository.saveAndFlush(novoCanteiro(vila, 25)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void deveAceitarItemNoNivelVinteETres() {
+		Vila vila = criarVila(criarUsuario("item-23@teste.local").getId());
+
+		Item salvo = itemRepository.saveAndFlush(novoItem(vila, 23));
+
+		assertThat(salvo.getNivel()).isEqualTo(23);
+	}
+
+	@Test
+	void deveRejeitarItemNoNivelVinteEQuatro() {
+		Vila vila = criarVila(criarUsuario("item-24@teste.local").getId());
+
+		assertThatThrownBy(() -> itemRepository.saveAndFlush(novoItem(vila, 24)))
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 

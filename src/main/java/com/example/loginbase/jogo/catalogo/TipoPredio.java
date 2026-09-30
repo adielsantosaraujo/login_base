@@ -5,10 +5,14 @@ import static com.example.loginbase.jogo.catalogo.TipoRecurso.MADEIRA;
 import static com.example.loginbase.jogo.catalogo.TipoRecurso.PEDRA;
 
 /**
- * Tipos de prédio da vila (um de cada tipo por vila, níveis 0 a 5; nível 0 =
- * não construído). Custo para atingir o nível N =
- * {@code round_half_up(custoBase × 1,5^(N-1))}; tempo de construção =
- * {@code tempoBase × 2^(N-1)} segundos.
+ * Tipos de prédio da vila (um de cada tipo por vila, níveis 0 a 100; nível 0 =
+ * não construído). Fórmulas em duas faixas:
+ * <ul>
+ * <li>N ≤ 5: custo {@code round_half_up(custoBase × 1,5^(N-1))}; tempo
+ * {@code tempoBase × 2^(N-1)} segundos;</li>
+ * <li>N &gt; 5: custo {@code round_half_up(custoBase × 5,0625 × (N/5)^p)} (ver
+ * {@link CurvaNiveis}); tempo {@code (tempoBase × 16 × N + 4) / 5} segundos (linear).</li>
+ * </ul>
  */
 public enum TipoPredio {
 
@@ -31,21 +35,28 @@ public enum TipoPredio {
 		this.tempoBaseSegundos = tempoBaseSegundos;
 	}
 
-	public Custo custo(int nivel) {
+	public static final int NIVEL_FIM_FAIXA_INICIAL = 5;
+
+	public static final int NUMERO_MAXIMO_CANTEIROS = 24;
+
+	public Custo custo(int nivel, CurvaNiveis curva) {
 		validarNivel(nivel);
-		return custoBase.paraNivel(nivel);
+		return custoBase.paraNivel(nivel, curva);
 	}
 
 	public long tempoSegundos(int nivel) {
 		validarNivel(nivel);
-		return (long) tempoBaseSegundos << (nivel - 1);
+		if (nivel <= NIVEL_FIM_FAIXA_INICIAL) {
+			return (long) tempoBaseSegundos << (nivel - 1);
+		}
+		return (tempoBaseSegundos * 16L * nivel + 4) / 5;
 	}
 
 	/** ARMAZEM: capacidade por recurso no nível informado. */
-	public long capacidadeRecurso(int nivel) {
+	public long capacidadeRecurso(int nivel, CurvaNiveis curva) {
 		exigirTipo(ARMAZEM);
 		validarNivel(nivel);
-		return TipoRecurso.capacidadeArmazem(nivel);
+		return TipoRecurso.capacidadeArmazem(nivel, curva);
 	}
 
 	/** SERRARIA/PEDREIRA/MINA_FERRO: produção adicional por hora no nível informado. */
@@ -63,14 +74,17 @@ public enum TipoPredio {
 	public int numeroCanteiros(int nivel) {
 		exigirTipo(FAZENDA);
 		validarNivel(nivel);
-		return nivel;
+		return nivel <= 5 ? nivel : 5 + (nivel - 5) / 5;
 	}
 
 	/** FORJA: nível máximo de item forjável no nível informado. */
 	public int nivelMaximoForjavel(int nivel) {
 		exigirTipo(FORJA);
 		validarNivel(nivel);
-		return nivel;
+		if (nivel <= 10) {
+			return nivel;
+		}
+		return nivel <= 50 ? 10 + (nivel - 10) / 5 : 18 + (nivel - 50) / 10;
 	}
 
 	/** QUARTEL: capacidade do exército (unidades + em treino) no nível informado. */

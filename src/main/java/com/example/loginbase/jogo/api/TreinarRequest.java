@@ -11,7 +11,7 @@ import com.example.loginbase.jogo.catalogo.TipoTropa;
  * Corpo de {@code POST /api/jogo/quartel/ordens} (ver spec game-army e
  * design.md, decisões D4 e D7). Seleção por configuração (nível da arma,
  * modelo/nível da armadura), não por id específico: {@code armaNivel} e
- * {@code armaduraNivel} MUST estar entre 1 e {@link ModeloItem#NIVEL_MAXIMO};
+ * {@code armaduraNivel} MUST estar entre 1 e {@link ModeloItem#NIVEL_MAXIMO} (faixa 1–23);
  * {@code quantidade} (tamanho do lote) MUST estar entre 1 e 15 — fora dessa
  * faixa, 400 {@code REQUISICAO_INVALIDA} via {@code @Valid}. A
  * disponibilidade real de armas/armaduras, a capacidade do exército e a

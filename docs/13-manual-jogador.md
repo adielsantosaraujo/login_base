@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
+| Versão | 1.3.0 |
 | Data | 2026-09-28 |
-| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Diátaxis (tutorial + how-to) |
 | Público | jogador final (linguagem acessível) |
 | Fontes | `frontend/src/views/*.vue`; `src/main/resources/templates/sistema/public/login.html`; `jogo/CodigoErro.java`; `openspec/changes/archive/2026-09-27-add-city-builder-game/design.md` §3–§11 |
@@ -159,7 +159,7 @@ Após vencer, você recebe:
 ### 3.2 Fazenda
 
 **O que mostra:**
-- **Título:** "Fazenda (nível N)" mostra quantos canteiros você tem (até 5).
+- **Título:** "Fazenda (nível N)" mostra quantos canteiros você tem (até 24 no nível 100; progride com o nível).
 - **Tabela de canteiros:** posição, cultivo atual, produção/hora e botões para selecionar novo cultivo e plantar.
 - **Estoque de sementes:** lista quantidade de cada semente.
 
@@ -167,6 +167,8 @@ Após vencer, você recebe:
 - Selecione um **novo cultivo** no dropdown (ex.: Milho).
 - Clique **Plantar** (instantâneo; consome 1 semente se não for Trigo).
 - Plantios subsequentes **preservam o progresso anterior** no canteiro.
+
+**Número de canteiros:** até o nível 5 da Fazenda, você tem N canteiros. Acima do nível 5, ganham-se novos canteiros a cada 5 níveis (ex.: nível 10 = 6 canteiros, nível 15 = 7, nível 100 = 24).
 
 **Cultivos disponíveis:**
 - **Trigo:** 20 comida/h, sem semente (sempre disponível).
@@ -178,13 +180,15 @@ Após vencer, você recebe:
 
 **O que mostra:**
 - **Fila de ordens:** ordens de forja em andamento.
-- **Criador de ordem:** dropdowns para modelo (Espada, Lança, Arco, Armadura de Couro, Armadura de Ferro), nível (1–5, limitado ao nível da Forja) e quantidade (1–5).
+- **Criador de ordem:** dropdowns para modelo (Espada, Lança, Arco, Armadura de Couro, Armadura de Ferro), nível (até o nível máximo forjável) e quantidade (1–5).
 
 **Como usar:**
 1. Selecione o modelo desejado.
-2. Escolha o nível (máximo: nível da Forja).
+2. Escolha o nível (máximo: nível máximo forjável pela sua Forja).
 3. Escolha a quantidade (1–5).
 4. Clique **Forjar**.
+
+**Nível máximo forjável:** limitado pelo nível da sua Forja. Ex.: Forja nível 15 permite forjar itens até nível 11. A progressão é: até nível 10 da Forja → itens N1–N10; nível 15 da Forja → até N11; nível 50 → até N18; nível 100 → até N23.
 
 **Tempo:** base do modelo × nível × quantidade ÷ velocidade, arredondado para cima.
 
@@ -192,13 +196,13 @@ Após vencer, você recebe:
 
 **O que mostra:**
 - **Fila de treino:** ordens de treino em andamento.
-- **Criador de ordem:** tipo de tropa (Soldado, Arqueiro, Lanceiro), seleção de arma (da categoria exigida) e armadura.
-- **Unidades disponíveis:** lista de tropas já treinadas, com tipo, HP e status.
+- **Criador de ordem:** tipo de tropa (Soldado, Arqueiro, Lanceiro), seleção de arma (da categoria exigida, de níveis disponíveis em seu inventário) e armadura.
+- **Unidades disponíveis:** lista de tropas já treinadas, com nome, tipo, HP e status.
 
 **Como usar:**
 1. Selecione o tipo de tropa (limitado ao nível do Quartel).
-2. Escolha a arma **exigida** (ex.: Soldado exige Espada).
-3. Escolha a armadura.
+2. Escolha a arma **exigida** (ex.: Soldado exige Espada). O seletor mostra apenas os níveis de arma que você possui em inventário.
+3. Escolha a armadura (níveis disponíveis).
 4. Clique **Treinar**.
 
 **Restrições:**
@@ -262,7 +266,9 @@ Após vencer, você recebe:
 3. Clique **Melhorar** (se houver recursos suficientes).
 4. A ordem aparecerá na fila.
 
-**Tempo:** `base × 2^(N-1)` segundos (ex.: Serraria: 120 s para ir de N1 a N2, 240 s para N3 — N é o nível que se quer atingir).
+**Tempo:** 
+- **Níveis 1–5:** `base × 2^(N-1)` segundos (ex.: Serraria: 120 s para N2, 240 s para N3).
+- **Níveis 6–100:** linear em `ceil(base × 16 × N / 5)` segundos. A transição no nível 6 é contínua.
 
 ### Plantar um cultivo
 
@@ -343,7 +349,7 @@ Se uma ação falhar, um aviso em **vermelho (Toast)** aparecerá com a mensagem
 |---|---|---|
 | `RECURSOS_INSUFICIENTES` | "Recursos insuficientes para esta ação." | Aguarde a produção ou melhore a economia. |
 | `FILA_OCUPADA` | "Já existe uma ordem em andamento nesta categoria." | Aguarde a ordem anterior terminar. |
-| `NIVEL_MAXIMO` | "Prédio já está no nível máximo (5)." | Não é possível melhorar mais. |
+| `NIVEL_MAXIMO` | "Prédio já está no nível máximo (100)." | Não é possível melhorar mais. |
 | `REQUISITO_NAO_ATENDIDO` | "Pré-requisito não atendido." | Construa/melhore o prédio necessário primeiro. |
 | `CANTEIRO_INEXISTENTE` | "Canteiro não encontrado." | Verifique a posição (1–N). |
 | `SEMENTE_INDISPONIVEL` | "Não há sementes deste cultivo." | Obtenha sementes em uma masmorra. |
@@ -434,6 +440,8 @@ Diversifique os canteiros para maximizar comida, pois treinar tropas consome rec
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: prédios até nível 100, canteiros até 24, forja limitada por nível máximo forjável, tempo em duas faixas | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-28 | Change add-soldier-names-batch-slots implementada: nomes com sufixo, treino em lote, detalhe com slots, troca de equipamento | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Change add-frontend-build implementada: SPA servida pelo backend em produção | Adiel, com apoio de agentes Claude |
 | 1.0.1 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) — endereço do servidor | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

@@ -141,6 +141,55 @@ class ForjaServiceTest {
 	}
 
 	@Test
+	void forjaNivel11RejeitaItemNivel11PorAcimaDoMaximoForjavel() {
+		Vila vila = prepararVilaComForja("forja-11-item-11", 11);
+
+		assertThatThrownBy(() -> forjaService.forjar(vila.getUsuarioId(), ModeloItem.ESPADA, 11, 1))
+				.isInstanceOf(RegraJogoException.class)
+				.satisfies(ex -> assertThat(((RegraJogoException) ex).getCodigo())
+						.isEqualTo(CodigoErro.REQUISITO_NAO_ATENDIDO));
+		assertThat(ordemRepository.findByVilaId(vila.getId())).isEmpty();
+	}
+
+	@Test
+	void forjaNivel15AceitaItemNivel11() {
+		Vila vila = prepararVilaComForja("forja-15-item-11", 15);
+		definirNivelArmazemERecursos(vila, 2, 500_000L);
+
+		forjaService.forjar(vila.getUsuarioId(), ModeloItem.ESPADA, 11, 1);
+
+		assertThat(ordemRepository.findByVilaId(vila.getId())).hasSize(1);
+	}
+
+	@Test
+	void forjaNivel100AceitaItemNivel23() {
+		Vila vila = prepararVilaComForja("forja-100-item-23", 100);
+		definirNivelArmazemERecursos(vila, 3, 1_000_000L);
+
+		forjaService.forjar(vila.getUsuarioId(), ModeloItem.ESPADA, 23, 1);
+
+		Ordem ordem = ordemRepository.findByVilaId(vila.getId()).stream()
+				.filter(o -> o.getCategoria() == CategoriaOrdem.FORJA)
+				.findFirst()
+				.orElseThrow();
+		assertThat(ordem.getNivel()).isEqualTo(23);
+	}
+
+	/** Ajusta o ARMAZEM e dá madeira/ferro (em milésimos) dentro da capacidade do nível. */
+	private void definirNivelArmazemERecursos(Vila vila, int nivelArmazem, long milesimos) {
+		Predio armazem = predioRepository.findByVilaId(vila.getId()).stream()
+				.filter(predio -> predio.getTipo() == TipoPredio.ARMAZEM)
+				.findFirst()
+				.orElseThrow();
+		armazem.setNivel(nivelArmazem);
+		predioRepository.saveAndFlush(armazem);
+		Vila atual = vilaRepository.findById(vila.getId()).orElseThrow();
+		atual.setMadeira(milesimos);
+		atual.setFerro(milesimos);
+		vilaRepository.saveAndFlush(atual);
+	}
+
+	@Test
 	void nivelOuQuantidadeForaDaFaixaRejeitaComRequisicaoInvalida() {
 		Vila vila = prepararVilaComForja("faixa-invalida", 5);
 
@@ -148,7 +197,7 @@ class ForjaServiceTest {
 				.isInstanceOf(RegraJogoException.class)
 				.satisfies(ex -> assertThat(((RegraJogoException) ex).getCodigo())
 						.isEqualTo(CodigoErro.REQUISICAO_INVALIDA));
-		assertThatThrownBy(() -> forjaService.forjar(vila.getUsuarioId(), ModeloItem.ESPADA, 6, 1))
+		assertThatThrownBy(() -> forjaService.forjar(vila.getUsuarioId(), ModeloItem.ESPADA, 24, 1))
 				.isInstanceOf(RegraJogoException.class)
 				.satisfies(ex -> assertThat(((RegraJogoException) ex).getCodigo())
 						.isEqualTo(CodigoErro.REQUISICAO_INVALIDA));

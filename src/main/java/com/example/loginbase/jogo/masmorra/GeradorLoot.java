@@ -30,6 +30,13 @@ public class GeradorLoot {
 	private static final int NIVEL_MASMORRA_MINIMO = 1;
 	private static final int NIVEL_MASMORRA_MAXIMO = 5;
 
+	/**
+	 * Nível máximo de item sorteado como loot ({@code min(5, N + d)}). Fixo em 5 e desacoplado de
+	 * {@link ModeloItem#NIVEL_MAXIMO} (23, faixa da Forja), para que o loot não mude quando o nível
+	 * máximo forjável aumenta.
+	 */
+	private static final int NIVEL_MAXIMO_ITEM_LOOT = 5;
+
 	private static final int LIMITE_ROLAGEM = 100;
 	private static final int LIMITE_SUPERIOR_SEMENTE = 34;
 	private static final int LIMITE_SUPERIOR_MATERIAL = 59;
@@ -133,7 +140,7 @@ public class GeradorLoot {
 
 	private Item sortearItem(int nivelMasmorra, Aleatorio aleatorio) {
 		ModeloItem modelo = MODELOS_ITEM_ORDEM.get(aleatorio.proximoInt(MODELOS_ITEM_ORDEM.size()));
-		int nivel = Math.min(ModeloItem.NIVEL_MAXIMO, nivelMasmorra + aleatorio.proximoInt(2));
+		int nivel = Math.min(NIVEL_MAXIMO_ITEM_LOOT, nivelMasmorra + aleatorio.proximoInt(2));
 
 		Item item = new Item();
 		item.setModelo(modelo);

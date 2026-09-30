@@ -11,6 +11,8 @@ import java.util.Map;
  */
 public record Custo(Map<TipoRecurso, Long> valores) {
 
+	private static final BigDecimal FATOR_NIVEL_5 = new BigDecimal("5.0625");
+
 	public Custo {
 		valores = Map.copyOf(valores);
 	}
@@ -40,11 +42,14 @@ public record Custo(Map<TipoRecurso, Long> valores) {
 	}
 
 	/**
-	 * Custo para atingir o nível informado de um prédio:
-	 * {@code round_half_up(base × 1,5^(nivel-1))} por recurso.
+	 * Custo para atingir o nível informado de um prédio, por recurso: até o nível 5,
+	 * {@code round_half_up(base × 1,5^(nivel-1))}; acima, {@code round_half_up(base × 5,0625 × (N/5)^p)}
+	 * (5,0625 = 1,5^4, custo do nível 5).
 	 */
-	public Custo paraNivel(int nivel) {
-		BigDecimal fator = new BigDecimal("1.5").pow(nivel - 1);
+	public Custo paraNivel(int nivel, CurvaNiveis curva) {
+		BigDecimal fator = nivel <= CurvaNiveis.NIVEL_BASE
+				? new BigDecimal("1.5").pow(nivel - 1)
+				: FATOR_NIVEL_5.multiply(curva.fator(nivel));
 		Map<TipoRecurso, Long> resultado = new EnumMap<>(TipoRecurso.class);
 		valores.forEach((recurso, base) -> resultado.put(recurso,
 				BigDecimal.valueOf(base).multiply(fator).setScale(0, RoundingMode.HALF_UP).longValueExact()));

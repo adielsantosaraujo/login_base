@@ -116,7 +116,7 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 |---|---|---|---|---|---|---|
 | `RF-VIL-001` | Criação automática da vila no 1º acesso (estado inicial) | game-village | jogo 3.2, 6.1 | VilaService.consultar() (cria no 1º acesso, REQUIRES_NEW), VilaController | VilaControllerWebMvcTest | Automatizado |
 | `RF-VIL-002` | Isolamento por usuário (outro usuário vê 404) | game-village | jogo 3.2 | VilaRepository.findByUsuarioId(), isolamento no controller | VilaControllerWebMvcTest, VilaServiceTest | Automatizado |
-| `RF-VIL-003` | Recursos e capacidade (madeira, pedra, ferro, comida em milésimos, limite por armazém) | game-village | jogo 3.1, 3.2 | CalculadoraProducao, Estoque, TipoPredio | CalculadoraProducaoTest (18), VilaServiceTest | Automatizado |
+| `RF-VIL-003` | Recursos e capacidade em duas faixas, produção sem overflow com saturação | game-village | jogo 3.1, 3.2 | CalculadoraProducao, Estoque, TipoPredio, CurvaNiveis | CalculadoraProducaoTest (18), VilaServiceTest, CurvaNiveisTest | Automatizado |
 | `RF-VIL-004` | Produção em tempo real calculada sob demanda (lazy, sem background jobs) | game-village | jogo 3.1, 3.2 | CalculadoraProducao.produzirAte(), VilaService | CalculadoraProducaoTest, VilaServiceTest | Automatizado |
 | `RF-VIL-005` | Conclusão de ordens sob demanda (sincronização preguiçosa) | game-village | jogo 3.2 | VilaService.sincronizar(), AplicadorOrdens.aplicar() | VilaServiceTest | Automatizado |
 | `RF-VIL-006` | Velocidade configurável (`JOGO_VELOCIDADE`, padrão 1) | game-village | jogo 1.4, 3.1 | JogoProperties, CalculadoraProducao | VilaServiceTest, CalculadoraProducaoTest | Automatizado |
@@ -129,19 +129,19 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
-| `RF-PRD-001` | Tipos de prédio e efeitos (8 tipos, 5 níveis, efeitos variados) | game-buildings | jogo 1.3, 4.1 | TipoPredio enum, efeitos documentados em design | CatalogoTest, ConstrucaoServiceTest | Automatizado |
-| `RF-PRD-002` | Custo e tempo por nível (fórmula: base × 1.5^(n-1), tempo × 2^(n-1)) | game-buildings | jogo 1.3, 4.1 | TipoPredio.custo(nivel), tempoSegundos(nivel) | CatalogoTest (11), ConstrucaoServiceTest (10) | Automatizado |
+| `RF-PRD-001` | Tipos de prédio e efeitos (8 tipos, níveis 0–100, fórmulas em duas faixas, expoente configurável) | game-buildings | jogo 1.3, 4.1 | TipoPredio enum, CurvaNiveis, JogoProperties | CatalogoTest, CurvaNiveisTest, JogoPropertiesTest | Automatizado |
+| `RF-PRD-002` | Custo e tempo por nível (fórmulas em duas faixas com expoente p) | game-buildings | jogo 1.3, 4.1 | TipoPredio.custo(nivel, curva), tempoSegundos(nivel), CurvaNiveis | CatalogoTest (11), CurvaNiveisTest, ConstrucaoServiceTest (10) | Automatizado |
 | `RF-PRD-003` | Limite pelo centro da vila (nível máximo = nível do centro) | game-buildings | jogo 4.1 | ConstrucaoService.melhorar() | ConstrucaoServiceTest | Automatizado |
 | `RF-PRD-004` | Pré-requisitos (FORJA exige MINA ≥1, QUARTEL exige FORJA ≥1) | game-buildings | jogo 4.1 | ConstrucaoService (ordem de validação) | ConstrucaoServiceTest | Automatizado |
 | `RF-PRD-005` | Fila de construção única (1 ordem por tipo por vila) | game-buildings | jogo 4.1 | OrdemRepository (unique vila+tipo), FILA_OCUPADA | ConstrucaoServiceTest | Automatizado |
-| `RF-PRD-006` | Nível máximo 5 | game-buildings | jogo 1.3, 4.1 | TipoPredio (valores 1–5), validação NIVEL_MAXIMO | ConstrucaoServiceTest | Automatizado |
+| `RF-PRD-006` | Nível máximo 100 | game-buildings | jogo 1.3, 4.1 | TipoPredio (NIVEL_MAXIMO = 100), validação NIVEL_MAXIMO | ConstrucaoServiceTest, CurvaNiveisTest | Automatizado |
 | `RF-PRD-007` | Débito no início, efeito na conclusão | game-buildings | jogo 4.1 | ConstrucaoService (débito antes de criar ordem) | ConstrucaoServiceTest | Automatizado |
 
 ### FAZ — Game Farming (4 RF, delta jogo)
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
-| `RF-FAZ-001` | Canteiros da fazenda (nº = nível da fazenda, até 5) | game-farming | jogo 2.1, 4.2 | Canteiro, CanteiroRepository | FazendaServiceTest (7) | Automatizado |
+| `RF-FAZ-001` | Canteiros da fazenda (nº = nível até 5; após: `5 + ⌊(N−5)/5⌋`, máx. 24; posição 1–24) | game-farming | jogo 2.1, 4.2 | Canteiro, TipoPredio.numeroCanteiros(), CanteiroRepository | FazendaServiceTest (7), RepositoriosJogoTest | Automatizado |
 | `RF-FAZ-002` | Cultivos e produção (4: TRIGO/MILHO/BATATA/ABOBORA_DOURADA com taxas 20/30/45/70 comida/h) | game-farming | jogo 1.3, 4.2 | Cultivo enum, CalculadoraProducao | FazendaServiceTest, CalculadoraProducaoTest | Automatizado |
 | `RF-FAZ-003` | Plantio consome semente | game-farming | jogo 4.2 | FazendaService.plantar(), EstoqueSemente | FazendaServiceTest | Automatizado |
 | `RF-FAZ-004` | Troca de cultivo preserva a produção anterior (milésimos acumulados) | game-farming | jogo 4.2 | Canteiro.cultivo, produção acumulada | FazendaServiceTest | Automatizado |
@@ -150,9 +150,9 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 
 | RF | Requirement | Change | Task(s) | Código | Teste(s) | Verificação |
 |---|---|---|---|---|---|---|
-| `RF-FOR-001` | Modelos e atributos por nível (5 modelos: ESPADA/LANCA/ARCO/ARMADURA_COURO/ARMADURA_FERRO, ataque/defesa/alcance por nível) | game-forge | jogo 1.3, 4.3 | ModeloItem enum, atributos em design | CatalogoTest, ForjaServiceTest | Automatizado |
-| `RF-FOR-002` | Receitas e ordem de forja (custo = base × nível × quantidade, tempo = ceil(base × nível × quantidade / velocidade)) | game-forge | jogo 1.3, 4.3 | ModeloItem.custoTotal(), tempoTotalSegundos(), ForjaService.forjar() | CatalogoTest, ForjaServiceTest (9) | Automatizado |
-| `RF-FOR-003` | Nível limitado pela forja (item nível ≤ nível FORJA) | game-forge | jogo 4.3 | ForjaService.forjar() | ForjaServiceTest | Automatizado |
+| `RF-FOR-001` | Modelos e atributos por nível 1–23 (5 modelos: ESPADA/LANCA/ARCO/ARMADURA_COURO/ARMADURA_FERRO, ataque/defesa/alcance derivados linearmente) | game-forge | jogo 1.3, 4.3 | ModeloItem enum (NIVEL_MAXIMO = 23), atributos em design | CatalogoTest, CurvaNiveisTest, ForjaServiceTest | Automatizado |
+| `RF-FOR-002` | Receitas e ordem de forja (fórmulas lineares até L23) | game-forge | jogo 1.3, 4.3 | ModeloItem.custoTotal(), tempoTotalSegundos(), ForjaService.forjar() | CatalogoTest, ForjaServiceTest (9), CurvaNiveisTest | Automatizado |
+| `RF-FOR-003` | Nível limitado pela forja (item nível ≤ nível máximo forjável por faixas) | game-forge | jogo 4.3 | ForjaService.forjar(), TipoPredio.nivelMaximoForjavel() | ForjaServiceTest, CurvaNiveisTest | Automatizado |
 | `RF-FOR-004` | Uma ordem por vez (fila de 1) | game-forge | jogo 4.3 | OrdemRepository (unique vila+FORJA), FILA_OCUPADA | ForjaServiceTest | Automatizado |
 | `RF-FOR-005` | Entrega na conclusão (Item criado com status DISPONIVEL) | game-forge | jogo 4.3 | ForjaService.aplicarOrdemForja(), Item.status | ForjaServiceTest | Automatizado |
 | `RF-FOR-006` | Validação da ordem (recursos, pré-requisitos, nível máximo) | game-forge | jogo 4.3 | ForjaService.forjar() | ForjaServiceTest | Automatizado |
@@ -163,7 +163,7 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 |---|---|---|---|---|---|---|
 | `RF-EXE-001` | Tipos de tropa e atributos derivados (3: SOLDADO/ARQUEIRO/LANCEIRO; HP = 30/22/40, ataque/defesa/alcance/movimento) | game-army | jogo 1.3, 4.4 | TipoTropa enum, atributos em design | CatalogoTest, QuartelServiceTest | Automatizado |
 | `RF-EXE-002` | Treino em lote consome N armas (modelo/nível exato, DISPONIVEL) + N armaduras (modelo/nível, DISPONIVEL); reservadas no início com ordem_id | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | QuartelService.treinar(), ItemRepository | QuartelServiceTest, VilaServiceTest | Automatizado |
-| `RF-EXE-003` | Validação: tipo válido, armaNível 1–5, armaduraModelo/Nível, quantidade 1–15, itens suficientes, capacidade, comida | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | QuartelService.treinar() + validações | QuartelServiceTest | Automatizado |
+| `RF-EXE-003` | Validação: tipo válido, armaNível 1–23, armaduraModelo/Nível 1–23, quantidade 1–15, itens suficientes, capacidade, comida | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | QuartelService.treinar() + validações | QuartelServiceTest | Automatizado |
 | `RF-EXE-004` | Tropas liberadas pelo nível do quartel (N1=SOLDADO, N2=+ARQUEIRO, N3=+LANCEIRO) | game-army | jogo 1.3, 4.4 | TipoTropa.nivelMinimoQuartel, validação | QuartelServiceTest, CatalogoTest | Automatizado |
 | `RF-EXE-005` | Capacidade do exército: cap = 3 × N − unidades_vivas − Σ quantidade_ordens_TREINO; rejeita se quantidade > capacidade | game-army + add-soldier-names-batch-slots | jogo 4.4, 4.2 | TipoPredio.capacidadeExercito(nivel), QuartelService | QuartelServiceTest, VilaServiceTest | Automatizado |
 | `RF-EXE-006` | Uma ordem de treino por vez (fila de 1) | game-army | jogo 4.4 | OrdemRepository (unique vila+TREINO), FILA_OCUPADA | QuartelServiceTest | Automatizado |
@@ -195,7 +195,7 @@ Navegue por **Capability** (ex.: ACD, AUT, VIL, COM) para agrupar requisitos rel
 | `RF-LOO-001` | Recursos garantidos (40N comida, 50N madeira/pedra, 20N ferro por nível) | game-dungeon-loot | jogo 5.2 | GeradorLoot.gerarRecursos(), Loot | GeradorLootTest (17) | Automatizado |
 | `RF-LOO-002` | Rolagens de loot (faixas 0–34 semente, 35–59 ferro, 60–99 item) | game-dungeon-loot | jogo 5.2 | GeradorLoot.gerar(), Aleatorio | GeradorLootTest | Automatizado |
 | `RF-LOO-003` | Sementes por nível (N1 MILHO; N2 +BATATA; N4 +ABOBORA_DOURADA; TRIGO não tem semente) | game-dungeon-loot | jogo 5.2 | GeradorLoot.gerar(), sortearSemente() | GeradorLootTest | Automatizado |
-| `RF-LOO-004` | Itens com nível próprio (1–5, distribuição por nível: min(5, N+0\|1)) | game-dungeon-loot | jogo 5.2 | GeradorLoot.gerarItens(), nível derivado | GeradorLootTest | Automatizado |
+| `RF-LOO-004` | Itens com nível próprio (1–5 em loot, distribuição por nível: min(5, N+0\|1); desacoplado do nível máximo de item forjável 23) | game-dungeon-loot | jogo 5.2 | GeradorLoot.gerarItens(), NIVEL_MAXIMO_ITEM_LOOT = 5 | GeradorLootTest | Automatizado |
 | `RF-LOO-005` | Nenhum loot na derrota | game-dungeon-loot | jogo 5.3 | MasmorraService (loot apenas em VITORIA) | MasmorraServiceTest | Automatizado |
 | `RF-LOO-006` | Loot registrado na batalha (Batalha.loot JSON) | game-dungeon-loot | jogo 5.3 | Batalha.loot, Loot classe | MasmorraServiceTest | Automatizado |
 

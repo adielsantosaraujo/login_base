@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.3.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Registro de riscos (ISO 31010) + backlog de evolução |
 | Público | líderes, arquitetos, desenvolvedores |
 
@@ -31,12 +31,13 @@ Riscos identificados nesta documentação (R-02, R-06 e R-10 derivam dos Risks d
 | R-11 | Clone limpo sem `make build_front` → erro 500 em `/` | **Média** | **Alto** | **Ativo — mitigado por docs** | Mitigação implementada: docs em `09-guia-desenvolvedor.md` §4.10, `10-implantacao-operacao.md` §5, README setup; CI futuro executa `make build_front` antes de `./mvnw package` / `docker build`. | **Médio**: template não existe até primeiro build. Documentação clara implementada. |
 | R-12 | Rota nova da SPA fora do `PaginaController` → F5/link direto dá 404 | **Média** | **Médio** | **Ativo — mitigado por design** | Lista explícita de rotas `/`, `/fazenda`, `/forja`, `/quartel`, `/masmorras`, `/batalhas/{id}` implementada em `PaginaController`. Mitigação: padrão documentado; considerar catch-all futuro se rotas crescerem demais. | **Médio**: risco de esquecer atualizar lista em mudanças futuras; trade-off entre segurança (lista) e flexibilidade (catch-all). |
 | R-13 | Build de produção depende de Docker | **Baixa** | **Médio** | **Ativo — aceito** | Docker já é obrigatório para dev (serviço `frontend`). Mitigação implementada: CI/CD futuro assume Docker disponível; sem Docker, sem build de produção (aceitável em projeto containerizado). | **Baixo**: alinhado com escolha de stack (Docker Compose obrigatório). |
+| R-14 | Balanceamento: itens N6–N23 muito fortes contra masmorras 1–5 (dano mínimo 1) | **Média** | **Médio** | **Ativo** | Aceito nesta change (raise-building-max-level-100); registrado em Open Questions do design.md. Loot e masmorras permanecem limitados a nível 5 (comportamento atual preservado). | **Médio**: sem balanceamento de masmorras, itens altos trivializam dungeons baixas. Mitigação: change futura de rebalanceamento de masmorras/dungeons. |
 
 ### Resumo de Risco
 
 - **Crítico:** 2 (R-01, R-08) → Exigem ação imediata se produção planejada.
 - **Alto:** 5 (R-02, R-03, R-04, R-05, R-11) → Mitigar em próximas changes; R-11 será documentado.
-- **Médio/Baixo:** 6 (R-06, R-07, R-09, R-10, R-12, R-13) → Backlog.
+- **Médio/Baixo:** 7 (R-06, R-07, R-09, R-10, R-12, R-13, R-14) → Backlog.
 
 ---
 
@@ -77,7 +78,7 @@ Consolidadas de `proposal.md`, `design.md`, specs, código-fonte e artefatos imp
 | ID | Donde Citado | Planejado/Documentado | Código Real | Documentação Afetada | Recomendação |
 |---|---|---|---|---|---|
 | **D-01** | `README.md` exemplo cURL | Login com `login=...&senha=...` sem `_csrf`; token de `.xsrfToken` do JSON catálogo | `CatalogoDto` **não tem** `xsrfToken`; token vem do cookie `XSRF-TOKEN` (lido pelo navegador); POST `/login` obriga `_csrf` (formulário ou header) | `06-api-rest.md` (exemplo corrigido), `17` (aqui) | Corrigir exemplo cURL na task 8.1 ou release notes; atualizados docs. **Status:** Resolvido em `16`, faltam exemplos. |
-| **D-02** | README padrão do jogo | "Canteiros até 5 por nível fazenda"; "Login com e-mail + senha" | Nº de canteiros **= nível da fazenda** (máx. 5, constraint `ck_jogo_canteiros_posicao 1-5`); **login aceita e-mail OU celular** | `12-gdd.md` (atualizado), `13-manual-jogador.md` | Ambos corretos no documento (código prevalece); sem ação adicional. **Status:** Resolvido. |
+| **D-02** | README padrão do jogo (pré-change 9) | "Canteiros até 5 por nível fazenda"; "Login com e-mail + senha" | **Pré-change 9:** Nº canteiros = nível (máx. 5). **Change 9 (raise-building-max-level-100):** Agora canteiros por faixa: N ≤ 5 = N canteiros; N > 5 = 5 + ⌊(N−5)/5⌋ (máx. 24 no nível 100). Constraint no banco: `ck_jogo_canteiros_posicao 1-24` (V5). **Login** aceita e-mail OU celular (sempre correto). | `12-gdd.md` (atualizado), `13-manual-jogador.md` (atualizado), README.md | **Status:** Resolvido (change 9 implementada, docs atualizadas). |
 | **D-03** | spec `game-village` › Operações serializadas | "Segunda melhoria simultânea → `422 RECURSOS_INSUFICIENTES`" | Ordem de validação em `ConstrucaoService`: **`FILA_OCUPADA` vem ANTES** de recursos → 2ª recebe `FILA_OCUPADA` | `02-requisitos.md` (registrado), `15-rastreabilidade.md` | Código correto (fila é mais relevante); spec levemente enganosa. Atualizar spec na revisão de divergências. **Status:** Código prevalece. |
 | **D-04** | spec `game-village`, design §1 | "Custos já refletem velocidade" | `JogoMapper.toCatalogoDto()` aplica velocidade **apenas aos tempos** (prédio, forja, treino); custos NÃO variam com velocidade | `02-requisitos.md` (clarificado), `06-api-rest.md` (campo `custo` sem velocity) | Código correto: Velocidade afeta **quando** construir, não o **preço**. Spec é confusa; testes validam. **Status:** Design incorreto; código prevalece. |
 | **D-05** | spec `game-village`, design § 4 | "`401 UNAUTHORIZED` como corpo" (JSON) em anônimo a `/api/**`; ref a "valores iniciais A.4" | `HttpStatusEntryPoint` devolve `401` **sem corpo**; "A.4" não existe (corresponde design §4, não spec) | `02-requisitos.md`, `06-api-rest.md` (example correto) | Especificação confusa. Código correto (sem corpo é padrão REST). **Status:** Design enganoso, docs corrigidas. |
@@ -186,6 +187,7 @@ Propostas de evolução (não aprovadas). Só os itens marcados com * constam co
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: novo risco R-14 (balanceamento itens N6–N23 vs. masmorras), resolve D-02 (canteiros agora por faixa, máx. 24) | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: atualiza R-11/R-12/R-13 para "Ativo — mitigado", D-13/D-14/D-15 para "Resolvida", roadmap CH-FRONT-BUILD marca como [x] realizado | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): riscos R-11 a R-13, dívida DT-14, divergências D-13 a D-16, roadmap CH-FRONT-BUILD | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial (jogo) | Adiel, com apoio de agentes Claude |

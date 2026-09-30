@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.3.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Glossário alfabético técnico e de negócio |
 | Público | todos (desenvolvedores, QA, jogadores) |
 | Fontes | `openspec/changes/archive/2026-09-27-add-city-builder-game/design.md`; `jogo/catalogo/*.java`; `jogo/dominio/*.java`; `CLAUDE.md`; `.claude/skills/dev-subagentes/SKILL.md`; `openspec/changes/add-frontend-build/design.md` e `proposal.md` |
@@ -25,7 +25,7 @@ Tipo de item forjável que confere ataque e alcance a uma tropa. Modelos: Espada
 Tipo de item forjável que confere defesa extra a uma tropa. Modelos: Armadura de Couro, Armadura de Ferro. Restrições de nível aplicáveis. Classe: `Item`.
 
 ### Armazém
-Prédio que aumenta a capacidade de estoque de recursos (madeira, pedra, ferro, comida) por nível. Nível N permite `500 × 2^(N-1)` unidades de cada recurso. Não é pré-requisito de outros prédios. Classe: `TipoPredio.ARMAZEM`.
+Prédio que aumenta a capacidade de estoque de recursos (madeira, pedra, ferro, comida) por nível. **Níveis 1–5:** `500 × 2^(N-1)` unidades; **níveis 6–100:** `round_half_up(8000 × (N/5)^p)` onde p é `JOGO_EXPOENTE_CURVA` (padrão 1,5). Não é pré-requisito de outros prédios. Classe: `TipoPredio.ARMAZEM`.
 
 ### Ataque (atributo)
 Número que representa o dano base de uma arma. Calculado como `6 + 2(L-1)` para Espada N1+. Reduzido pela defesa efetiva do alvo. Código: `AtributosItem.ataque()`, `Combatente.ataque()`.
@@ -34,10 +34,10 @@ Número que representa o dano base de uma arma. Calculado como `6 + 2(L-1)` para
 Encontro tático entre o jogador (até 4 unidades) e inimigos em masmorra. Persiste em `jogo_batalhas` com estado/log/loot em JSON. Máximo 30 turnos. Estados: `EM_ANDAMENTO`, `VITORIA`, `DERROTA`. Classe: `Batalha`.
 
 ### Canteiro
-Posição na Fazenda (1 a N, N = nível Fazenda, máx. 5) onde o jogador planta cultivos. Cada canteiro produz comida segundo o cultivo. Classe: `Canteiro`.
+Posição na Fazenda (1 a N, N = número de canteiros; máx. 24 no nível 100) onde o jogador planta cultivos. **Níveis 1–5:** N canteiros = nível. **Níveis 6–100:** N = 5 + ⌊(nível − 5)/5⌋. Cada canteiro produz comida segundo o cultivo. Classe: `Canteiro`.
 
 ### Capacidade
-Limite máximo de um recurso no armazém (comida, madeira, pedra, ferro). Calculada por `CalculadoraProducao.capacidadeMaxima(nível_armazem)` = `500 × 2^(N-1) × 1000` milésimos (500×2^(N-1) unidades). Quando cheia, produção para. Coluna: `jogo_vilas.{comida,madeira,pedra,ferro}`.
+Limite máximo de um recurso no armazém (comida, madeira, pedra, ferro). Calculada por `CalculadoraProducao.capacidadeMaxima(nível_armazem)`. **Níveis 1–5:** `500 × 2^(N-1) × 1000` milésimos; **níveis 6–100:** `round_half_up(8000 × (N/5)^p) × 1000` milésimos onde p é `JOGO_EXPOENTE_CURVA`. Quando cheia, produção para. Coluna: `jogo_vilas.{comida,madeira,pedra,ferro}`.
 
 ### Capacidade do exército
 Número máximo de unidades que podem estar na vila (treinadas ou em treino). Baseada em `3 × nível_quartel`. Verificado em `QuartelService.treinar()`.
@@ -71,6 +71,9 @@ Valor de HP reduzido de um combatente após um ataque. Calculado como `max(1, at
 
 ### Equilíbrio/Balanceamento
 Ajuste de números (custos, tempos, atributos) para manter jogo justo e progressão suave. Ver [GDD §14 — Exemplos numéricos](12-gdd/12.14-gdd-exemplos-numericos.md).
+
+### Expoente da curva
+Variável `JOGO_EXPOENTE_CURVA` (padrão 1,5) que controla o crescimento de custos e capacidades acima do nível 5. Faixa permitida: 1,0–2,0 em múltiplos de 0,25 (1,0 · 1,25 · 1,5 · 1,75 · 2,0). Validada na inicialização da aplicação. Aplicada nas fórmulas de custo (expoente p) e capacidade do armazém (expoente p). Propriedade: `app.jogo.expoente-curva` em `application.properties`.
 
 ### Esquadrão
 Seleção de até 4 unidades para uma batalha. Ordem fixa (J1, J2, J3, J4 = ID na ordem de seleção). Persiste durante a batalha. Classe: `IniciarBatalhaRequest.unidadeIds`.
@@ -129,8 +132,11 @@ Nível de progresso (0–5) de um prédio. Nível 0 = não construído. Custo e 
 ### Nivel liberado de masmorra
 Maior nível de masmorra que o jogador desbloqueou (1–5). Inicialmente 1. Incrementa com vitórias. Coluna: `jogo_vilas.masmorra_nivel_liberado`.
 
+### Nivel máximo forjável
+Nível máximo de item que pode ser forjado, limitado pelo nível da Forja. **Até nível 10 da Forja:** N; **níveis 11–50:** 10 + ⌊(N − 10)/5⌋; **níveis 51–100:** 18 + ⌊(N − 50)/10⌋. Exemplos: Forja N15 → N11 forjável; Forja N50 → N18; Forja N100 → N23. Campo: `VilaDto.nivelMaximoForjavel`.
+
 ### Nivel máximo
-Nível 5. Limite superior para prédios, itens e tropas. Hard cap na lógica de negócio. Constante: `TipoPredio.NIVEL_MAXIMO`.
+Nível 100. Limite superior para prédios. Hard cap na lógica de negócio. Constante: `TipoPredio.NIVEL_MAXIMO`. Masmorras e loot permanecem limitados a nível 5 (comportamento atual preservado).
 
 ### Obstáculo
 Célula no mapa de masmorra que não pode ser ocupada ou atravessada. 8 obstáculos fixos no mapa padrão. Bloqueiam movimento e pathfinding. Array: `MapaMasmorra.obstaculos()`.
@@ -151,7 +157,7 @@ Prédio que produz pedra. Nível N = +20×N pedra/h. Sem pré-requisito. Classe:
 Coordenada (x, y) no mapa de masmorra (0–7, 0–7). Usada para localizar combatentes e obstáculos. Record: `MapaMasmorra.Posicao`.
 
 ### Prédio
-Construção na vila (um de cada tipo). Tem nível (0–5), tipo, efeitos associados (capacidade, produção, etc.). Classe: `Predio`.
+Construção na vila (um de cada tipo). Tem nível (0–100), tipo, efeitos associados (capacidade, produção, custo, etc.). Classe: `Predio`.
 
 ### Produção
 Taxa de geração de recursos por hora. Calculada sob demanda por `CalculadoraProducao`, baseada em níveis de prédios produtivos e cultivos. Afetada por `JOGO_VELOCIDADE`.
@@ -184,7 +190,7 @@ Posição inicial de um inimigo no mapa. 5 pontos: S1, S2, S3, S4, S5. Inimigos 
 Estado de um item (DISPONIVEL, RESERVADO, EQUIPADO). Muda durante treino (DISPONIVEL → RESERVADO) e equipe em batalha (→ EQUIPADO). Enum: `StatusItem`.
 
 ### Tempo de construção
-Duração de uma ordem de construção: `tempoBase × 2^(N-1)` segundos. Afetado por `JOGO_VELOCIDADE` (divide o valor). Coluna: `jogo_ordens.conclui_em`.
+Duração de uma ordem de construção. **Níveis 1–5:** `tempoBase × 2^(N-1)` segundos. **Níveis 6–100:** `ceil(tempoBase × 16 × N / 5)` segundos. Afetado por `JOGO_VELOCIDADE` (divide o valor). Coluna: `jogo_ordens.conclui_em`.
 
 ### Tropa
 Unidade de combate treinada no Quartel. Composição: tipo + arma + armadura. Atributos derivados: HP (tipo), ataque/alcance (arma), defesa (tipo + armadura), movimento (tipo). Classe: `Unidade`.
@@ -416,6 +422,7 @@ Arquivo modelo em `openspec/templates/task.md` com seções padrão (objetivo, a
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: verbetes de armazém, capacidade, canteiros, prédios, tempo com duas faixas; novo verbete expoente curva e nível máximo forjável | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

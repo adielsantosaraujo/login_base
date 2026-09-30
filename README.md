@@ -268,18 +268,24 @@ Em container Docker (padrão `docker-compose.yml`), é `http://host.docker.inter
 Inteiro ≥ 1. Aumente para testes manuais (ex.: `60` = tudo 60× mais rápido). 
 Altere no `.env` ou na linha de comando: `JOGO_VELOCIDADE=10 make up`.
 
+**`JOGO_EXPOENTE_CURVA`** (padrão `1.5`): expoente p que controla o crescimento de custos e capacidades acima do nível 5. 
+Faixa permitida: 1,0 a 2,0 em múltiplos de 0,25 (válidos: 1,0 · 1,25 · 1,5 · 1,75 · 2,0). 
+Validado na inicialização; aplicação não sobe com valor inválido. 
+Afeta as fórmulas de custo (níveis 6–100: `base × 1,5^4 × (N/5)^p`) e capacidade do armazém (níveis 6–100: `8000 × (N/5)^p`). 
+Altere no `.env` ou na linha de comando: `JOGO_EXPOENTE_CURVA=1.25 make up`.
+
 ### Estrutura do jogo
 
 Uma vila possui:
 
 - **Recursos**: comida, madeira, pedra, ferro (produzidos/armazenados com limite de capacidade).
-- **Prédios** (um de cada tipo):
+- **Prédios** (um de cada tipo, níveis 0–100):
   - `CENTRO_VILA`: limita nível máximo dos outros.
-  - `ARMAZEM`: aumenta capacidade de armazenamento (nível N = 500 × 2^(N−1) por recurso).
+  - `ARMAZEM`: aumenta capacidade de armazenamento. **Níveis 1–5:** `500 × 2^(N−1)` por recurso. **Níveis 6–100:** `round_half_up(8000 × (N/5)^p)` por recurso, onde p = `JOGO_EXPOENTE_CURVA` (padrão 1,5).
   - `FAZENDA`, `SERRARIA`, `PEDREIRA`, `MINA_FERRO`: aumentam produção de recursos.
   - `FORJA`: cria armas (`ESPADA`, `LANCA`, `ARCO`) e armaduras (`ARMADURA_COURO`, `ARMADURA_FERRO`).
   - `QUARTEL`: treina tropas (`SOLDADO`, `ARQUEIRO`, `LANCEIRO`).
-- **Canteiros** (até 5 por nível de fazenda): plantam cultivos (`TRIGO`, `MILHO`, `BATATA`, `ABOBORA_DOURADA`) que produzem comida.
+- **Canteiros:** plantam cultivos (`TRIGO`, `MILHO`, `BATATA`, `ABOBORA_DOURADA`) que produzem comida. **Níveis 1–5 da Fazenda:** até N canteiros. **Níveis 6–100:** `5 + ⌊(N−5)/5⌋` canteiros (máx. 24 no nível 100).
 - **Batalhas em masmorras**: 5 níveis com inimigos; vitória libera próximo nível; combate tático em turno (mover, atacar, defender).
 
 ### Fluxo de jogo

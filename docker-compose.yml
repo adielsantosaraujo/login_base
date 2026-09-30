@@ -24,6 +24,7 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@loginbase.local}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       JOGO_VELOCIDADE: ${JOGO_VELOCIDADE:-1}
+      JOGO_EXPOENTE_CURVA: ${JOGO_EXPOENTE_CURVA:-1.5}
     ports:
       - "80:80"
 

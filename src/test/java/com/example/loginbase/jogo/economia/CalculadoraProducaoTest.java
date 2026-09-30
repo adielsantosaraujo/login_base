@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.example.loginbase.jogo.CodigoErro;
 import com.example.loginbase.jogo.RegraJogoException;
 import com.example.loginbase.jogo.catalogo.Cultivo;
+import com.example.loginbase.jogo.catalogo.CurvaNiveis;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
 
@@ -32,12 +33,12 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void construtorRejeitaVelocidadeMenorQueUm() {
-		assertThatThrownBy(() -> new CalculadoraProducao(0)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> new CalculadoraProducao(0, CurvaNiveis.PADRAO)).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
 	void taxaHoraSerrariaCresceComNivel() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 
 		Map<TipoRecurso, Long> n1 = calc.taxaHoraPorRecurso(Map.of(TipoPredio.SERRARIA, 1), List.of());
 		Map<TipoRecurso, Long> n2 = calc.taxaHoraPorRecurso(Map.of(TipoPredio.SERRARIA, 2), List.of());
@@ -48,7 +49,7 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void taxaHoraPedreiraEMinaFerroSeguemFormulasDoDesign() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 
 		Map<TipoRecurso, Long> taxas = calc.taxaHoraPorRecurso(
 				Map.of(TipoPredio.PEDREIRA, 3, TipoPredio.MINA_FERRO, 2), List.of());
@@ -59,7 +60,7 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void taxaHoraComidaSomaTodosOsCanteiros() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 
 		Map<TipoRecurso, Long> umCanteiro = calc.taxaHoraPorRecurso(Map.of(), List.of(Cultivo.TRIGO));
 		Map<TipoRecurso, Long> tresCanteiros = calc.taxaHoraPorRecurso(Map.of(),
@@ -71,7 +72,7 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void taxaHoraPredioNivelZeroOuAusenteNaoProduz() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 
 		Map<TipoRecurso, Long> taxas = calc.taxaHoraPorRecurso(Map.of(TipoPredio.SERRARIA, 0), List.of());
 
@@ -81,17 +82,24 @@ class CalculadoraProducaoTest {
 	}
 
 	@Test
+	void construtorRejeitaCurvaNula() {
+		assertThatThrownBy(() -> new CalculadoraProducao(1, null)).isInstanceOf(NullPointerException.class);
+	}
+
+	@Test
 	void capacidadeMaximaSeguerFormula500Vezes2ElevadoNMenos1EmMilesimos() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 
 		assertThat(calc.capacidadeMaxima(1)).isEqualTo(500_000L);
 		assertThat(calc.capacidadeMaxima(2)).isEqualTo(1_000_000L);
 		assertThat(calc.capacidadeMaxima(5)).isEqualTo(8_000_000L);
+		assertThat(calc.capacidadeMaxima(6)).isEqualTo(10_516_000L);
+		assertThat(calc.capacidadeMaxima(100)).isEqualTo(715_542_000L);
 	}
 
 	@Test
 	void producaoDeUmaHoraComSerrariaNivel1SomaTrintaUnidadesEmMilesimos() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 		Map<TipoRecurso, Long> taxas = calc.taxaHoraPorRecurso(Map.of(TipoPredio.SERRARIA, 1), List.of());
 		Estoque inicial = Estoque.vazio();
 
@@ -103,7 +111,7 @@ class CalculadoraProducaoTest {
 	@Test
 	void velocidadeMultiplicaTaxaEfetivaDeProducao() {
 		// taxa 30/h (serraria N1), velocidade 2, 1 hora real → efetivo 2h de produção base = +60 unidades
-		CalculadoraProducao calc = new CalculadoraProducao(2);
+		CalculadoraProducao calc = new CalculadoraProducao(2, CurvaNiveis.PADRAO);
 		Map<TipoRecurso, Long> taxas = calc.taxaHoraPorRecurso(Map.of(TipoPredio.SERRARIA, 1), List.of());
 		Estoque inicial = Estoque.vazio();
 
@@ -114,7 +122,7 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void esgotamentoDeCapacidadeNaoUltrapassaOLimite() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 		// taxa 100/h por 1 hora → ganho de 100 unidades, mas estoque parte de 450 com capacidade 500.
 		Map<TipoRecurso, Long> taxas = Map.of(COMIDA, 100L);
 		Estoque inicial = new Estoque(Map.of(COMIDA, 450_000L));
@@ -126,7 +134,7 @@ class CalculadoraProducaoTest {
 
 	@Test
 	void estoqueJaNoLimiteOuAcimaPermaneceInalterado() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 		Map<TipoRecurso, Long> taxas = Map.of(COMIDA, 100L);
 		Estoque noLimite = new Estoque(Map.of(COMIDA, 500_000L));
 
@@ -136,8 +144,32 @@ class CalculadoraProducaoTest {
 	}
 
 	@Test
+	void producaoQueEstouraLongSaturaNaCapacidadeSemValorNegativo() {
+		CalculadoraProducao calc = new CalculadoraProducao(1_000_000, CurvaNiveis.PADRAO);
+		long capacidade = calc.capacidadeMaxima(100);
+		Map<TipoRecurso, Long> taxas = Map.of(MADEIRA, 3000L);
+
+		Estoque resultado = calc.produzirAte(Estoque.vazio(), taxas, capacidade, T0, T0.plus(Duration.ofDays(36_500)));
+
+		assertThat(resultado.get(MADEIRA)).isEqualTo(capacidade);
+		assertThat(resultado.get(COMIDA)).isZero();
+	}
+
+	@Test
+	void somaAtualMaisGanhoQueEstouraLongSaturaNaCapacidade() {
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
+		// ganho de 1_000_000 milésimos cabe em long, mas atual + ganho estouraria
+		Estoque inicial = new Estoque(Map.of(COMIDA, Long.MAX_VALUE - 10));
+
+		Estoque resultado = calc.produzirAte(inicial, Map.of(COMIDA, 1000L), Long.MAX_VALUE, T0,
+				T0.plus(Duration.ofHours(1)));
+
+		assertThat(resultado.get(COMIDA)).isEqualTo(Long.MAX_VALUE);
+	}
+
+	@Test
 	void semTempoDecorridoNaoAlteraOEstoque() {
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 		Map<TipoRecurso, Long> taxas = Map.of(MADEIRA, 30L);
 		Estoque inicial = Estoque.vazio();
 
@@ -149,7 +181,7 @@ class CalculadoraProducaoTest {
 	@Test
 	void trechosComTaxasDiferentesAntesEDepoisDeUpgradeSaoAcumulados() {
 		// Serraria sobe de N1 para N2 no meio do intervalo: 1h com taxa 30/h, depois 1h com taxa 60/h.
-		CalculadoraProducao calc = new CalculadoraProducao(1);
+		CalculadoraProducao calc = new CalculadoraProducao(1, CurvaNiveis.PADRAO);
 		Instant t1 = T0.plus(Duration.ofHours(1));
 		Instant t2 = t1.plus(Duration.ofHours(1));
 

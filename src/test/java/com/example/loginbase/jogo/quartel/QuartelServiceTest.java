@@ -243,6 +243,20 @@ class QuartelServiceTest {
 	}
 
 	@Test
+	void treinoComEspadaNivel23EArmaduraDeFerroNivel23EAceito() {
+		Usuario usuario = criarUsuario("treino-nivel-23", "Marina");
+		Vila vila = criarVilaComQuartel(usuario, 1);
+		criarItens(vila.getId(), ModeloItem.ESPADA, 23, StatusItem.DISPONIVEL, 1);
+		criarItens(vila.getId(), ModeloItem.ARMADURA_FERRO, 23, StatusItem.DISPONIVEL, 1);
+
+		Ordem ordem = quartelService.treinar(usuario.getId(), TipoTropa.SOLDADO, 23, ModeloItem.ARMADURA_FERRO, 23,
+				1);
+
+		assertThat(ordem.getQuantidade()).isEqualTo(1);
+		assertThat(ordemRepository.findByVilaId(vila.getId())).hasSize(1);
+	}
+
+	@Test
 	void armasInsuficientesRejeitaComItemIndisponivelENadaMuda() {
 		Usuario usuario = criarUsuario("armas-insuficientes", "Bruno");
 		Vila vila = criarVilaComQuartel(usuario, 2);

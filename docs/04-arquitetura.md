@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` em progresso |
 | Modelo/norma | arc42 (versão 2024.1) + C4 (níveis 1–3 em Mermaid) |
 | Público | desenvolvedores, arquitetos, revisores |
 | Fontes | Especificações OpenSpec; `design.md` do jogo; `design.md` da change `add-frontend-build`; código-fonte em `src/main`; `pom.xml`; `docker-compose.yml`; `Dockerfile`; `frontend/` |
@@ -693,7 +693,7 @@ Ver [17-riscos-divida-roadmap.md](17-riscos-divida-roadmap.md) para registro com
 
 ## 12. Decisões Arquiteturais
 
-Cada decisão é registrada como ADR em `docs/adr/0001-…-0023.md` (formato MADR 4.0).
+Cada decisão é registrada como ADR em `docs/adr/0001-…-0025.md` (formato MADR 4.0).
 
 | Nº | Título | Data | Status |
 |---|---|---|---|
@@ -720,6 +720,8 @@ Cada decisão é registrada como ADR em `docs/adr/0001-…-0023.md` (formato MAD
 | [0021](adr/0021-velocidade-configuravel.md) | `JOGO_VELOCIDADE` multiplica taxas | 2026-09-26 | Vigente |
 | [0022](adr/0022-testes-postgres-compose.md) | Testes contra Postgres do compose | 2026-09-24/26 | Vigente |
 | [0023](adr/0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | Aceita |
+| [0024](adr/0024-listas-nomes-classpath.md) | Listas de nomes como recurso de classpath | 2026-09-28 | Vigente |
+| [0025](adr/0025-curva-progressao-configuravel.md) | Curva de progressão configurável para níveis de prédio | 2026-09-28 | Vigente |
 
 ---
 
@@ -740,6 +742,6 @@ Termos-chave; ver [14-glossario.md](14-glossario.md) para lista completa.
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
-| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-28 | Adiciona ADRs 0024–0025 (nomes de classpath, curva configurável); atualiza status da change raise-building-max-level-100 para em progresso | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

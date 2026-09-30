@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Card from 'primevue/card'
 import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
@@ -106,9 +106,6 @@ import type { CodigoErro, ItemDto, ModeloItem, TipoTropa } from '../api/tipos'
 // itens): qualquer modelo de armadura serve para qualquer tipo de tropa,
 // diferente da arma, que deve ser exatamente a exigida pelo tipo.
 const MODELOS_ARMADURA: ModeloItem[] = ['ARMADURA_COURO', 'ARMADURA_FERRO']
-
-// Níveis possíveis de arma/armadura (ver TreinarRequest: @Min(1) @Max(5)).
-const NIVEIS = [1, 2, 3, 4, 5]
 
 const NOMES_TROPA: Record<TipoTropa, string> = {
   SOLDADO: 'Soldado',
@@ -167,6 +164,16 @@ function contarDisponiveis(modelo: ModeloItem, nivel: number): number {
   ).length
 }
 
+// Níveis distintos com pelo menos 1 item DISPONIVEL do modelo, em ordem
+// crescente (ver design.md — D10).
+function niveisDisponiveis(modelo: ModeloItem): number[] {
+  const niveis = new Set<number>()
+  for (const item of vila.value?.itens ?? []) {
+    if (item.status === 'DISPONIVEL' && item.modelo === modelo) niveis.add(item.nivel)
+  }
+  return [...niveis].sort((a, b) => a - b)
+}
+
 function chaveArmadura(modelo: ModeloItem, nivel: number): string {
   return `${modelo}::${nivel}`
 }
@@ -184,7 +191,7 @@ function parseArmadura(chave: string): { modelo: ModeloItem; nivel: number } | n
 const armaNivelOpcoes = computed(() => {
   const modelo = armaExigida.value
   if (!modelo) return []
-  return NIVEIS.map((nivel) => ({
+  return niveisDisponiveis(modelo).map((nivel) => ({
     label: `Nível ${nivel} (${contarDisponiveis(modelo, nivel)} disponível)`,
     value: nivel,
   }))
@@ -195,11 +202,25 @@ const armaNivelOpcoes = computed(() => {
 const armaduraOpcoesAgrupadas = computed(() => {
   return MODELOS_ARMADURA.map((modelo) => ({
     label: modelo,
-    items: NIVEIS.map((nivel) => ({
+    items: niveisDisponiveis(modelo).map((nivel) => ({
       label: `${modelo} N${nivel} (${contarDisponiveis(modelo, nivel)} disponível)`,
       value: chaveArmadura(modelo, nivel),
     })),
-  }))
+  })).filter((grupo) => grupo.items.length > 0)
+})
+
+// Limpa a seleção se o nível escolhido deixou de estar disponível após uma
+// atualização da vila.
+watch(armaNivelOpcoes, (opcoes) => {
+  if (armaNivel.value != null && !opcoes.some((o) => o.value === armaNivel.value)) {
+    armaNivel.value = null
+  }
+})
+
+watch(armaduraOpcoesAgrupadas, (grupos) => {
+  if (armaduraSelecao.value && !grupos.some((g) => g.items.some((i) => i.value === armaduraSelecao.value))) {
+    armaduraSelecao.value = null
+  }
 })
 
 const ordemTreino = computed(() => vila.value?.ordens.find((o) => o.categoria === 'TREINO') ?? null)

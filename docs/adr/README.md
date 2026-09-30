@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.3.0 |
+| Versão | 1.4.0 |
 | Data | 2026-09-28 |
-| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` em progresso |
 | Modelo/norma | MADR 4.0 (Markdown Any Decision Records) |
 | Público | arquitetos, desenvolvedores, revisores |
 | Fontes | `design.md` das changes OpenSpec; código-fonte; `design.md` da change `add-frontend-build` |
@@ -41,6 +41,7 @@
 | [0022](0022-testes-postgres-compose.md) | Testes de integração contra Postgres do compose (sem Testcontainers) | 2026-09-24 | `add-user-authentication` + `add-city-builder-game` | Vigente |
 | [0023](0023-spa-servida-pelo-backend.md) | SPA servida pelo backend (`/app/**` + view) | 2026-09-27 | `add-frontend-build` | Vigente |
 | [0024](0024-listas-nomes-classpath.md) | Listas de nomes como recurso de classpath | 2026-09-28 | `add-soldier-names-batch-slots` | Vigente |
+| [0025](0025-curva-progressao-configuravel.md) | Curva de progressão configurável para níveis de prédio | 2026-09-28 | `raise-building-max-level-100` | Vigente |
 
 ---
 
@@ -157,6 +158,7 @@ Se nenhuma alternativa constar no design.md da change, escrever aqui:
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.4.0 | 2026-09-28 | Adiciona ADR 0025 (Curva de progressão configurável para níveis de prédio) implementada pela change raise-building-max-level-100 | Adiel, com apoio de agentes Claude |
 | 1.3.0 | 2026-09-28 | Adiciona ADR 0024 (Listas de nomes como recurso de classpath) implementada pela change add-soldier-names-batch-slots | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | ADR 0023 implementada pela change add-frontend-build: muda status de Proposta para Vigente | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Adiciona ADR 0023 (SPA servida pelo backend, proposta para change add-frontend-build) | Adiel, com apoio de agentes Claude |

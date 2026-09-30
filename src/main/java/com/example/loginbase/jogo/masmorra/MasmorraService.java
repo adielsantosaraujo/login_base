@@ -29,6 +29,7 @@ import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
 import com.example.loginbase.jogo.catalogo.TipoTropa;
 import com.example.loginbase.jogo.config.Aleatorio;
+import com.example.loginbase.jogo.config.JogoProperties;
 import com.example.loginbase.jogo.dominio.Batalha;
 import com.example.loginbase.jogo.dominio.BatalhaRepository;
 import com.example.loginbase.jogo.dominio.EstoqueSemente;
@@ -92,12 +93,14 @@ public class MasmorraService {
 	private final EstoqueSementeRepository estoqueSementeRepository;
 	private final Clock clock;
 	private final Aleatorio aleatorio;
+	private final JogoProperties jogoProperties;
 	private final GeradorLoot geradorLoot = new GeradorLoot();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	public MasmorraService(VilaService vilaService, VilaRepository vilaRepository, BatalhaRepository batalhaRepository,
 			UnidadeRepository unidadeRepository, ItemRepository itemRepository, PredioRepository predioRepository,
-			EstoqueSementeRepository estoqueSementeRepository, Clock clock, Aleatorio aleatorio) {
+			EstoqueSementeRepository estoqueSementeRepository, Clock clock, Aleatorio aleatorio,
+			JogoProperties jogoProperties) {
 		this.vilaService = vilaService;
 		this.vilaRepository = vilaRepository;
 		this.batalhaRepository = batalhaRepository;
@@ -107,6 +110,7 @@ public class MasmorraService {
 		this.estoqueSementeRepository = estoqueSementeRepository;
 		this.clock = clock;
 		this.aleatorio = aleatorio;
+		this.jogoProperties = jogoProperties;
 	}
 
 	/**
@@ -353,7 +357,7 @@ public class MasmorraService {
 				.findFirst()
 				.map(Predio::getNivel)
 				.orElse(1);
-		long capacidadeMilesimos = TipoRecurso.capacidadeArmazem(nivelArmazem) * 1000;
+		long capacidadeMilesimos = Math.multiplyExact(TipoRecurso.capacidadeArmazem(nivelArmazem, jogoProperties.curvaNiveis()), 1000L);
 
 		vila.setComida(creditarComCapacidade(vila.getComida(),
 				loot.recursos().getOrDefault(TipoRecurso.COMIDA, 0L), capacidadeMilesimos));

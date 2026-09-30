@@ -32,6 +32,8 @@ import com.example.loginbase.jogo.dominio.EstoqueSemente;
 import com.example.loginbase.jogo.dominio.EstoqueSementeRepository;
 import com.example.loginbase.jogo.dominio.Ordem;
 import com.example.loginbase.jogo.dominio.OrdemRepository;
+import com.example.loginbase.jogo.dominio.Predio;
+import com.example.loginbase.jogo.dominio.PredioRepository;
 import com.example.loginbase.jogo.dominio.Vila;
 import com.example.loginbase.jogo.economia.AplicadorOrdens;
 import com.example.loginbase.jogo.economia.VilaService;
@@ -73,6 +75,9 @@ class FazendaServiceTest {
 	private OrdemRepository ordemRepository;
 
 	@Autowired
+	private PredioRepository predioRepository;
+
+	@Autowired
 	private RelogioAjustavel relogio;
 
 	/**
@@ -95,6 +100,50 @@ class FazendaServiceTest {
 		estoque.setCultivo(cultivo);
 		estoque.setQuantidade(quantidade);
 		estoqueSementeRepository.saveAndFlush(estoque);
+	}
+
+	/** Define o nível da FAZENDA e deixa exatamente {@code canteiros} canteiros (TRIGO) na vila. */
+	private void prepararFazenda(Long vilaId, int nivel, int canteiros) {
+		Predio fazenda = predioRepository.findByVilaId(vilaId).stream()
+				.filter(p -> p.getTipo() == TipoPredio.FAZENDA)
+				.findFirst()
+				.orElseGet(() -> {
+					Predio novo = new Predio();
+					novo.setVilaId(vilaId);
+					novo.setTipo(TipoPredio.FAZENDA);
+					return novo;
+				});
+		fazenda.setNivel(nivel);
+		predioRepository.saveAndFlush(fazenda);
+
+		canteiroRepository.deleteAll(canteiroRepository.findByVilaId(vilaId));
+		canteiroRepository.flush();
+		for (int posicao = 1; posicao <= canteiros; posicao++) {
+			Canteiro canteiro = new Canteiro();
+			canteiro.setVilaId(vilaId);
+			canteiro.setPosicao(posicao);
+			canteiro.setCultivo(Cultivo.TRIGO);
+			canteiro.setPlantadoEm(relogio.instant());
+			canteiroRepository.save(canteiro);
+		}
+		canteiroRepository.flush();
+	}
+
+	/** Cria uma ordem de melhoria da FAZENDA já vencida e sincroniza a vila. */
+	private void concluirMelhoriaDaFazenda(Long usuarioId, Long vilaId, int novoNivel) {
+		Instant agora = relogio.instant();
+		Ordem ordem = new Ordem();
+		ordem.setVilaId(vilaId);
+		ordem.setCategoria(CategoriaOrdem.CONSTRUCAO);
+		ordem.setAlvo(TipoPredio.FAZENDA.name());
+		ordem.setNivel(novoNivel);
+		ordem.setQuantidade(1);
+		ordem.setIniciadaEm(agora);
+		ordem.setConcluiEm(agora.plusSeconds(60));
+		ordemRepository.saveAndFlush(ordem);
+
+		relogio.avancar(Duration.ofMinutes(2));
+		vilaService.obterParaAtualizacao(usuarioId);
 	}
 
 	@Test
@@ -213,6 +262,55 @@ class FazendaServiceTest {
 		List<Canteiro> canteiros = canteiroRepository.findByVilaId(vila.getId());
 		assertThat(canteiros).hasSize(2);
 		assertThat(canteiros).extracting(Canteiro::getPosicao).containsExactlyInAnyOrder(1, 2);
+	}
+
+	@Test
+	void melhoriaDaFazendaDe5Para6NaoCriaCanteiro() {
+		Usuario usuario = criarUsuario("faixa-5-6", "Helena");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		prepararFazenda(vila.getId(), 5, 5);
+
+		concluirMelhoriaDaFazenda(usuario.getId(), vila.getId(), 6);
+
+		assertThat(canteiroRepository.findByVilaId(vila.getId())).extracting(Canteiro::getPosicao)
+				.containsExactlyInAnyOrder(1, 2, 3, 4, 5);
+	}
+
+	@Test
+	void melhoriaDaFazendaDe9Para10CriaCanteiroDaPosicao6ComTrigo() {
+		Usuario usuario = criarUsuario("faixa-9-10", "Igor");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		prepararFazenda(vila.getId(), 9, 5);
+
+		concluirMelhoriaDaFazenda(usuario.getId(), vila.getId(), 10);
+
+		List<Canteiro> canteiros = canteiroRepository.findByVilaId(vila.getId());
+		assertThat(canteiros).extracting(Canteiro::getPosicao).containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
+		assertThat(canteiros).filteredOn(c -> c.getPosicao() == 6).singleElement()
+				.satisfies(c -> assertThat(c.getCultivo()).isEqualTo(Cultivo.TRIGO));
+	}
+
+	@Test
+	void plantioNaPosicao6ComFazendaNivel9FalhaComCanteiroInexistente() {
+		Usuario usuario = criarUsuario("plantio-n9", "Julia");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		prepararFazenda(vila.getId(), 9, 5);
+
+		assertThatThrownBy(() -> fazendaService.plantar(usuario.getId(), 6, Cultivo.TRIGO))
+				.isInstanceOf(RegraJogoException.class)
+				.satisfies(ex -> assertThat(((RegraJogoException) ex).getCodigo())
+						.isEqualTo(CodigoErro.CANTEIRO_INEXISTENTE));
+	}
+
+	@Test
+	void plantioNaPosicao6ComFazendaNivel10EAceito() {
+		Usuario usuario = criarUsuario("plantio-n10", "Kleber");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		prepararFazenda(vila.getId(), 10, 6);
+
+		fazendaService.plantar(usuario.getId(), 6, Cultivo.TRIGO);
+
+		assertThat(canteiroRepository.findByVilaId(vila.getId())).hasSize(6);
 	}
 
 }

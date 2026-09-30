@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.3.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Diátaxis (referência + runbook) |
 | Público | Desenvolvedores, operação |
 | Fontes | `docker-compose.yml`, `Dockerfile`, `frontend/Dockerfile`, `Makefile`, `.env.example`, `application.properties`, `frontend/vite.config.ts`, `scripts/build_front.py`, `PaginaController.java`, `SecurityConfig.java`, `.gitignore` |
@@ -153,6 +153,7 @@ ADMIN_PASSWORD=                             # OBRIGATÓRIO definir; vazio = sem 
 
 # Jogo
 JOGO_VELOCIDADE=1                           # Multiplicador (1=normal, 60=rápido)
+JOGO_EXPOENTE_CURVA=1.5                     # Expoente curva: 1,0–2,0 (múltiplo de 0,25); inválido impede inicialização
 ```
 
 ### Variáveis opcionais (não constam em `.env.example`)
@@ -177,7 +178,8 @@ SESSION_COOKIE_SECURE=false                 # Cookie seguro (true só com HTTPS)
 | `DB_HOST` | `application.properties` (Spring) | `jdbc:postgresql://${DB_HOST:localhost}:5432/...` | Compose não define; Spring padrão `localhost` para IDE, service `db` para container |
 | `PROFILE*` | `Makefile`, `docker-compose.yml` | `docker compose --profile "$(PROFILE)"` | Makefile passa para compose |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `application.properties` (Spring) | `app.admin.email=${ADMIN_EMAIL:...}` | Spring cria admin via `ApplicationRunner` se não existir |
-| `JOGO_VELOCIDADE` | `application.properties` (Spring); `docker-compose.yml` repassa aos serviços `app` e `frontend` | `app.jogo.velocidade=${JOGO_VELOCIDADE:1}` | Backend usa; frontend não (D-07) |
+| `JOGO_VELOCIDADE` | `application.properties` (Spring); `docker-compose.yml` repassa ao serviço `app` | `app.jogo.velocidade=${JOGO_VELOCIDADE:1}` | Backend usa; frontend não (D-07) |
+| `JOGO_EXPOENTE_CURVA` | `application.properties` (Spring); `docker-compose.yml` repassa ao serviço `app` | `app.jogo.expoente-curva=${JOGO_EXPOENTE_CURVA:1.5}` | Backend valida na inicialização (1,0–2,0, múltiplo de 0,25); afeta custo e capacidade acima do nível 5 |
 | `SESSION_TIMEOUT`, `SESSION_COOKIE_SECURE` | `application.properties` (Spring) | `server.servlet.session.timeout=${SESSION_TIMEOUT:30m}` | Configuração HTTP/cookies |
 | `VITE_PRIMEUI_LICENSE`, `VITE_USE_POLLING`, `BACKEND_URL` | `docker-compose.yml` (serviço `frontend`) | Passadas como ENV ao container Node | `vite.config.ts` lê `VITE_USE_POLLING` e `BACKEND_URL` via `process.env`; `src/main.ts` lê `import.meta.env.VITE_PRIMEUI_LICENSE` |
 
@@ -385,8 +387,15 @@ docker volume ls | grep login_base
 # 2. Subir novamente
 make up
 
-# Migrations rodam do zero: V1 → V2 → V3
+# Migrations rodam do zero: V1 → V2 → V3 → V4 → V5
 # Hibernate valida contra nova estrutura (sucesso esperado)
+```
+
+**Nota específica — Checksum divergente em V3:** Ao reverter `V3__jogo.sql` para remover a constraint `0..100` (de um commit anterior), Flyway acusará checksum divergente no banco de desenvolvimento **que já aplicou a versão editada**. **Não** executar `flyway repair` (reescreve histórico). Em vez disso:
+
+```bash
+# Executar make down_v (acima) para limpar o volume inteiro
+# Banco será recriado com todas as migrações no novo formato (V3 com constraint 0..5 → V5 com 0..100)
 ```
 
 ### Problema: Admin não criado; aviso no log "ADMIN_PASSWORD is empty"
@@ -690,6 +699,7 @@ docker compose exec db psql -U login_base login_base < backup.sql
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: JOGO_EXPOENTE_CURVA documentada, nota sobre checksum do V3 com estratégia de cleanup | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: SPA servida pelo backend, remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

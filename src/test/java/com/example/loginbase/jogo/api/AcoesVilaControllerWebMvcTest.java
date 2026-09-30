@@ -206,10 +206,20 @@ class AcoesVilaControllerWebMvcTest {
 	}
 
 	@Test
-	void postForjarComNivelSeisRecebe400() throws Exception {
+	void postForjarComNivelVinteEQuatroRecebe400() throws Exception {
 		mockMvc.perform(post("/api/jogo/forja/ordens").with(user("ana@exemplo.com")).with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
-				.content("{\"modelo\":\"ESPADA\",\"nivel\":6,\"quantidade\":1}"))
+				.content("{\"modelo\":\"ESPADA\",\"nivel\":24,\"quantidade\":1}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
+	}
+
+	@Test
+	void postTreinarComArmaNivelVinteEQuatroRecebe400() throws Exception {
+		mockMvc.perform(post("/api/jogo/quartel/ordens").with(user("ana@exemplo.com")).with(csrf())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("{\"tipo\":\"SOLDADO\",\"armaNivel\":24,\"armaduraModelo\":\"ARMADURA_COURO\","
+						+ "\"armaduraNivel\":1,\"quantidade\":1}"))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.codigo", is("REQUISICAO_INVALIDA")));
 	}

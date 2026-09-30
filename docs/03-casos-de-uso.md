@@ -195,7 +195,7 @@ flowchart LR
 
 **Pré-condições**:
 - Jogador autenticado, vila existe.
-- Prédio existe, nível < 5.
+- Prédio existe, nível < 100.
 - Recursos suficientes (após sincronização).
 - Nenhuma ordem de construção ativa.
 
@@ -207,7 +207,7 @@ flowchart LR
 3. Frontend emite POST `/api/jogo/predios/{tipo}/melhorar` sem corpo (tipo ∈ enums).
 4. Sistema valida:
    - Prédio existe.
-   - Nível < 5 (erro: `NIVEL_MAXIMO`).
+   - Nível < 100 (erro: `NIVEL_MAXIMO`).
    - Nível-alvo ≤ nível do CENTRO_VILA, exceto para o próprio centro (erro: `REQUISITO_NAO_ATENDIDO`).
    - Pré-requisitos: FORJA requer MINA_FERRO ≥1; QUARTEL requer FORJA ≥1 (erro: `REQUISITO_NAO_ATENDIDO`).
    - Nenhuma ordem `CONSTRUCAO` ativa (erro: `FILA_OCUPADA`).
@@ -240,7 +240,7 @@ flowchart LR
 
 **Pré-condições**:
 - Jogador autenticado, vila existe.
-- Canteiro existe (posição 1–5, ≤ nível fazenda).
+- Canteiro existe (posição 1–24, ≤ nível fazenda).
 - Sementes disponíveis (se cultivo ≠ TRIGO).
 - Cultivo permitido por nível masmorra liberado.
 
@@ -288,13 +288,13 @@ flowchart LR
 **Gatilho**: Jogador acessa tela Forja, seleciona modelo/nível/quantidade.
 
 **Fluxo principal**:
-1. Frontend exibe seletores: modelo (ESPADA/LANCA/ARCO/ARMADURA_COURO/ARMADURA_FERRO), nível (1–5, max = nível forja), quantidade (1–5).
+1. Frontend exibe seletores: modelo (ESPADA/LANCA/ARCO/ARMADURA_COURO/ARMADURA_FERRO), nível (1–`nivelMaximoForjavel`, max = `TipoPredio.FORJA.nivelMaximoForjavel(nivelForja)`), quantidade (1–5).
 2. Jogador seleciona, clica "Forjar".
 3. Frontend calcula custo (via catálogo × quantidade × nível), exibe tempo estimado.
 4. Frontend emite POST `/api/jogo/forja/ordens` com body `{ "modelo": "ESPADA", "nivel": 2, "quantidade": 1 }`.
 5. Sistema valida:
    - Modelo, nível, quantidade válidos (erro: `REQUISICAO_INVALIDA`).
-   - Nível ≤ nível forja (erro: `REQUISITO_NAO_ATENDIDO`).
+   - Nível ≤ nível máximo forjável (erro: `REQUISITO_NAO_ATENDIDO`).
    - Nenhuma ordem `FORJA` ativa (erro: `FILA_OCUPADA`).
    - Recursos (erro: `RECURSOS_INSUFICIENTES`).
 6. Sistema debita, cria ordem `FORJA`, data_conclusao = agora + tempo.
@@ -702,7 +702,7 @@ Cenário: Melhoria falha: recursos insuficientes
   E nada é debitado
 
 Cenário: Melhoria falha: nível máximo
-  Dado que ARMAZEM está nível 5
+  Dado que ARMAZEM está nível 100
   Quando clico "Melhorar"
   Então vejo Toast: "Nível máximo atingido."
 ```
@@ -764,10 +764,10 @@ Cenário: Forjar ESPADA nível 1
   Após 60 s, ESPADA nível 1 aparece em "Itens" com status DISPONIVEL
 
 Cenário: Nível máximo limitado pela FORJA
-  Dado que FORJA está nível 2
-  Quando tentou forjar "ARCO" nível 3
-  Então vejo aviso "Máximo nível 2 (seu nível de Forja)"
-  E o seletor de nível só deixa selecionar 1–2
+  Dado que FORJA está nível 10
+  Quando tentou forjar "ARCO" nível 11
+  Então vejo aviso "Máximo nível 10 (seu nível de forja permite até 10)"
+  E o seletor de nível só deixa selecionar 1–10
 ```
 
 **Origem**: RF-FOR-001..006, UC-07.

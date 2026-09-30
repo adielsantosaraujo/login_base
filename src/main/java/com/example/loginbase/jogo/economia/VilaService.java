@@ -74,7 +74,7 @@ public class VilaService {
 		this.usuarioRepository = usuarioRepository;
 		this.aplicadorOrdens = aplicadorOrdens;
 		this.clock = clock;
-		this.calculadoraProducao = new CalculadoraProducao(jogoProperties.getVelocidade());
+		this.calculadoraProducao = new CalculadoraProducao(jogoProperties.getVelocidade(), jogoProperties.curvaNiveis());
 		this.transacaoNova = new TransactionTemplate(transactionManager);
 		this.transacaoNova.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRES_NEW);
 	}

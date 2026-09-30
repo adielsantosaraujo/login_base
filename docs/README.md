@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.2.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` em progresso |
 | Público | todos |
 
 > Mapa completo da documentação do sistema login_base — um framework de autenticação e autorização que evoluiu para um city builder tático baseado em web, com build de frontend integrado.
@@ -32,8 +32,8 @@ A plataforma é reproduzível via Docker Compose no WSL2, com testes automatizad
 | **01** | [Visão do produto](01-visao-produto.md) | Contexto, stakeholders, escopo, objetivos, não-objetivos, premissas | Todos, stakeholders |
 | **02** | [Requisitos (SRS)](02-requisitos.md) | 104 requisitos funcionais vigentes, 15 não-funcionais, 8 regras de negócio | Desenvolvedores, QA, revisores |
 | **03** | [Casos de uso e histórias](03-casos-de-uso.md) | 12 casos de uso com fluxos, 12 histórias com critérios Gherkin | QA, PO, desenvolvedores |
-| **04** | [Arquitetura (arc42 + C4)](04-arquitetura.md) | 12 seções arc42 + C4 níveis 1–3 em Mermaid, 23 ADRs vigentes | Desenvolvedores, arquitetos |
-| **adr/** | [ADRs (decisões)](adr/README.md) | 23 decisões arquiteturais vigentes no formato MADR 4.0 | Arquitetos, desenvolvedores |
+| **04** | [Arquitetura (arc42 + C4)](04-arquitetura.md) | 12 seções arc42 + C4 níveis 1–3 em Mermaid, 25 ADRs vigentes | Desenvolvedores, arquitetos |
+| **adr/** | [ADRs (decisões)](adr/README.md) | 25 decisões arquiteturais vigentes no formato MADR 4.0 | Arquitetos, desenvolvedores |
 | **05** | [Modelo de dados](05-modelo-dados.md) | ER bidirecional, 14 tabelas, dicionário, constraints, enums | Desenvolvedores, DBA |
 | **06** | [API REST](06-api-rest.md) | 9 endpoints, esquemas DTOs, mapeamento de erros, exemplos cURL | Frontend/backend, QA |
 | **07** | [Segurança](07-seguranca.md) | STRIDE, OWASP ASVS L1, LGPD, autenticação, sessão, CSRF | Desenvolvedores, revisores |
@@ -179,7 +179,7 @@ Exemplo: `` `user-authentication` › *Requirement: Página inicial segura* `` �
 
 **Casos de uso (UC):** `UC-01` … `UC-12` (fixos).
 
-**ADRs:** `0001-spring-boot-java-25-maven.md` … `0023-spa-servida-pelo-backend.md` (23 total).
+**ADRs:** `0001-spring-boot-java-25-maven.md` … `0025-curva-progressao-configuravel.md` (25 total).
 
 **Divergências:** `D-01` … `D-16` (16 total em `17-riscos-divida-roadmap.md`).
 
@@ -238,6 +238,6 @@ Quando código ou spec divergem:
 
 | Versão | Data | Resumo | Autor |
 |---|---|---|---|
-| 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto/aberta/proposto | Adiel, com apoio de agentes Claude |
+| 1.2.0 | 2026-09-28 | Atualização para changes add-soldier-names-batch-slots (implementada, 0024) e raise-building-max-level-100 (em progresso, 0025); ADRs 23→25 | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta): RF 101→104, ADRs 22→23 (0023 proposto), divergências D-01…D-16, 7 changes (6 arquivadas + 1 aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

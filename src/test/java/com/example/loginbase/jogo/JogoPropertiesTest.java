@@ -40,6 +40,34 @@ class JogoPropertiesTest {
 		runner.withPropertyValues("app.jogo.velocidade=-1").run(context -> assertThat(context).hasFailed());
 	}
 
+	@Test
+	void expoenteCurvaPadraoEUmVirgulaCinco() {
+		runner.run(context -> {
+			assertThat(context).hasNotFailed();
+			assertThat(context.getBean(JogoProperties.class).getExpoenteCurva())
+					.isEqualByComparingTo("1.5");
+		});
+	}
+
+	@Test
+	void expoenteCurvaValidoEAceito() {
+		runner.withPropertyValues("app.jogo.expoente-curva=2.0")
+				.run(context -> assertThat(context).hasNotFailed());
+		runner.withPropertyValues("app.jogo.expoente-curva=1.25").run(context -> {
+			assertThat(context).hasNotFailed();
+			assertThat(context.getBean(JogoProperties.class).curvaNiveis().fator(80))
+					.isEqualByComparingTo("32");
+		});
+	}
+
+	@Test
+	void expoenteCurvaInvalidoFalhaNaInicializacao() {
+		for (String valor : new String[] { "2.5", "0.5", "1.3" }) {
+			runner.withPropertyValues("app.jogo.expoente-curva=" + valor)
+					.run(context -> assertThat(context).hasFailed());
+		}
+	}
+
 	@Configuration
 	@EnableConfigurationProperties(JogoProperties.class)
 	static class Config {

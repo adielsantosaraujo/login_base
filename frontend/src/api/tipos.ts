@@ -186,6 +186,9 @@ export interface VilaDto {
   // Limite de unidades vivas do exército: `3 × nível do quartel` (ver spec
   // game-army — Capacidade do exército).
   capacidadeExercito: number
+  // Maior nível de item que a forja atual consegue produzir (0 com forja em
+  // nível 0); calculado pelo backend.
+  nivelMaximoForjavel: number
   ordens: OrdemDto[]
 }
 

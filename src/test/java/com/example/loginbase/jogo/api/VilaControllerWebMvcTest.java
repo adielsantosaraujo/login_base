@@ -112,13 +112,13 @@ class VilaControllerWebMvcTest {
 				.andExpect(jsonPath("$.nome", is("Vila de Ana")))
 				.andExpect(jsonPath("$.recursos.COMIDA", is(300)))
 				.andExpect(jsonPath("$.recursos.MADEIRA", is(400)))
-				.andExpect(jsonPath("$.capacidade.COMIDA", is(8000)))
+				.andExpect(jsonPath("$.capacidade.COMIDA", is(715542)))
 				.andExpect(jsonPath("$.producaoPorHora.MADEIRA", is(30)))
 				.andExpect(jsonPath("$.masmorraNivelLiberado", is(1)))
 				.andExpect(jsonPath("$.batalhaAtivaId").doesNotExist())
 				.andExpect(jsonPath("$.predios", org.hamcrest.Matchers.hasSize(2)))
 				.andExpect(jsonPath("$.predios[0].tipo", is("ARMAZEM")))
-				.andExpect(jsonPath("$.predios[0].nivel", is(5)))
+				.andExpect(jsonPath("$.predios[0].nivel", is(TipoPredio.NIVEL_MAXIMO)))
 				.andExpect(jsonPath("$.predios[0].proximoNivel").doesNotExist())
 				.andExpect(jsonPath("$.predios[1].tipo", is("SERRARIA")))
 				.andExpect(jsonPath("$.predios[1].proximoNivel.nivel", is(2)))
@@ -148,7 +148,26 @@ class VilaControllerWebMvcTest {
 				.andExpect(jsonPath("$.unidades[0].equipamento.ANEL_2").doesNotExist())
 				.andExpect(jsonPath("$.unidades[0].equipamento.ANEL_3").doesNotExist())
 				.andExpect(jsonPath("$.capacidadeExercito", is(0)))
+				.andExpect(jsonPath("$.nivelMaximoForjavel", is(0)))
 				.andExpect(jsonPath("$.ordens[0].categoria", is("CONSTRUCAO")));
+	}
+
+	@Test
+	void getVilaComForjaNivel15RetornaNivelMaximoForjavel11() throws Exception {
+		EstadoVila estado = estadoVilaValido();
+		Predio forja = new Predio();
+		forja.setId(3L);
+		forja.setVilaId(10L);
+		forja.setTipo(TipoPredio.FORJA);
+		forja.setNivel(15);
+		List<Predio> predios = new java.util.ArrayList<>(estado.predios());
+		predios.add(forja);
+		when(vilaService.consultar(1L)).thenReturn(new EstadoVila(estado.vila(), predios, estado.canteiros(),
+				estado.sementes(), estado.itens(), estado.unidades(), estado.ordens()));
+
+		mockMvc.perform(get("/api/jogo/vila").with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.nivelMaximoForjavel", is(11)));
 	}
 
 	@Test
@@ -174,7 +193,7 @@ class VilaControllerWebMvcTest {
 	void getCatalogoAutenticadoRetorna200() throws Exception {
 		mockMvc.perform(get("/api/jogo/catalogo").with(user("ana@exemplo.com")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.predios.SERRARIA", org.hamcrest.Matchers.hasSize(5)))
+				.andExpect(jsonPath("$.predios.SERRARIA", org.hamcrest.Matchers.hasSize(100)))
 				.andExpect(jsonPath("$.cultivos.TRIGO.comidaPorHora", is(20)))
 				.andExpect(jsonPath("$.modelosItem.ESPADA.tempoBaseSegundos", is(60)))
 				.andExpect(jsonPath("$.tropas.SOLDADO.hp", is(30)))

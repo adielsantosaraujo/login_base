@@ -127,6 +127,28 @@ class ConstrucaoServiceTest {
 	}
 
 	@Test
+	void centroNoNivel5MelhoriaParaNivel6AceitaComCustoDaCurva() {
+		Usuario usuario = criarUsuario("centro-nivel-6", "Otavio");
+		Vila vila = vilaService.obterParaAtualizacao(usuario.getId());
+		definirNivel(vila.getId(), TipoPredio.CENTRO_VILA, 5);
+		definirNivel(vila.getId(), TipoPredio.ARMAZEM, 5);
+		vila = vilaService.obterParaAtualizacao(usuario.getId());
+		vila.setMadeira(2_000_000L);
+		vila.setPedra(2_000_000L);
+		vilaRepository.saveAndFlush(vila);
+
+		construcaoService.melhorar(usuario.getId(), TipoPredio.CENTRO_VILA);
+
+		Vila atualizada = vilaRepository.findByUsuarioId(usuario.getId()).orElseThrow();
+		assertThat(atualizada.getMadeira()).isEqualTo(2_000_000L - 998_000L);
+		assertThat(atualizada.getPedra()).isEqualTo(2_000_000L - 998_000L);
+		List<Ordem> ordens = ordensDeConstrucao(vila.getId());
+		assertThat(ordens).hasSize(1);
+		assertThat(ordens.get(0).getAlvo()).isEqualTo(TipoPredio.CENTRO_VILA.name());
+		assertThat(ordens.get(0).getNivel()).isEqualTo(6);
+	}
+
+	@Test
 	void centroDaVilaLimitaNivelDosDemaisPredios() {
 		// Vila nova: CENTRO_VILA e ARMAZEM nível 1; melhorar o armazém para 2 excede o centro.
 		Usuario usuario = criarUsuario("limite-centro", "Bruno");

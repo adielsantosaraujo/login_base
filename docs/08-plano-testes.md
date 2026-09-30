@@ -49,7 +49,7 @@
 
 - **Dados determinísticos**: uso de `AleatorioSequencia` (sequência pré-definida) e `RelogioAjustavel` (relógio mockado) para reproduzir comportamentos do jogo (loot, produção, IA).
 - **Cenários de specs**: testes derivados dos `Scenario` Gherkin das capabilities OpenSpec; cada RF tem ao menos uma verificação.
-- **Valores-limite**: testes de fronteira (nível máximo 5, capacidade 0, recursos 0, fila cheia).
+- **Valores-limite**: testes de fronteira (níveis 5/6 e 100/101 de prédio, canteiros 24/25, item 23/24, expoente 1,0/2,0/1,3/2,5, capacidade 0, recursos 0, fila cheia, saturação de produção).
 - **Erros esperados**: validação de códigos `RegraJogoException` (`RECURSOS_INSUFICIENTES`, `FILA_OCUPADA`, etc.) com HTTP 422.
 
 ---
@@ -394,6 +394,7 @@ Cada RF tem pelo menos uma verificação (automatizada ou manual); RNF aparecem 
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: estratégia de testes de fronteira atualizada para níveis 5/6, 100/101, canteiros 24/25, item 23/24 | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: testes atualizados para 242 total, remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

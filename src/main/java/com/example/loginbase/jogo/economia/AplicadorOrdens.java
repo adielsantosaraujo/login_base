@@ -31,7 +31,8 @@ import com.example.loginbase.jogo.quartel.NumeradorNomes;
 /**
  * Aplica o efeito de uma {@link Ordem} vencida sobre a vila, quando
  * {@link VilaService#sincronizar} a conclui: sobe o nível do prédio (e, no
- * caso de {@code FAZENDA}, cria um novo canteiro), entrega os itens forjados
+ * caso de {@code FAZENDA}, cria os canteiros TRIGO que o novo nível acrescenta
+ * a {@link TipoPredio#numeroCanteiros(int)}, se houver), entrega os itens forjados
  * ou cria as unidades do lote treinado, cada uma equipando uma arma e uma
  * armadura reservadas pela ordem, com nome/sobrenome sorteados ({@link
  * GeradorNomes}) e ordinal do par calculado pelo contador histórico da vila
@@ -85,13 +86,16 @@ public class AplicadorOrdens {
 		predioRepository.save(predio);
 
 		if (tipo == TipoPredio.FAZENDA) {
-			int novaPosicao = canteiroRepository.findByVilaId(vila.getId()).size() + 1;
-			Canteiro canteiro = new Canteiro();
-			canteiro.setVilaId(vila.getId());
-			canteiro.setPosicao(novaPosicao);
-			canteiro.setCultivo(Cultivo.TRIGO);
-			canteiro.setPlantadoEm(ordem.getConcluiEm());
-			canteiroRepository.save(canteiro);
+			int existentes = canteiroRepository.findByVilaId(vila.getId()).size();
+			int total = tipo.numeroCanteiros(ordem.getNivel());
+			for (int posicao = existentes + 1; posicao <= total; posicao++) {
+				Canteiro canteiro = new Canteiro();
+				canteiro.setVilaId(vila.getId());
+				canteiro.setPosicao(posicao);
+				canteiro.setCultivo(Cultivo.TRIGO);
+				canteiro.setPlantadoEm(ordem.getConcluiEm());
+				canteiroRepository.save(canteiro);
+			}
 		}
 	}
 

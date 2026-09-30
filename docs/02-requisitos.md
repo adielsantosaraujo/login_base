@@ -180,7 +180,7 @@ Fonte: delta [`openspec/specs/game-data/spec.md`](../openspec/specs/game-data/sp
 |---|---|---|---|---|
 | RF-DAD-001 | 8 tabelas do jogo (vilas, prédios, canteiros, sementes, itens, unidades, ordens, batalhas) em migração V3 | Obrigatório | Inspeção: V3__jogo.sql | 1 |
 | RF-DAD-002 | Uma vila por usuário; constraint unique (`uk_jogo_vilas_usuario`) | Obrigatório | Teste: `RepositoriosJogoTest` | 2 |
-| RF-DAD-003 | Integridade de níveis e quantidades de recursos: constraints `ck_jogo_vilas_recursos` (≥0), `ck_jogo_vilas_masmorra_nivel` (1–5) | Obrigatório | Inspeção: SQL + teste | 1 |
+| RF-DAD-003 | Integridade de níveis e quantidades de recursos: constraints `ck_jogo_predios_nivel` (0–100), `ck_jogo_canteiros_posicao` (1–24), `ck_jogo_itens_nivel` (1–23), `ck_jogo_vilas_recursos` (≥0), `ck_jogo_vilas_masmorra_nivel` (1–5); migração V5 com faixas estendidas | Obrigatório | Inspeção: V5 SQL + teste | 1 |
 | RF-DAD-004 | Fila de 1 ordem por categoria (`CONSTRUCAO`, `FORJA`, `TREINO`); constraint unique (`uk_jogo_ordens_vila_categoria`) | Obrigatório | Teste: `RepositoriosJogoTest` | 2 |
 | RF-DAD-005 | Uma batalha em andamento por vila; constraint unique parcial `ux_jogo_batalhas_vila_em_andamento` where status='EM_ANDAMENTO' | Obrigatório | Teste: `MasmorraServiceTest` | 1 |
 | RF-DAD-006 | Auditoria em todas as 8 tabelas do jogo: `criado_em`, `criado_por`, `alterado_em`, `alterado_por` (not null) | Obrigatório | Inspeção: V3 + entities | 1 |
@@ -193,7 +193,7 @@ Fonte: delta [`openspec/specs/game-village/spec.md`](../openspec/specs/game-vill
 |---|---|---|---|---|
 | RF-VIL-001 | Criação automática da vila no 1º acesso via GET `/api/jogo/vila`; estado inicial: 6 prédios nível 1, 1 canteiro TRIGO, recursos 300/400/300/50 | Obrigatório | Teste: `VilaControllerWebMvcTest` | 2 |
 | RF-VIL-002 | Isolamento por usuário: acesso a vila de outro → 404 `NAO_ENCONTRADO` | Obrigatório | Teste: `VilaControllerWebMvcTest` | 1 |
-| RF-VIL-003 | Recursos com capacidade por nível de armazém: `500 × 2^(N−1)`; inserção/consumo respeitam limite | Obrigatório | Teste: `VilaServiceTest` | 2 |
+| RF-VIL-003 | Recursos com capacidade por nível de armazém: `500 × 2^(N−1)` para N≤5, `round_half_up(8000 × (N/5)^p)` para N>5; inserção/consumo respeitam limite; produção sem overflow com saturação | Obrigatório | Teste: `VilaServiceTest`, `CalculadoraProducaoTest` | 2 |
 | RF-VIL-004 | Produção em tempo real calculada sob demanda por trechos entre conclusões de ordens; sem jobs em background | Obrigatório | Teste: `CalculadoraProducaoTest` | 3 |
 | RF-VIL-005 | Conclusão de ordens vencidas sincronizada sob demanda ao consultar vila | Obrigatório | Teste: `VilaServiceTest` | 1 |
 | RF-VIL-006 | Velocidade configurável por `JOGO_VELOCIDADE` (≥1); multiplica taxas, divide tempos (ceil) | Obrigatório | Teste: `JogoPropertiesTest` + `CalculadoraProducaoTest` | 2 |
@@ -201,6 +201,7 @@ Fonte: delta [`openspec/specs/game-village/spec.md`](../openspec/specs/game-vill
 | RF-VIL-008 | Catálogo de regras acessível via GET `/api/jogo/catalogo`; inclui custos, cultivos, inimigos, masmorras por nível | Obrigatório | Teste: `CatalogoTest` | 1 |
 | RF-VIL-009 | Operações serializadas por vila: lock pessimista `PESSIMISTIC_WRITE` em `findByUsuarioIdParaAtualizacao` | Obrigatório | Inspeção: `VilaRepository` + teste | 2 |
 | RF-VIL-010 | Erros de regra padronizados: 18 códigos (`CodigoErro`); 422 Unprocessable Entity com `{ "codigo": "...", "mensagem": "..." }` | Obrigatório | Teste: `ErroApiHandler` + `AcoesVilaControllerWebMvcTest` | 2 |
+| RF-VIL-011 | Expoente da curva de níveis configurável: `app.jogo.expoente-curva` (variável `JOGO_EXPOENTE_CURVA`, padrão 1,5; faixa 1,0–2,0, múltiplo de 0,25); validação na inicialização com falha se custo/capacidade até nível 100 estourar | Obrigatório | Teste: `JogoPropertiesTest`, `CurvaNiveisTest` | 2 |
 
 ### 3.8 Prédios (PRD)
 
@@ -208,12 +209,12 @@ Fonte: delta [`openspec/specs/game-buildings/spec.md`](../openspec/specs/game-bu
 
 | ID | Requisito | Prioridade | Verificação | Cenários |
 |---|---|---|---|---|
-| RF-PRD-001 | 8 tipos de prédio (CENTRO_VILA, ARMAZEM, FAZENDA, SERRARIA, PEDREIRA, MINA_FERRO, FORJA, QUARTEL); níveis 0–5; custo base × 1,5^(N−1), tempo base × 2^(N−1) | Obrigatório | Teste: `CatalogoTest` | 1 |
+| RF-PRD-001 | 8 tipos de prédio (CENTRO_VILA, ARMAZEM, FAZENDA, SERRARIA, PEDREIRA, MINA_FERRO, FORJA, QUARTEL); níveis 0–100; custo base × 1,5^(N−1) para N≤5, base × 1,5^4 × (N/5)^p para N>5; tempo base × 2^(N−1) para N≤5, ceil(base × 16 × N / 5) para N>5; expoente p configurável | Obrigatório | Teste: `CatalogoTest`, `CurvaNiveisTest` | 1 |
 | RF-PRD-002 | Cada prédio tem efeito (limite de nível, capacidade, canteiros, produção, capacidade do exército); consulta via catálogo | Obrigatório | Teste: `CatalogoTest` | 1 |
 | RF-PRD-003 | Limite de nível pelo CENTRO_VILA: máx. nível prédio = nível do centro + 1 | Obrigatório | Teste: `ConstrucaoServiceTest` | 2 |
 | RF-PRD-004 | Pré-requisitos (ex.: QUARTEL requer nível ≥3 CENTRO_VILA); validação antes de débito | Obrigatório | Teste: `ConstrucaoServiceTest` | 2 |
 | RF-PRD-005 | Fila de construção única por vila (`CategoriaOrdem.CONSTRUCAO`); nova ordem rejeita se há ordem ativa | Obrigatório | Teste: `ConstrucaoServiceTest` | 2 |
-| RF-PRD-006 | Nível máximo 5; tentativa de melhorar nível 5 retorna erro `NIVEL_MAXIMO` | Obrigatório | Teste: `ConstrucaoServiceTest` | 1 |
+| RF-PRD-006 | Nível máximo 100; tentativa de melhorar nível 100 retorna erro `NIVEL_MAXIMO` | Obrigatório | Teste: `ConstrucaoServiceTest` | 1 |
 | RF-PRD-007 | Débito de recursos no início da ordem (ou falha); efeito aplicado na conclusão; ordem armazenada com `nivel`, `tipo`, `data_conclusao` | Obrigatório | Teste: `ConstrucaoServiceTest` | 2 |
 
 ### 3.9 Fazenda (FAZ)
@@ -222,7 +223,7 @@ Fonte: delta [`openspec/specs/game-farming/spec.md`](../openspec/specs/game-farm
 
 | ID | Requisito | Prioridade | Verificação | Cenários |
 |---|---|---|---|---|
-| RF-FAZ-001 | Canteiros iguais ao nível da fazenda (máx. 5); posição 1–5 | Obrigatório | Teste: `VilaServiceTest` | 1 |
+| RF-FAZ-001 | Canteiros iguais ao nível da fazenda até 5; acima: `5 + ⌊(N−5)/5⌋` (máx. 24); posição 1–24; validação de posição de plantio | Obrigatório | Teste: `FazendaServiceTest`, `RepositoriosJogoTest` | 1 |
 | RF-FAZ-002 | 4 cultivos (TRIGO: 20/h sem semente; MILHO: 30/h masmorra≥1; BATATA: 45/h ≥2; ABOBORA_DOURADA: 70/h ≥4); produção por hora em recurso COMIDA | Obrigatório | Teste: `FazendaServiceTest` | 2 |
 | RF-FAZ-003 | Plantio consome 1 semente; rejeita se nenhuma disponível ou cultivo ≠ TRIGO sem masmorra > 0 | Obrigatório | Teste: `FazendaServiceTest` | 2 |
 | RF-FAZ-004 | Trocar cultivo em canteiro já plantado preserva produção acumulada | Obrigatório | Teste: `FazendaServiceTest` | 1 |
@@ -233,12 +234,12 @@ Fonte: delta [`openspec/specs/game-forge/spec.md`](../openspec/specs/game-forge/
 
 | ID | Requisito | Prioridade | Verificação | Cenários |
 |---|---|---|---|---|
-| RF-FOR-001 | 5 modelos (ESPADA, LANCA, ARCO, ARMADURA_COURO, ARMADURA_FERRO) com atributos (ataque, defesa, alcance) por nível 1–5 | Obrigatório | Teste: `CatalogoTest` | 1 |
+| RF-FOR-001 | 5 modelos (ESPADA, LANCA, ARCO, ARMADURA_COURO, ARMADURA_FERRO) com atributos (ataque, defesa, alcance) por nível 1–23; atributos derivados linearmente em L | Obrigatório | Teste: `CatalogoTest`, `CurvaNiveisTest` | 1 |
 | RF-FOR-002 | Receitas: custo por modelo/nível (base × L × quantidade); tempo base por modelo (ex.: ESPADA 60 s); tempo = base × L × quantidade / velocidade | Obrigatório | Teste: `ForjaServiceTest` | 1 |
 | RF-FOR-003 | Nível máximo de item limitado pela forja (nível forja N → max item nível N) | Obrigatório | Teste: `ForjaServiceTest` | 1 |
 | RF-FOR-004 | Uma ordem de forja por vez (`CategoriaOrdem.FORJA`); fila de 1 | Obrigatório | Teste: `ForjaServiceTest` | 1 |
 | RF-FOR-005 | Item criado e armazenado na vila ao concluir ordem; status DISPONIVEL | Obrigatório | Teste: `ForjaServiceTest` | 1 |
-| RF-FOR-006 | Validação de ordem: quantidade 1–5, nível 1–5, modelo válido; falha = 422 com código apropriado | Obrigatório | Teste: `ForjaServiceTest` | 1 |
+| RF-FOR-006 | Validação de ordem: quantidade 1–5, nível 1–23, modelo válido; nível ≤ nível máximo forjável por faixas (N até 10; +1 a cada 5 níveis 11–50; +1 a cada 10 níveis 51–100 → 23 em N100); falha = 422 com código apropriado | Obrigatório | Teste: `ForjaServiceTest`, `CurvaNiveisTest` | 1 |
 
 ### 3.11 Quartel (EXE)
 
@@ -248,7 +249,7 @@ Fonte: delta [`openspec/specs/game-army/spec.md`](../openspec/specs/game-army/sp
 |---|---|---|---|---|
 | RF-EXE-001 | 3 tipos de tropa (SOLDADO, ARQUEIRO, LANCEIRO) com atributos derivados de arma+armadura (HP, ataque, defesa, alcance, movimento) | Obrigatório | Teste: `QuartelServiceTest` | 2 |
 | RF-EXE-002 | Treino consome armas e armaduras (quantidade N) reservadas no início; validação de disponibilidade e compatibilidade | Obrigatório | Teste: `QuartelServiceTest` | 1 |
-| RF-EXE-003 | Validação: tipo válido, armaNível 1–5, armaduraModelo/Nível válidos, quantidade 1–15, itens suficientes, não reservados/equipados | Obrigatório | Teste: `QuartelServiceTest` | 2 |
+| RF-EXE-003 | Validação: tipo válido, armaNível 1–23, armaduraModelo/Nível 1–23 válidos, quantidade 1–15, itens suficientes, não reservados/equipados | Obrigatório | Teste: `QuartelServiceTest` | 2 |
 | RF-EXE-004 | Tropas liberadas (acesso) conforme nível do quartel | Obrigatório | Teste: `QuartelServiceTest` | 1 |
 | RF-EXE-005 | Capacidade do exército escalonada: cap = `3 × nível_quartel − unidades_vivas − Σ quantidade_ordens_TREINO`; nova ordem rejeita se quantidade > capacidade | Obrigatório | Teste: `QuartelServiceTest` | 2 |
 | RF-EXE-006 | Uma ordem de treino por vez (`CategoriaOrdem.TREINO`); fila de 1 | Obrigatório | Teste: `QuartelServiceTest` | 1 |

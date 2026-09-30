@@ -17,8 +17,8 @@
             />
           </div>
           <div class="campo">
-            <label for="forja-nivel">Nível</label>
-            <InputNumber id="forja-nivel" v-model="nivel" :min="1" :max="5" />
+            <label for="forja-nivel">Nível (máx. {{ nivelMaximoForjavel }})</label>
+            <InputNumber id="forja-nivel" v-model="nivel" :min="1" :max="Math.max(1, nivelMaximoForjavel)" />
           </div>
           <div class="campo">
             <label for="forja-quantidade">Quantidade</label>
@@ -42,8 +42,8 @@
         <small v-else-if="nivelForja === 0" class="aviso-bloqueio">
           Forja em nível 0: melhore-a para poder forjar.
         </small>
-        <small v-else-if="nivel > nivelForja" class="aviso-bloqueio">
-          Nível solicitado acima do nível da forja.
+        <small v-else-if="nivel > nivelMaximoForjavel" class="aviso-bloqueio">
+          Nível acima do máximo forjável ({{ nivelMaximoForjavel }}).
         </small>
       </template>
     </Card>
@@ -130,6 +130,8 @@ const nivelForja = computed(() => {
   return vila.value?.predios.find((p) => p.tipo === 'FORJA')?.nivel ?? 0
 })
 
+const nivelMaximoForjavel = computed(() => vila.value?.nivelMaximoForjavel ?? 0)
+
 // Custo total = custoBase (por unidade no nível 1, lista `[{recurso,
 // quantidade}]`) × nível × quantidade (spec game-forge — Receitas e ordem de
 // forja).
@@ -142,7 +144,7 @@ const custoCalculado = computed<Array<[TipoRecurso, number]>>(() => {
 const podeForjar = computed(() => {
   if (forjando.value) return false
   if (nivelForja.value === 0) return false
-  if (nivel.value > nivelForja.value) return false
+  if (nivel.value > nivelMaximoForjavel.value) return false
 
   const recursos = vila.value?.recursos
   if (!recursos) return false

@@ -106,7 +106,7 @@ public class ConstrucaoService {
 					"Já existe uma construção em andamento nesta vila");
 		}
 
-		Custo custo = tipo.custo(nivelAlvo);
+		Custo custo = tipo.custo(nivelAlvo, jogoProperties.curvaNiveis());
 		debitar(vila, custo);
 
 		Instant agora = clock.instant();

@@ -5,8 +5,10 @@ import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.example.loginbase.jogo.catalogo.Cultivo;
+import com.example.loginbase.jogo.catalogo.CurvaNiveis;
 import com.example.loginbase.jogo.catalogo.TipoPredio;
 import com.example.loginbase.jogo.catalogo.TipoRecurso;
 
@@ -26,15 +28,18 @@ public final class CalculadoraProducao {
 	private static final long MILESIMOS_POR_UNIDADE = 1000L;
 
 	private final int velocidade;
+	private final CurvaNiveis curva;
 
 	/**
 	 * @param velocidade multiplicador de velocidade do jogo ({@code app.jogo.velocidade}), &gt;= 1
+	 * @param curva      curva de níveis configurada (não nula)
 	 */
-	public CalculadoraProducao(int velocidade) {
+	public CalculadoraProducao(int velocidade, CurvaNiveis curva) {
 		if (velocidade < 1) {
 			throw new IllegalArgumentException("Velocidade inválida: " + velocidade);
 		}
 		this.velocidade = velocidade;
+		this.curva = Objects.requireNonNull(curva, "curva de níveis não pode ser nula");
 	}
 
 	public int velocidade() {
@@ -75,7 +80,7 @@ public final class CalculadoraProducao {
 	 * nível de armazém informado: {@code 500 × 2^(nivel-1) × 1000}.
 	 */
 	public long capacidadeMaxima(int nivelArmazem) {
-		return TipoRecurso.capacidadeArmazem(nivelArmazem) * 1000L;
+		return Math.multiplyExact(TipoRecurso.capacidadeArmazem(nivelArmazem, curva), MILESIMOS_POR_UNIDADE);
 	}
 
 	/**
@@ -88,7 +93,8 @@ public final class CalculadoraProducao {
 	 * {@code ganho (milésimos) = taxa (unidades/h) × velocidade × dtMs × 1000 / 3_600_000}
 	 * (ms → horas, arredondado para baixo, já convertido para milésimos); novo valor =
 	 * {@code min(capacidade, estoque + ganho)} se o estoque atual for menor que a capacidade,
-	 * senão o estoque permanece inalterado.
+	 * senão o estoque permanece inalterado. Sem overflow: se o produto não couber em {@code long}
+	 * (ou o ganho alcançar o espaço restante), o recurso satura na capacidade.
 	 *
 	 * @param estoqueAtual         estoque no instante {@code dataAnterior}
 	 * @param taxasHoraPorRecurso  taxas/h por recurso (ver {@link #taxaHoraPorRecurso}), sem velocidade aplicada
@@ -111,10 +117,31 @@ public final class CalculadoraProducao {
 				continue;
 			}
 			long taxa = taxasHoraPorRecurso.getOrDefault(recurso, 0L);
-			long ganho = taxa * velocidade * dtMs * MILESIMOS_POR_UNIDADE / MILISSEGUNDOS_POR_HORA;
-			novo.put(recurso, Math.min(capacidade, atual + ganho));
+			long ganho;
+			try {
+				ganho = ganhoMilesimos(taxa, dtMs);
+			}
+			catch (ArithmeticException e) {
+				// ganho não cabe em long: com certeza excede a capacidade restante
+				novo.put(recurso, capacidade);
+				continue;
+			}
+			// comparação em vez de soma evita overflow de atual + ganho
+			novo.put(recurso, ganho >= capacidade - atual ? capacidade : atual + ganho);
 		}
 		return new Estoque(novo);
+	}
+
+	/**
+	 * Ganho em milésimos: {@code taxa × velocidade × dtMs × 1000 / 3_600_000}. A divisão
+	 * ocorre após as multiplicações (mesmo arredondamento de antes).
+	 *
+	 * @throws ArithmeticException se o produto exceder o intervalo de {@code long}
+	 */
+	private long ganhoMilesimos(long taxa, long dtMs) {
+		long produto = Math.multiplyExact(Math.multiplyExact(Math.multiplyExact(taxa, (long) velocidade), dtMs),
+				MILESIMOS_POR_UNIDADE);
+		return produto / MILISSEGUNDOS_POR_HORA;
 	}
 
 }

@@ -36,6 +36,7 @@ public record VilaDto(
 		List<ItemDto> itens,
 		List<UnidadeDto> unidades,
 		int capacidadeExercito,
+		int nivelMaximoForjavel,
 		List<OrdemDto> ordens) {
 
 	/** Custo em uma unidade de recurso (não milésimos). */

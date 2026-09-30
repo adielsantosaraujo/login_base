@@ -59,9 +59,9 @@ Construir um **jogo de estratégia e construção de cidades baseado na web**, a
 | `subagent-dev-workflow` | Vigente | Orquestração por Opus/Sonnet/Haiku; sessão limpa; relatório de tokens; parallelismo |
 | `game-data` | Delta | 8 tabelas do jogo (vilas, prédios, canteiros, sementes, itens, unidades, ordens, batalhas); constraints; auditoria |
 | `game-village` | Delta | Criação automática de vila (estado inicial); sincronização lazy de produção; isolamento por usuário; catálogo de regras |
-| `game-buildings` | Delta | 8 tipos de prédio (níveis 1–5); custos/tempos; efeitos (limite, produção, canteiros); validação de pré-requisitos |
+| `game-buildings` | Delta | 8 tipos de prédio (níveis 0–100); custos/tempos em duas faixas; efeitos (limite, produção, canteiros); validação de pré-requisitos; expoente configurável |
 | `game-farming` | Delta | Canteiros (nº = nível fazenda, máx. 5); 4 cultivos (trigo/milho/batata/abóbora); sementes; produção escalonada |
-| `game-forge` | Delta | 5 modelos de item (espada, lança, arco, armaduras); níveis 1–5; atributos derivados; fila de 1 ordem |
+| `game-forge` | Delta | 5 modelos de item (espada, lança, arco, armaduras); níveis 1–23; atributos derivados; nível máximo forjável por faixas; fila de 1 ordem |
 | `game-army` | Delta | 3 tipos de tropa (soldado, arqueiro, lanceiro); liberação por nível; atributos derivados; capacidade escalonada; treino |
 | `game-dungeon-combat` | Delta | Masmorras 1–5; mapa 8×8; 4 inimigos (goblin/esqueleto/orc/troll); combate tático por turnos; IA; 30 turnos máx.; vitória/derrota |
 | `game-dungeon-loot` | Delta | Recursos garantidos por nível; rolagens de sementes/materiais/itens; distribuição por chance; liberação de níveis |

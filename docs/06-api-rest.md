@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
+| Versão | 1.3.0 |
 | Data | 2026-09-28 |
-| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `add-soldier-names-batch-slots` implementadas |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build`, `add-soldier-names-batch-slots` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Referência REST em Markdown (estilo OpenAPI) |
 | Público | Desenvolvedores, QA |
 | Fontes | `src/main/java/com/example/loginbase/jogo/api/*.java`, `src/main/java/com/example/loginbase/seguranca/SecurityConfig.java`, `src/main/java/com/example/loginbase/web/PaginaController.java`, `frontend/src/api/jogo.ts` |
@@ -311,6 +311,7 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
     }
   ],
   "capacidadeExercito": 9,
+  "nivelMaximoForjavel": 11,
   "ordens": [
     {
       "id": 301,
@@ -324,6 +325,12 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
   ]
 }
 ```
+
+**Campo `nivelMaximoForjavel`:** 
+- Nível máximo de item que pode ser forjado na FORJA com seu nível atual.
+- Fórmula: N (N ≤ 10); 10 + (N−10)/5 (11 ≤ N ≤ 50); 18 + (N−50)/10 (51 ≤ N ≤ 100).
+- Exemplo: FORJA nível 15 → `nivelMaximoForjavel = 11`.
+- Valor 0 se FORJA não foi construída (nível 0).
 
 ---
 
@@ -362,6 +369,15 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
           { "recurso": "PEDRA", "quantidade": 225 }
         ],
         "tempoSegundos": 240
+      },
+      ...
+      {
+        "nivel": 100,
+        "custo": [
+          { "recurso": "MADEIRA", "quantidade": 67921 },
+          { "recurso": "PEDRA", "quantidade": 67921 }
+        ],
+        "tempoSegundos": 38400
       }
     ],
     "FAZENDA": [ ... ]
@@ -761,7 +777,7 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-------------|-----------|
 | `modelo` | enum | `ESPADA`, `LANCA`, `ARCO`, `ARMADURA_COURO`, `ARMADURA_FERRO` | Modelo de item |
-| `nivel` | int | 1..5, <= nível máximo de FORJA | Nível de qualidade |
+| `nivel` | int | 1..23, <= nível máximo forjável da FORJA | Nível de qualidade |
 | `quantidade` | int | 1..`QUANTIDADE_MAXIMA_ORDEM` | Número de itens a forjar |
 
 **Respostas:**
@@ -803,9 +819,9 @@ Rotas mapeadas por `PaginaController` para servir pages/views (não JSON).
 | Campo | Tipo | Constraints | Descrição |
 |-------|------|-------------|-----------|
 | `tipo` | enum | `SOLDADO`, `ARQUEIRO`, `LANCEIRO` | Tipo de tropa |
-| `armaNivel` | int | 1–5 | Nível da arma a equipar (ex.: 2 = ESPADA N2, LANCA N2 ou ARCO N2 conforme tipo) |
+| `armaNivel` | int | 1–23 | Nível da arma a equipar (ex.: 2 = ESPADA N2, LANCA N2 ou ARCO N2 conforme tipo) |
 | `armaduraModelo` | enum | `ARMADURA_COURO`, `ARMADURA_FERRO` | Modelo da armadura |
-| `armaduraNivel` | int | 1–5 | Nível da armadura |
+| `armaduraNivel` | int | 1–23 | Nível da armadura |
 | `quantidade` | int | 1–15 | Número de unidades a treinar em lote |
 
 **Validações (422 se falhar):**
@@ -926,7 +942,7 @@ FILA_OCUPADA
   → HTTP 422
 
 NIVEL_MAXIMO
-  → Prédio/item já está no nível máximo (5)
+  → Prédio já está no nível máximo (100)
   → HTTP 422
 
 REQUISITO_NAO_ATENDIDO
@@ -934,7 +950,7 @@ REQUISITO_NAO_ATENDIDO
   → HTTP 422
 
 CANTEIRO_INEXISTENTE
-  → Posição de canteiro não existe (e.g., posição > nível da FAZENDA)
+  → Posição de canteiro não existe (e.g., posição > número de canteiros da FAZENDA)
   → HTTP 422
 
 SEMENTE_INDISPONIVEL
@@ -1035,6 +1051,7 @@ Os três controllers do jogo são anotados com `@Transactional` na classe (GET e
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: níveis até 100 em prédios, níveis até 23 em itens, nivelMaximoForjavel no VilaDto, catálogo com 100 níveis | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Adiciona seção "Rotas de página (não-API)" para change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |

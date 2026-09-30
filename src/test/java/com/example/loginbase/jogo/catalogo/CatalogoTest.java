@@ -7,6 +7,8 @@ import static com.example.loginbase.jogo.catalogo.TipoRecurso.PEDRA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -17,50 +19,50 @@ class CatalogoTest {
 
 	@Test
 	void capacidadeDoArmazemDobraPorNivelTabelaA1() {
-		assertThat(TipoRecurso.capacidadeArmazem(1)).isEqualTo(500);
-		assertThat(TipoRecurso.capacidadeArmazem(2)).isEqualTo(1000);
-		assertThat(TipoRecurso.capacidadeArmazem(3)).isEqualTo(2000);
-		assertThat(TipoRecurso.capacidadeArmazem(4)).isEqualTo(4000);
-		assertThat(TipoRecurso.capacidadeArmazem(5)).isEqualTo(8000);
+		assertThat(TipoRecurso.capacidadeArmazem(1, CurvaNiveis.PADRAO)).isEqualTo(500);
+		assertThat(TipoRecurso.capacidadeArmazem(2, CurvaNiveis.PADRAO)).isEqualTo(1000);
+		assertThat(TipoRecurso.capacidadeArmazem(3, CurvaNiveis.PADRAO)).isEqualTo(2000);
+		assertThat(TipoRecurso.capacidadeArmazem(4, CurvaNiveis.PADRAO)).isEqualTo(4000);
+		assertThat(TipoRecurso.capacidadeArmazem(5, CurvaNiveis.PADRAO)).isEqualTo(8000);
 	}
 
 	@Test
 	void custoETempoDosPrediosSeguemTabelaA3() {
-		assertThat(TipoPredio.CENTRO_VILA.custo(1)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 150));
+		assertThat(TipoPredio.CENTRO_VILA.custo(1, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 150));
 		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(1)).isEqualTo(120);
-		assertThat(TipoPredio.CENTRO_VILA.custo(2)).isEqualTo(Custo.de(MADEIRA, 225, PEDRA, 225));
+		assertThat(TipoPredio.CENTRO_VILA.custo(2, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 225, PEDRA, 225));
 		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(2)).isEqualTo(240);
-		assertThat(TipoPredio.CENTRO_VILA.custo(3)).isEqualTo(Custo.de(MADEIRA, 338, PEDRA, 338));
+		assertThat(TipoPredio.CENTRO_VILA.custo(3, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 338, PEDRA, 338));
 		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(3)).isEqualTo(480);
-		assertThat(TipoPredio.CENTRO_VILA.custo(4)).isEqualTo(Custo.de(MADEIRA, 506, PEDRA, 506));
+		assertThat(TipoPredio.CENTRO_VILA.custo(4, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 506, PEDRA, 506));
 		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(4)).isEqualTo(960);
-		assertThat(TipoPredio.CENTRO_VILA.custo(5)).isEqualTo(Custo.de(MADEIRA, 759, PEDRA, 759));
+		assertThat(TipoPredio.CENTRO_VILA.custo(5, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 759, PEDRA, 759));
 		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(5)).isEqualTo(1920);
 
-		assertThat(TipoPredio.ARMAZEM.custo(1)).isEqualTo(Custo.de(MADEIRA, 100, PEDRA, 60));
-		assertThat(TipoPredio.ARMAZEM.custo(4)).isEqualTo(Custo.de(MADEIRA, 338, PEDRA, 203));
-		assertThat(TipoPredio.ARMAZEM.custo(5)).isEqualTo(Custo.de(MADEIRA, 506, PEDRA, 304));
+		assertThat(TipoPredio.ARMAZEM.custo(1, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 100, PEDRA, 60));
+		assertThat(TipoPredio.ARMAZEM.custo(4, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 338, PEDRA, 203));
+		assertThat(TipoPredio.ARMAZEM.custo(5, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 506, PEDRA, 304));
 
-		assertThat(TipoPredio.FAZENDA.custo(3)).isEqualTo(Custo.de(MADEIRA, 180, PEDRA, 90));
+		assertThat(TipoPredio.FAZENDA.custo(3, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 180, PEDRA, 90));
 
-		assertThat(TipoPredio.SERRARIA.custo(4)).isEqualTo(Custo.de(MADEIRA, 203, PEDRA, 135));
+		assertThat(TipoPredio.SERRARIA.custo(4, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 203, PEDRA, 135));
 
-		assertThat(TipoPredio.PEDREIRA.custo(5)).isEqualTo(Custo.de(MADEIRA, 405, PEDRA, 101));
+		assertThat(TipoPredio.PEDREIRA.custo(5, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 405, PEDRA, 101));
 
-		assertThat(TipoPredio.MINA_FERRO.custo(2)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 120));
+		assertThat(TipoPredio.MINA_FERRO.custo(2, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 120));
 		assertThat(TipoPredio.MINA_FERRO.tempoSegundos(2)).isEqualTo(180);
 
-		assertThat(TipoPredio.FORJA.custo(1)).isEqualTo(Custo.de(MADEIRA, 120, PEDRA, 100, FERRO, 40));
-		assertThat(TipoPredio.FORJA.custo(5)).isEqualTo(Custo.de(MADEIRA, 608, PEDRA, 506, FERRO, 203));
+		assertThat(TipoPredio.FORJA.custo(1, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 120, PEDRA, 100, FERRO, 40));
+		assertThat(TipoPredio.FORJA.custo(5, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 608, PEDRA, 506, FERRO, 203));
 		assertThat(TipoPredio.FORJA.tempoSegundos(5)).isEqualTo(1920);
 
-		assertThat(TipoPredio.QUARTEL.custo(1)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 120, FERRO, 40));
-		assertThat(TipoPredio.QUARTEL.custo(5)).isEqualTo(Custo.de(MADEIRA, 759, PEDRA, 608, FERRO, 203));
+		assertThat(TipoPredio.QUARTEL.custo(1, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 150, PEDRA, 120, FERRO, 40));
+		assertThat(TipoPredio.QUARTEL.custo(5, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 759, PEDRA, 608, FERRO, 203));
 	}
 
 	@Test
 	void efeitosDosPrediosPorNivel() {
-		assertThat(TipoPredio.ARMAZEM.capacidadeRecurso(3)).isEqualTo(2000);
+		assertThat(TipoPredio.ARMAZEM.capacidadeRecurso(3, CurvaNiveis.PADRAO)).isEqualTo(2000);
 		assertThat(TipoPredio.FAZENDA.numeroCanteiros(4)).isEqualTo(4);
 		assertThat(TipoPredio.SERRARIA.producaoAdicionalPorHora(2)).isEqualTo(60);
 		assertThat(TipoPredio.PEDREIRA.producaoAdicionalPorHora(2)).isEqualTo(40);
@@ -71,8 +73,73 @@ class CatalogoTest {
 
 	@Test
 	void nivelDePredioForaDoIntervaloRejeitado() {
-		assertThatThrownBy(() -> TipoPredio.CENTRO_VILA.custo(0)).isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> TipoPredio.CENTRO_VILA.custo(6)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> TipoPredio.CENTRO_VILA.custo(0, CurvaNiveis.PADRAO))
+				.isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> TipoPredio.CENTRO_VILA.custo(101, CurvaNiveis.PADRAO)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
+	void custosAcimaDoNivel5SeguemCurva() {
+		assertThat(TipoPredio.CENTRO_VILA.custo(6, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 998, PEDRA, 998));
+		assertThat(TipoPredio.CENTRO_VILA.custo(10, CurvaNiveis.PADRAO)).isEqualTo(Custo.de(MADEIRA, 2148, PEDRA, 2148));
+		assertThat(TipoPredio.CENTRO_VILA.custo(100, CurvaNiveis.PADRAO))
+				.isEqualTo(Custo.de(MADEIRA, 67921, PEDRA, 67921));
+		assertThat(TipoPredio.FORJA.custo(100, CurvaNiveis.PADRAO))
+				.isEqualTo(Custo.de(MADEIRA, 54336, PEDRA, 45280, FERRO, 18112));
+	}
+
+	@Test
+	void temposAcimaDoNivel5SaoLineares() {
+		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(5)).isEqualTo(1920);
+		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(6)).isEqualTo(2304);
+		assertThat(TipoPredio.CENTRO_VILA.tempoSegundos(100)).isEqualTo(38400);
+		assertThat(TipoPredio.ARMAZEM.tempoSegundos(100)).isEqualTo(19200);
+	}
+
+	@Test
+	void capacidadeDoArmazemAcimaDoNivel5SegueCurva() {
+		assertThat(TipoRecurso.capacidadeArmazem(6, CurvaNiveis.PADRAO)).isEqualTo(10516);
+		assertThat(TipoRecurso.capacidadeArmazem(10, CurvaNiveis.PADRAO)).isEqualTo(22627);
+		assertThat(TipoRecurso.capacidadeArmazem(100, CurvaNiveis.PADRAO)).isEqualTo(715542);
+		assertThat(TipoPredio.ARMAZEM.capacidadeRecurso(10, CurvaNiveis.PADRAO)).isEqualTo(22627);
+	}
+
+	@Test
+	void expoenteDiferenteAlteraCapacidadeECusto() {
+		CurvaNiveis quadratica = new CurvaNiveis(new BigDecimal("2.0"));
+		assertThat(TipoRecurso.capacidadeArmazem(10, quadratica)).isEqualTo(32000);
+		assertThat(TipoPredio.CENTRO_VILA.custo(10, quadratica).quantidade(MADEIRA)).isEqualTo(3038);
+	}
+
+	@Test
+	void canteirosPorFaixa() {
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(5)).isEqualTo(5);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(6)).isEqualTo(5);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(9)).isEqualTo(5);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(10)).isEqualTo(6);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(15)).isEqualTo(7);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(100)).isEqualTo(24);
+		assertThat(TipoPredio.FAZENDA.numeroCanteiros(100)).isEqualTo(TipoPredio.NUMERO_MAXIMO_CANTEIROS);
+	}
+
+	@Test
+	void nivelMaximoForjavelPorFaixa() {
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(10)).isEqualTo(10);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(11)).isEqualTo(10);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(15)).isEqualTo(11);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(50)).isEqualTo(18);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(51)).isEqualTo(18);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(60)).isEqualTo(19);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(100)).isEqualTo(23);
+		assertThat(TipoPredio.FORJA.nivelMaximoForjavel(100)).isEqualTo(ModeloItem.NIVEL_MAXIMO);
+	}
+
+	@Test
+	void atributosDeItemNoNivel23() {
+		assertThat(ModeloItem.ESPADA.atributos(23)).isEqualTo(new ModeloItem.AtributosItem(50, 0, 1));
+		assertThat(ModeloItem.ARMADURA_COURO.atributos(23)).isEqualTo(new ModeloItem.AtributosItem(0, 24, 0));
+		assertThat(ModeloItem.ARMADURA_FERRO.atributos(23)).isEqualTo(new ModeloItem.AtributosItem(0, 47, 0));
+		assertThatThrownBy(() -> ModeloItem.ESPADA.atributos(24)).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test

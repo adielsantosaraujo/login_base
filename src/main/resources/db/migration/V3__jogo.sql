@@ -35,7 +35,7 @@ create table jogo_predios (
     constraint pk_jogo_predios primary key (id),
     constraint fk_jogo_predios_vila foreign key (vila_id) references jogo_vilas (id),
     constraint uk_jogo_predios_vila_tipo unique (vila_id, tipo),
-    constraint ck_jogo_predios_nivel check (nivel between 0 and 100)
+    constraint ck_jogo_predios_nivel check (nivel between 0 and 5)
 );
 
 create index ix_jogo_predios_vila on jogo_predios (vila_id);

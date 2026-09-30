@@ -23,9 +23,10 @@ import com.example.loginbase.jogo.economia.VilaService;
 
 /**
  * Gerencia o plantio de cultivos nos canteiros da fazenda. O plantio é
- * instantâneo: escolhe um canteiro (posição de 1 até o nível atual da
- * FAZENDA), consome 1 semente do cultivo (exceto {@code TRIGO}, que não
- * exige semente) e substitui o cultivo ativo, que passa a produzir
+ * instantâneo: escolhe um canteiro (posição de 1 até
+ * {@link TipoPredio#numeroCanteiros(int)} do nível atual da FAZENDA), consome
+ * 1 semente do cultivo (exceto {@code TRIGO}, que não exige semente) e
+ * substitui o cultivo ativo, que passa a produzir
  * imediatamente. Como {@link VilaService#obterParaAtualizacao} já produziu
  * recursos até agora com o cultivo anterior antes desta ação alterar o
  * canteiro, a produção anterior ao plantio é preservada e a próxima
@@ -54,7 +55,7 @@ public class FazendaService {
 	 * Planta {@code cultivo} no canteiro {@code posicao} da vila do usuário.
 	 *
 	 * @throws RegraJogoException com {@link CodigoErro#CANTEIRO_INEXISTENTE} se a posição for
-	 *                            menor que 1 ou maior que o nível atual da FAZENDA
+	 *                            menor que 1 ou maior que o número de canteiros do nível atual da FAZENDA
 	 * @throws RegraJogoException com {@link CodigoErro#SEMENTE_INDISPONIVEL} se {@code cultivo}
 	 *                            exigir semente e a vila não tiver nenhuma em estoque
 	 */
@@ -66,9 +67,11 @@ public class FazendaService {
 				.findFirst()
 				.map(Predio::getNivel)
 				.orElse(0);
-		if (posicao < 1 || posicao > nivelFazenda) {
+		int canteiros = nivelFazenda == 0 ? 0 : TipoPredio.FAZENDA.numeroCanteiros(nivelFazenda);
+		if (posicao < 1 || posicao > canteiros) {
 			throw new RegraJogoException(CodigoErro.CANTEIRO_INEXISTENTE,
-					"Canteiro " + posicao + " inexistente: fazenda está no nível " + nivelFazenda);
+					"Canteiro " + posicao + " inexistente: fazenda nível " + nivelFazenda + " tem " + canteiros
+							+ " canteiros");
 		}
 
 		if (cultivo.exigeSemente()) {

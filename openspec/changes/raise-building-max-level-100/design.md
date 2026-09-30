@@ -19,9 +19,10 @@ Ver [proposal.md](proposal.md) — Why. Estado atual relevante:
 - `GeradorLoot` limita o nível do item por `min(ModeloItem.NIVEL_MAXIMO, N + d)`; subir o
   `NIVEL_MAXIMO` de item mudaria o loot da masmorra 5 sem querer.
 - `CalculadoraProducao.produzirAte` multiplica `taxa × velocidade × dtMs × 1000` sem checagem.
-- Há uma edição local não commitada (`TipoPredio.NIVEL_MAXIMO = 100`, literal 100 em
-  `TipoRecurso.capacidadeArmazem` e constraint `0..100` editada em `V3__jogo.sql`); `V3` já foi
-  aplicada em bancos existentes.
+- As três edições (`TipoPredio.NIVEL_MAXIMO = 100`, literal 100 em `TipoRecurso.capacidadeArmazem` e
+  constraint `0..100` em `V3__jogo.sql`) foram commitadas no commit 19ebb28; a constraint do `V3`
+  precisa ser revertida (D9), enquanto as edições Java são mantidas e incorporadas pela change;
+  `V3` já foi aplicada em bancos existentes.
 
 ## Goals / Non-Goals
 
@@ -162,8 +163,8 @@ reordenar a divisão mudaria o arredondamento dos testes atuais.
 
 ### D9 — Migração V5 e reversão do V3
 
-**Decisão:** reverter a edição local de `V3__jogo.sql` (voltar ao conteúdo do commit, `0..5`) e criar
-`V5__niveis_estendidos.sql`:
+**Decisão:** reverter a edição do commit 19ebb28 em `V3__jogo.sql` (voltar ao conteúdo de 19ebb28^,
+`0..5`) e criar `V5__niveis_estendidos.sql`:
 
 ```sql
 alter table jogo_predios drop constraint ck_jogo_predios_nivel;
@@ -247,13 +248,13 @@ inalcançável por falta de armazém.
 
 ## Migration Plan
 
-1. Reverter `src/main/resources/db/migration/V3__jogo.sql` ao conteúdo do `HEAD`.
+1. Reverter `src/main/resources/db/migration/V3__jogo.sql` ao conteúdo de 19ebb28^ (usar `git checkout 19ebb28^ -- src/main/resources/db/migration/V3__jogo.sql`).
 2. Adicionar `V5__niveis_estendidos.sql` (D9).
-3. **Nota operacional — banco de desenvolvimento:** se o banco local já aplicou o `V3` editado, o
-   Flyway acusará checksum divergente. **Não** rodar `flyway repair`: o usuário limpará o banco de
-   desenvolvimento por conta própria (o mesmo Postgres do compose é usado pelos testes, ADR 0022) antes
-   de rodar a aplicação ou `./mvnw test`. Subagentes que encontrarem esse erro devem parar e avisar o
-   orquestrador.
+3. **Nota operacional — banco de desenvolvimento:** o `V3` foi aplicado em bancos existentes com o
+   conteúdo editado (19ebb28). Ao reverter o arquivo para 19ebb28^, o Flyway acusará checksum
+   divergente. **Não** rodar `flyway repair`: o usuário limpará o banco de desenvolvimento por conta
+   própria (o mesmo Postgres do compose é usado pelos testes, ADR 0022) antes de rodar a aplicação ou
+   `./mvnw test`. Subagentes que encontrarem esse erro devem parar e avisar o orquestrador.
 4. Deploy: nenhuma ação extra; V5 só amplia faixas. Rollback: reverter o código e remover a V5 num
    banco descartável (não há produção com dados a preservar).
 

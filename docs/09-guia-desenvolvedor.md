@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-09-27 |
-| Status | Vigente — baseline do commit `454ae58` + change `add-frontend-build` implementada |
+| Versão | 1.3.0 |
+| Data | 2026-09-28 |
+| Status | Vigente — baseline do commit `454ae58` + changes `add-frontend-build` e `raise-building-max-level-100` implementadas |
 | Modelo/norma | Diátaxis (tutorial + how-tos) |
 | Público | Novos desenvolvedores, colaboradores |
 | Fontes | `README.md`, `Makefile`, `.env.example`, `docker-compose.yml`, `pom.xml`, `CLAUDE.md`, `scripts/build_front.py` |
@@ -665,6 +665,7 @@ Lidas de `.env` (e passadas ao Docker):
 | `ADMIN_EMAIL` | `admin@loginbase.local` | Spring | E-mail do admin inicial |
 | `ADMIN_PASSWORD` | — | Spring | **Obrigatório** para criar admin inicial (vazio = aviso, sem criar) |
 | `JOGO_VELOCIDADE` | 1 | Spring, Makefile | Multiplicador de velocidade (1=normal, 60=rápido) |
+| `JOGO_EXPOENTE_CURVA` | 1.5 | Spring, Makefile | Expoente da curva de progressão (1,0–2,0, múltiplo de 0,25; afeta custo de prédios e capacidade de armazém acima do nível 5; valor inválido impede a inicialização) |
 | `SESSION_TIMEOUT` | `30m` | Spring | Timeout de sessão HTTP |
 | `SESSION_COOKIE_SECURE` | `false` | Spring | Cookie seguro (true apenas em HTTPS) |
 | `VITE_PRIMEUI_LICENSE` | — | compose/frontend | Chave licença PrimeUI (vazio = aviso no console) |
@@ -677,6 +678,7 @@ Lidas de `.env` (e passadas ao Docker):
 
 | Versão | Data | Descrição | Autor |
 |---|---|---|---|
+| 1.3.0 | 2026-09-28 | Change raise-building-max-level-100 implementada: documentação de JOGO_EXPOENTE_CURVA na tabela de variáveis | Adiel, com apoio de agentes Claude |
 | 1.2.0 | 2026-09-27 | Change add-frontend-build implementada: remove marcadores de previsto | Adiel, com apoio de agentes Claude |
 | 1.1.0 | 2026-09-27 | Atualização para a change add-frontend-build (prevista, aberta) | Adiel, com apoio de agentes Claude |
 | 1.0.0 | 2026-09-27 | Versão inicial | Adiel, com apoio de agentes Claude |
