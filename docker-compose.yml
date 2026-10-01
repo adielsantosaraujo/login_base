@@ -32,6 +32,9 @@ services:
     environment:
       VITE_PRIMEUI_LICENSE: ${VITE_PRIMEUI_LICENSE:-}
       VITE_USE_POLLING: "true"
+      VITE_BACKEND_URL: http://host.docker.internal:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "5173:5173"
     volumes:

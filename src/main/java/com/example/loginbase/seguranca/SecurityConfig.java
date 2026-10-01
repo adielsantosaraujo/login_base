@@ -1,6 +1,15 @@
 package com.example.loginbase.seguranca;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,7 +30,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, RegistroSessaoSuccessHandler handler)
             throws Exception {
+        RequestMatcher api = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache() {
+            @Override
+            public void saveRequest(HttpServletRequest request, HttpServletResponse response) {
+                if (!api.matches(request)) {
+                    super.saveRequest(request, response);
+                }
+            }
+        };
+
         http
+                .csrf(csrf -> csrf.spa())
+                .requestCache(cache -> cache.requestCache(requestCache))
+                .exceptionHandling(e -> e.defaultAuthenticationEntryPointFor(
+                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED), api)
+                        .defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"),
+                                AnyRequestMatcher.INSTANCE))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error")
                         .permitAll()

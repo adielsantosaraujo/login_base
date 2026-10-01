@@ -15,31 +15,31 @@ Legenda: `[B]` backend · `[F]` frontend.
 
 _Vila, mapa, ciclo de turnos, estoque e mercado._
 
-- [ ] **[v1-008 · H-001 — Criar vila escolhendo regiões iniciais](v1-008-vila-e-mapa/historia/h-001-criar-vila-escolhendo-regioes-iniciais.md)**
-  - [ ] [B] [Tarefa 001 — Modelo de dados da vila e regiões](v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md)
-  - [ ] [B] [Tarefa 002 — Geração de jazidas por semente](v1-008-vila-e-mapa/historia/h-001-tarefa-002-geracao-de-jazidas-por-semente.md)
-  - [ ] [B] [Tarefa 003 — API de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-003-api-de-criacao-da-vila.md)
-  - [ ] [F] [Tarefa 004 — Tela de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-004-tela-de-criacao-da-vila.md)
+- [x] **[v1-008 · H-001 — Criar vila escolhendo regiões iniciais](v1-008-vila-e-mapa/historia/h-001-criar-vila-escolhendo-regioes-iniciais.md)**
+  - [x] [B] [Tarefa 001 — Modelo de dados da vila e regiões](v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md)
+  - [x] [B] [Tarefa 002 — Geração de jazidas por semente](v1-008-vila-e-mapa/historia/h-001-tarefa-002-geracao-de-jazidas-por-semente.md)
+  - [x] [B] [Tarefa 003 — API de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-003-api-de-criacao-da-vila.md)
+  - [x] [F] [Tarefa 004 — Tela de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-004-tela-de-criacao-da-vila.md)
 
-- [ ] **[v1-008 · H-002 — Visualizar mapa da vila](v1-008-vila-e-mapa/historia/h-002-visualizar-mapa-da-vila.md)**
-  - [ ] [B] [Tarefa 001 — API do mapa da vila](v1-008-vila-e-mapa/historia/h-002-tarefa-001-api-do-mapa-da-vila.md)
-  - [ ] [F] [Tarefa 002 — Telas do mapa e da região](v1-008-vila-e-mapa/historia/h-002-tarefa-002-telas-do-mapa-e-da-regiao.md)
+- [x] **[v1-008 · H-002 — Visualizar mapa da vila](v1-008-vila-e-mapa/historia/h-002-visualizar-mapa-da-vila.md)**
+  - [x] [B] [Tarefa 001 — API do mapa da vila](v1-008-vila-e-mapa/historia/h-002-tarefa-001-api-do-mapa-da-vila.md)
+  - [x] [F] [Tarefa 002 — Telas do mapa e da região](v1-008-vila-e-mapa/historia/h-002-tarefa-002-telas-do-mapa-e-da-regiao.md)
 
-- [ ] **[v1-008 · H-003 — Anexar nova região](v1-008-vila-e-mapa/historia/h-003-anexar-nova-regiao.md)**
-  - [ ] [B] [Tarefa 001 — Regra e API de anexação](v1-008-vila-e-mapa/historia/h-003-tarefa-001-regra-e-api-de-anexacao.md)
-  - [ ] [F] [Tarefa 002 — Interface de anexação](v1-008-vila-e-mapa/historia/h-003-tarefa-002-interface-de-anexacao.md)
+- [x] **[v1-008 · H-003 — Anexar nova região](v1-008-vila-e-mapa/historia/h-003-anexar-nova-regiao.md)**
+  - [x] [B] [Tarefa 001 — Regra e API de anexação](v1-008-vila-e-mapa/historia/h-003-tarefa-001-regra-e-api-de-anexacao.md)
+  - [x] [F] [Tarefa 002 — Interface de anexação](v1-008-vila-e-mapa/historia/h-003-tarefa-002-interface-de-anexacao.md)
 
-- [ ] **[v1-009 · H-001 — Processar turno global](v1-009-turnos/historia/h-001-processar-turno-global.md)**
-  - [ ] [B] [Tarefa 001 — Agendador do turno global](v1-009-turnos/historia/h-001-tarefa-001-agendador-do-turno-global.md)
-  - [ ] [B] [Tarefa 002 — Pipeline de resolução por vila](v1-009-turnos/historia/h-001-tarefa-002-pipeline-de-resolucao-por-vila.md)
+- [x] **[v1-009 · H-001 — Processar turno global](v1-009-turnos/historia/h-001-processar-turno-global.md)**
+  - [x] [B] [Tarefa 001 — Agendador do turno global](v1-009-turnos/historia/h-001-tarefa-001-agendador-do-turno-global.md)
+  - [x] [B] [Tarefa 002 — Pipeline de resolução por vila](v1-009-turnos/historia/h-001-tarefa-002-pipeline-de-resolucao-por-vila.md)
 
-- [ ] **[v1-009 · H-002 — Acompanhar relatório do turno](v1-009-turnos/historia/h-002-acompanhar-relatorio-do-turno.md)**
-  - [ ] [B] [Tarefa 001 — Registro de eventos do turno](v1-009-turnos/historia/h-002-tarefa-001-registro-de-eventos-do-turno.md)
-  - [ ] [F] [Tarefa 002 — Barra do turno e relatório](v1-009-turnos/historia/h-002-tarefa-002-barra-do-turno-e-relatorio.md)
+- [x] **[v1-009 · H-002 — Acompanhar relatório do turno](v1-009-turnos/historia/h-002-acompanhar-relatorio-do-turno.md)**
+  - [x] [B] [Tarefa 001 — Registro de eventos do turno](v1-009-turnos/historia/h-002-tarefa-001-registro-de-eventos-do-turno.md)
+  - [x] [F] [Tarefa 002 — Barra do turno e relatório](v1-009-turnos/historia/h-002-tarefa-002-barra-do-turno-e-relatorio.md)
 
-- [ ] **[v1-010 · H-001 — Consultar estoque de recursos](v1-010-recursos-e-producao/historia/h-001-consultar-estoque-de-recursos.md)**
-  - [ ] [B] [Tarefa 001 — Modelo de estoque e capacidade](v1-010-recursos-e-producao/historia/h-001-tarefa-001-modelo-de-estoque-e-capacidade.md)
-  - [ ] [F] [Tarefa 002 — Painel de estoque](v1-010-recursos-e-producao/historia/h-001-tarefa-002-painel-de-estoque.md)
+- [x] **[v1-010 · H-001 — Consultar estoque de recursos](v1-010-recursos-e-producao/historia/h-001-consultar-estoque-de-recursos.md)**
+  - [x] [B] [Tarefa 001 — Modelo de estoque e capacidade](v1-010-recursos-e-producao/historia/h-001-tarefa-001-modelo-de-estoque-e-capacidade.md)
+  - [x] [F] [Tarefa 002 — Painel de estoque](v1-010-recursos-e-producao/historia/h-001-tarefa-002-painel-de-estoque.md)
 
 - **[v1-010 · H-004 — Negociar recursos no mercado](v1-010-recursos-e-producao/historia/h-004-negociar-recursos-no-mercado.md)** _(parte 1 — a história fecha na Fase 2)_
   - [ ] [B] [Tarefa 001 — API de compra e venda](v1-010-recursos-e-producao/historia/h-004-tarefa-001-api-de-compra-e-venda.md)
