@@ -1,16 +1,15 @@
 # H-004 · Tarefa 003 — Ouro passivo, imposto e estalagem
 
 **História:** [h-004-negociar-recursos-no-mercado.md](h-004-negociar-recursos-no-mercado.md) · **Domínio:** [../comercio.md](../comercio.md) ·
-**Depende de:** — · **Camada:** Backend
+**Depende de:** [../../v1-009-turnos/historia/h-001-tarefa-002-pipeline-de-resolucao-por-vila.md](../../v1-009-turnos/historia/h-001-tarefa-002-pipeline-de-resolucao-por-vila.md), [h-001-tarefa-001-modelo-de-estoque-e-capacidade.md](h-001-tarefa-001-modelo-de-estoque-e-capacidade.md), [../../v1-003-construcoes/historia/h-004-tarefa-001-api-de-alocacao.md](../../v1-003-construcoes/historia/h-004-tarefa-001-api-de-alocacao.md), [h-002-tarefa-001-calculo-de-eficiencia-do-trabalhador.md](h-002-tarefa-001-calculo-de-eficiencia-do-trabalhador.md) · **Camada:** Backend
 
 ## Objetivo
 
-Implementar a etapa 2 do turno (ouro passivo) que coleta imposto de cidadãos e gera ouro pela Estalagem (servindo Refeições e processando imigração).
+Implementar a etapa 2 do turno (ouro passivo) que coleta imposto de cidadãos e gera ouro pela Estalagem (servindo Refeições). A imigração pela Estalagem **não** faz parte desta tarefa: é o passo 9 do turno, implementado em [../../v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md](../../v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md).
 
 ## Contexto necessário
 
-- [../comercio.md#regras](../comercio.md#regras) — Imposto 0,5 Ouro por ≥18 anos; Estalagem 4 Ouro por Refeição servida (até 5/10/15 × eficiência × mult. nível); imigração chance 2/4/6%.
-  > Imigrante: adulto 18–30 anos, 20 car + 10 prof aleatórios, se houver núcleo livre.
+- [../comercio.md#regras](../comercio.md#regras) — Imposto 0,5 Ouro por ≥18 anos; Estalagem 4 Ouro por Refeição servida (até 5/10/15 × eficiência × mult. nível).
 
 - Seção 4.10 da bíblia — Estalagem vagas Cozinheiro/Comerciante (2/5/10).
 
@@ -27,25 +26,20 @@ Implementar a etapa 2 do turno (ouro passivo) que coleta imposto de cidadãos e 
     - **Estalagem**
       - Se não houver Estalagem ativa: skip
       - Contar Cozinheiros/Comerciantes alocados
-      - Calcular capacidade: `5 × Σ eficiência × mult. nível` Refeições
+      - Calcular capacidade: `floor(5 × Σ eficiência × mult. nível)` Refeições (arredondada para baixo — [../comercio.md#regras](../comercio.md#regras), R9)
+      - Refeições servidas = `min(capacidade, floor(Refeições em estoque))`
       - Debitar do estoque, adicionar Ouro (4 por Refeição)
       - Gravar evento ESTALAGEM_RECEITA
-      - **Imigração**
-        - Chance = 2% × nível (N1 2%, N2 4%, N3 6%)
-        - Se sortear sucesso E houver núcleo familiar livre:
-          - Criar novo cidadão: adulto (idade 18–30 anos aleatório)
-          - 20 pontos de característica + 10 de profissão distribuídos aleatoriamente
-          - Núcleo próprio (solteiro), família nova
-          - Gravar evento IMIGRANTE_CHEGOU
 
 - **Testes**
   - `testImpostoBasico()`: 10 adultos → +5 Ouro
   - `testImpostoSemAdultos()`: população só menores → +0 Ouro
   - `testEstalagemN1()`: 1 Cozinheiro eficiência 1,0, 5 Refeições → consume 5, gera 20 Ouro
   - `testEstalagemSemRefeicao()`: 0 Refeição → gera 0 Ouro
-  - `testImigraçãoSemNucleo()`: chance ativa mas sem núcleo livre → nada acontece
-  - `testImigracaoComNucleo()`: chance ativa, núcleo livre → novo cidadão criado
-  - `testImigracaoN1Chance()`: N1 2% chance (sorteio em 100 testes deve ter ~2)
+  - `testEstalagemN2Multiplicador()`: N2, 2 Cozinheiros eficiência 1,0, 30 Refeições → consome 12, gera 48 Ouro
+  - `testEstalagemRefeicoesInsuficientes()`: capacidade 10, 3 Refeições → consome 3, gera 12 Ouro
+  - `testEstalagemArredondamento()`: N2, 2 Cozinheiros eficiência 1,2, 30 Refeições → capacidade 14,4 → serve 14, gera 56 Ouro
+  - `testEstalagemSemTrabalhadores()`: Estalagem sem alocados → 0 Ouro da Estalagem, imposto cobrado
   - `testEventosRegistrados()`: cada passo gera evento_turno
 
 ## Frontend
@@ -56,7 +50,6 @@ Não se aplica (Backend only).
 
 - [/src/main/java/com/example/loginbase/jogo/recurso/OuroService.java](/src/main/java/com/example/loginbase/jogo/recurso/OuroService.java) (novo)
 - [/src/main/java/com/example/loginbase/jogo/turno/EtapaTurnoOuroPassivo.java](/src/main/java/com/example/loginbase/jogo/turno/EtapaTurnoOuroPassivo.java) (novo)
-- [/src/main/java/com/example/loginbase/jogo/cidadao/GeraçãoImigranteCitizen.java](/src/main/java/com/example/loginbase/jogo/cidadao/GeradorImigrante.java) (novo)
 
 ## Testes
 
@@ -64,14 +57,13 @@ Todos listados acima.
 
 ## Definição de pronto
 
-- Critérios de aceite da história cobertos por esta tarefa: CA1, CA2, CA3, CA4 (indireto)
-- Testes passando (incluindo probabilidade de imigração)
+- Critérios de aceite da história cobertos por esta tarefa: CA5, CA6, CA7, CA8, CA9
+- Testes passando
 - Build sem erros
 - Etapa integrada ao pipeline de turno (passo 2, após Produção)
 - Eventos registrados no relatório
-- Imigrante gerado com distribuição aleatória válida
 
 ## Fora de escopo
 
 - Gerenciamento manual de Refeições na Estalagem (automático)
-- Nomes/sobrenomes customizáveis de imigrantes (gerados aleatoriamente de listas fixas)
+- Imigração pela Estalagem (passo 9 do turno) — ver [../../v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md](../../v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md)

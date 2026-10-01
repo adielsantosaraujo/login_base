@@ -1,7 +1,7 @@
 # H-002 · Tarefa 002 — Interface de engaste
 
 **História:** [H-002 — Engastar pedra em item](h-002-engastar-pedra-em-item.md) · **Domínio:** [../pedras-de-bonus.md](../pedras-de-bonus.md), [../bonus.md](../bonus.md) ·
-**Depende de:** H-002-tarefa-001 (API de engaste), H-006-tarefa-004 (tela de inventário) | — · **Camada:** Frontend
+**Depende de:** [h-002-tarefa-001-api-de-engaste.md](h-002-tarefa-001-api-de-engaste.md), [../../v1-011-itens-e-fabricacao/historia/h-003-tarefa-002-tela-de-inventario.md](../../v1-011-itens-e-fabricacao/historia/h-003-tarefa-002-tela-de-inventario.md) · **Camada:** Frontend
 
 ## Objetivo
 

@@ -14,6 +14,7 @@ Estalagem serve Refeições a viajantes, gerando Ouro, e oferece chance de imigr
 - **R4**: Viajante que imigra vira núcleo próprio (solteiro) (seção 4.10) [proposta].
 - **R5**: Estalagem ocupa 1x1 (N1), 2x2 (N2), 3x3 (N3) em Região Urbana (seção 1.4) [req].
 - **R6**: Sem Refeições no estoque, nenhuma é servida e sem Ouro é gerado (seção 4.10) [proposta].
+- **R7**: A capacidade de Refeições por turno (R2) é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas, cada uma gerando 4 Ouro. Ex.: capacidade 14,4 → 14 Refeições → 56 Ouro. Mesma regra de [../v1-010-recursos-e-producao/comercio.md#regras](../v1-010-recursos-e-producao/comercio.md#regras) (R9) [proposta].
 
 ## Números e tabelas
 

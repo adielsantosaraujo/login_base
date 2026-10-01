@@ -1,7 +1,7 @@
 # H-002 · Tarefa 001 — API de engaste
 
 **História:** [H-002 — Engastar pedra em item](h-002-engastar-pedra-em-item.md) · **Domínio:** [../pedras-de-bonus.md](../pedras-de-bonus.md) ·
-**Depende de:** H-001-tarefa-001 (modelo de pedra), H-006-tarefa-002 (modelo de item) | — · **Camada:** Backend
+**Depende de:** [h-001-tarefa-001-modelo-e-gerador-de-pedras.md](h-001-tarefa-001-modelo-e-gerador-de-pedras.md), [../../v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md](../../v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md) · **Camada:** Backend
 
 ## Objetivo
 

@@ -1,6 +1,6 @@
 # H-003 · Tarefa 003 — Imigração pela Estalagem
 
-**História:** [H-003 — Nascimento e crescimento](h-003-nascimento-e-crescimento.md) · **Domínio:** [../familias.md](../familias.md) · **Depende de:** [h-003-tarefa-002-envelhecimento-crescimento-e-morte.md](h-003-tarefa-002-envelhecimento-crescimento-e-morte.md) · **Camada:** Backend
+**História:** [H-003 — Nascimento e crescimento](h-003-nascimento-e-crescimento.md) · **Domínio:** [../familias.md](../familias.md) · **Depende de:** [h-003-tarefa-002-envelhecimento-crescimento-e-morte.md](h-003-tarefa-002-envelhecimento-crescimento-e-morte.md), [../../v1-003-construcoes/historia/h-001-tarefa-001-catalogo-de-construcoes.md](../../v1-003-construcoes/historia/h-001-tarefa-001-catalogo-de-construcoes.md) · **Camada:** Backend
 
 ## Objetivo
 
@@ -43,7 +43,8 @@ Implementar etapa do turno que processa imigração pela Estalagem. Adultos alea
   - Alocar em casa.
 
 **Integração**:
-- Chamar em pipeline de turno, após passo 9 ou 10 (varia com design).
+- Chamar no passo 9 do pipeline de turno (Reprodução), após os nascimentos — ver [/docs/jogo/v1-009-turnos/turnos.md](/docs/jogo/v1-009-turnos/turnos.md).
+- Gravar um evento `IMIGRACAO` em `evento_turno` por imigrante (dados com o `cidadao_id` novo).
 
 ## Frontend
 
@@ -77,3 +78,4 @@ Não se aplica (backend apenas; relatório no painel de turno).
 
 - Nomes de imigrante (gerados simples; pode ser melhorado).
 - Seleção de profissão com peso (todas com chance igual).
+- Receita de Refeições e imposto da Estalagem (passo 2 do turno) — ver [../../v1-010-recursos-e-producao/historia/h-004-tarefa-003-ouro-passivo-imposto-e-estalagem.md](../../v1-010-recursos-e-producao/historia/h-004-tarefa-003-ouro-passivo-imposto-e-estalagem.md).

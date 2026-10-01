@@ -19,6 +19,7 @@ O Mercado permite compra e venda de recursos com um mercador NPC. A Estalagem ge
 - R6: Vagas: Cozinheiros ou Comerciantes (2/5/10).
 - R7: Serve Refeições a viajantes: por turno consome até `5 × Σ eficiência × mult. nível` Refeições e gera **4 Ouro por Refeição** servida.
 - R8: Imigração: a cada turno, chance de `2% × nível` (N1 2%, N2 4%, N3 6%) de chegar um viajante adulto (18–30 anos, 20 pontos de característica e 10 de profissão distribuídos aleatoriamente), se existir núcleo livre em alguma casa; ele vira um núcleo próprio (solteiro).
+- R9: Arredondamento da Estalagem: a capacidade de Refeições por turno é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas e cada uma gera 4 Ouro. Ex.: capacidade 14,4 → 14 Refeições servidas → 56 Ouro.
 
 ## Números e tabelas
 
@@ -48,11 +49,13 @@ O Mercado permite compra e venda de recursos com um mercador NPC. A Estalagem ge
 
 **Estalagem — geração de ouro**
 
-| Nível | Capacidade de Refeições | Máx. Ouro gerado por turno |
-|---|---|---|
-| N1 | 5 × eficiência | até 20 Ouro |
-| N2 | 10 × eficiência | até 40 Ouro |
-| N3 | 15 × eficiência | até 60 Ouro |
+| Nível | Multiplicador | Capacidade de Refeições por turno | Máx. Ouro por turno (4 por Refeição) |
+|---|---|---|---|
+| N1 | ×1,0 | 5 × Σ eficiência × 1,0 | 20 × Σ eficiência |
+| N2 | ×1,2 | 5 × Σ eficiência × 1,2 | 24 × Σ eficiência |
+| N3 | ×1,5 | 5 × Σ eficiência × 1,5 | 30 × Σ eficiência |
+
+Mesmos valores de [../v1-003-construcoes/estalagem.md](../v1-003-construcoes/estalagem.md).
 
 **Estalagem — imigração**
 
@@ -81,8 +84,8 @@ Imigrante: adulto (18–30 anos), 20 pontos de característica + 10 de profissã
 **Exemplo 3: Estalagem N2**
 - 2 Cozinheiros com eficiência média 1,2
 - Refeições disponíveis: 30
-- Capacidade: 5 × (1,2 + 1,2) = 12 Refeições por turno (com mult. N2 ×1,2: 12 × 1,2 = 14,4)
-- Efetivamente servidas: 14 Refeições
+- Capacidade: 5 × (1,2 + 1,2) × 1,2 = 14,4 Refeições por turno
+- Efetivamente servidas: floor(14,4) = 14 Refeições (R9)
 - Ouro gerado: 14 × 4 = **56 Ouro**
 - Chance de imigração: 4% (imigrante se houver núcleo livre)
 

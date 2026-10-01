@@ -1,7 +1,7 @@
 # H-001 · Tarefa 001 — Modelo e gerador de pedras
 
 **História:** [H-001 — Obter pedras nas masmorras](h-001-obter-pedras-nas-masmorras.md) · **Domínio:** [../pedras-de-bonus.md](../pedras-de-bonus.md) ·
-**Depende de:** H-001-tarefa-001 (masmorra e batalha) | — · **Camada:** Backend
+**Depende de:** [../../v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md](../../v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md), [../../v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md](../../v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md) · **Camada:** Backend
 
 ## Objetivo
 
@@ -120,6 +120,6 @@ Não se aplica. (Pedras são apenas resultado da batalha, exibidas no relatório
 
 ## Fora de escopo
 
-- Integração com batalha (será feita em H-001-tarefa-002, quando Batalha chamar o gerador).
+- Integração com batalha (será feita em [../../v1-001-masmorras/historia/h-003-tarefa-001-tabela-de-recompensas-e-drop.md](../../v1-001-masmorras/historia/h-003-tarefa-001-tabela-de-recompensas-e-drop.md), quando o drop da masmorra chamar o gerador).
 - Engaste e inventário de pedras (H-002).
 - Relatório visual no frontend (v1-014-batalha).
