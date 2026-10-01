@@ -42,59 +42,59 @@ _Vila, mapa, ciclo de turnos, estoque e mercado._
   - [x] [F] [Tarefa 002 — Painel de estoque](v1-010-recursos-e-producao/historia/h-001-tarefa-002-painel-de-estoque.md)
 
 - **[v1-010 · H-004 — Negociar recursos no mercado](v1-010-recursos-e-producao/historia/h-004-negociar-recursos-no-mercado.md)** _(parte 1 — a história fecha na Fase 2)_
-  - [ ] [B] [Tarefa 001 — API de compra e venda](v1-010-recursos-e-producao/historia/h-004-tarefa-001-api-de-compra-e-venda.md)
-  - [ ] [F] [Tarefa 002 — Tela do mercado](v1-010-recursos-e-producao/historia/h-004-tarefa-002-tela-do-mercado.md)
+  - [x] [B] [Tarefa 001 — API de compra e venda](v1-010-recursos-e-producao/historia/h-004-tarefa-001-api-de-compra-e-venda.md)
+  - [x] [F] [Tarefa 002 — Tela do mercado](v1-010-recursos-e-producao/historia/h-004-tarefa-002-tela-do-mercado.md)
 
 ## Fase 2 — População e construções
 
 _Famílias, prédios, trabalhadores, produção, alimentação e ouro passivo._
 
-- [ ] **[v1-002 · H-001 — Gerar famílias e distribuir pontos iniciais](v1-002-cidadaos/historia/h-001-gerar-familias-e-distribuir-pontos-iniciais.md)**
-  - [ ] [B] [Tarefa 001 — Modelo de dados de cidadãos e famílias](v1-002-cidadaos/historia/h-001-tarefa-001-modelo-de-dados-de-cidadaos-e-familias.md)
-  - [ ] [B] [Tarefa 002 — Geração das famílias iniciais](v1-002-cidadaos/historia/h-001-tarefa-002-geracao-das-familias-iniciais.md)
-  - [ ] [F] [Tarefa 003 — Tela de distribuição de pontos e família líder](v1-002-cidadaos/historia/h-001-tarefa-003-tela-de-distribuicao-de-pontos-e-familia-lider.md)
+- [x] **[v1-002 · H-001 — Gerar famílias e distribuir pontos iniciais](v1-002-cidadaos/historia/h-001-gerar-familias-e-distribuir-pontos-iniciais.md)**
+  - [x] [B] [Tarefa 001 — Modelo de dados de cidadãos e famílias](v1-002-cidadaos/historia/h-001-tarefa-001-modelo-de-dados-de-cidadaos-e-familias.md)
+  - [x] [B] [Tarefa 002 — Geração das famílias iniciais](v1-002-cidadaos/historia/h-001-tarefa-002-geracao-das-familias-iniciais.md)
+  - [x] [F] [Tarefa 003 — Tela de distribuição de pontos e família líder](v1-002-cidadaos/historia/h-001-tarefa-003-tela-de-distribuicao-de-pontos-e-familia-lider.md)
 
-- [ ] **[v1-003 · H-001 — Construir prédio nível 1](v1-003-construcoes/historia/h-001-construir-predio-nivel-1.md)**
-  - [ ] [B] [Tarefa 001 — Catálogo de construções](v1-003-construcoes/historia/h-001-tarefa-001-catalogo-de-construcoes.md)
-  - [ ] [B] [Tarefa 002 — API de construção e posicionamento](v1-003-construcoes/historia/h-001-tarefa-002-api-de-construcao-e-posicionamento.md)
-  - [ ] [B] [Tarefa 003 — Progresso de obra no turno](v1-003-construcoes/historia/h-001-tarefa-003-progresso-de-obra-no-turno.md)
-  - [ ] [F] [Tarefa 004 — Tela de construção na região](v1-003-construcoes/historia/h-001-tarefa-004-tela-de-construcao-na-regiao.md)
+- [x] **[v1-003 · H-001 — Construir prédio nível 1](v1-003-construcoes/historia/h-001-construir-predio-nivel-1.md)**
+  - [x] [B] [Tarefa 001 — Catálogo de construções](v1-003-construcoes/historia/h-001-tarefa-001-catalogo-de-construcoes.md)
+  - [x] [B] [Tarefa 002 — API de construção e posicionamento](v1-003-construcoes/historia/h-001-tarefa-002-api-de-construcao-e-posicionamento.md)
+  - [x] [B] [Tarefa 003 — Progresso de obra no turno](v1-003-construcoes/historia/h-001-tarefa-003-progresso-de-obra-no-turno.md)
+  - [x] [F] [Tarefa 004 — Tela de construção na região](v1-003-construcoes/historia/h-001-tarefa-004-tela-de-construcao-na-regiao.md)
 
-- [ ] **[v1-003 · H-002 — Melhorar prédio de nível](v1-003-construcoes/historia/h-002-melhorar-predio-de-nivel.md)**
-  - [ ] [B] [Tarefa 001 — Regra e API de upgrade](v1-003-construcoes/historia/h-002-tarefa-001-regra-e-api-de-upgrade.md)
-  - [ ] [F] [Tarefa 002 — Interface de upgrade](v1-003-construcoes/historia/h-002-tarefa-002-interface-de-upgrade.md)
+- [x] **[v1-003 · H-002 — Melhorar prédio de nível](v1-003-construcoes/historia/h-002-melhorar-predio-de-nivel.md)**
+  - [x] [B] [Tarefa 001 — Regra e API de upgrade](v1-003-construcoes/historia/h-002-tarefa-001-regra-e-api-de-upgrade.md)
+  - [x] [F] [Tarefa 002 — Interface de upgrade](v1-003-construcoes/historia/h-002-tarefa-002-interface-de-upgrade.md)
 
-- [ ] **[v1-003 · H-003 — Marcar ladrilhos de coleta](v1-003-construcoes/historia/h-003-marcar-ladrilhos-de-coleta.md)**
-  - [ ] [B] [Tarefa 001 — API de marcação de ladrilhos](v1-003-construcoes/historia/h-003-tarefa-001-api-de-marcacao-de-ladrilhos.md)
-  - [ ] [F] [Tarefa 002 — Interface de marcação](v1-003-construcoes/historia/h-003-tarefa-002-interface-de-marcacao.md)
+- [x] **[v1-003 · H-003 — Marcar ladrilhos de coleta](v1-003-construcoes/historia/h-003-marcar-ladrilhos-de-coleta.md)**
+  - [x] [B] [Tarefa 001 — API de marcação de ladrilhos](v1-003-construcoes/historia/h-003-tarefa-001-api-de-marcacao-de-ladrilhos.md)
+  - [x] [F] [Tarefa 002 — Interface de marcação](v1-003-construcoes/historia/h-003-tarefa-002-interface-de-marcacao.md)
 
-- [ ] **[v1-002 · H-002 — Casar cidadãos](v1-002-cidadaos/historia/h-002-casar-cidadaos.md)**
-  - [ ] [B] [Tarefa 001 — Regra e API de casamento](v1-002-cidadaos/historia/h-002-tarefa-001-regra-e-api-de-casamento.md)
-  - [ ] [F] [Tarefa 002 — Tela de famílias e casamento](v1-002-cidadaos/historia/h-002-tarefa-002-tela-de-familias-e-casamento.md)
+- [x] **[v1-002 · H-002 — Casar cidadãos](v1-002-cidadaos/historia/h-002-casar-cidadaos.md)**
+  - [x] [B] [Tarefa 001 — Regra e API de casamento](v1-002-cidadaos/historia/h-002-tarefa-001-regra-e-api-de-casamento.md)
+  - [x] [F] [Tarefa 002 — Tela de famílias e casamento](v1-002-cidadaos/historia/h-002-tarefa-002-tela-de-familias-e-casamento.md)
 
-- [ ] **[v1-002 · H-003 — Nascimento e crescimento](v1-002-cidadaos/historia/h-003-nascimento-e-crescimento.md)**
-  - [ ] [B] [Tarefa 001 — Reprodução e nascimento no turno](v1-002-cidadaos/historia/h-003-tarefa-001-reproducao-e-nascimento-no-turno.md)
-  - [ ] [B] [Tarefa 002 — Envelhecimento, crescimento e morte](v1-002-cidadaos/historia/h-003-tarefa-002-envelhecimento-crescimento-e-morte.md)
-  - [ ] [B] [Tarefa 003 — Imigração pela Estalagem](v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md)
+- [x] **[v1-002 · H-003 — Nascimento e crescimento](v1-002-cidadaos/historia/h-003-nascimento-e-crescimento.md)**
+  - [x] [B] [Tarefa 001 — Reprodução e nascimento no turno](v1-002-cidadaos/historia/h-003-tarefa-001-reproducao-e-nascimento-no-turno.md)
+  - [x] [B] [Tarefa 002 — Envelhecimento, crescimento e morte](v1-002-cidadaos/historia/h-003-tarefa-002-envelhecimento-crescimento-e-morte.md)
+  - [x] [B] [Tarefa 003 — Imigração pela Estalagem](v1-002-cidadaos/historia/h-003-tarefa-003-imigracao-pela-estalagem.md)
 
-- [ ] **[v1-002 · H-004 — Consultar painel do cidadão](v1-002-cidadaos/historia/h-004-consultar-painel-do-cidadao.md)**
-  - [ ] [B] [Tarefa 001 — API do cidadão e distribuição de pontos](v1-002-cidadaos/historia/h-004-tarefa-001-api-do-cidadao-e-distribuicao-de-pontos.md)
-  - [ ] [F] [Tarefa 002 — Tela do painel do cidadão](v1-002-cidadaos/historia/h-004-tarefa-002-tela-do-painel-do-cidadao.md)
+- [x] **[v1-002 · H-004 — Consultar painel do cidadão](v1-002-cidadaos/historia/h-004-consultar-painel-do-cidadao.md)**
+  - [x] [B] [Tarefa 001 — API do cidadão e distribuição de pontos](v1-002-cidadaos/historia/h-004-tarefa-001-api-do-cidadao-e-distribuicao-de-pontos.md)
+  - [x] [F] [Tarefa 002 — Tela do painel do cidadão](v1-002-cidadaos/historia/h-004-tarefa-002-tela-do-painel-do-cidadao.md)
 
-- [ ] **[v1-003 · H-004 — Alocar trabalhadores nos prédios](v1-003-construcoes/historia/h-004-alocar-trabalhadores-nos-predios.md)**
-  - [ ] [B] [Tarefa 001 — API de alocação](v1-003-construcoes/historia/h-004-tarefa-001-api-de-alocacao.md)
-  - [ ] [F] [Tarefa 002 — Painel do prédio](v1-003-construcoes/historia/h-004-tarefa-002-painel-do-predio.md)
+- [x] **[v1-003 · H-004 — Alocar trabalhadores nos prédios](v1-003-construcoes/historia/h-004-alocar-trabalhadores-nos-predios.md)**
+  - [x] [B] [Tarefa 001 — API de alocação](v1-003-construcoes/historia/h-004-tarefa-001-api-de-alocacao.md)
+  - [x] [F] [Tarefa 002 — Painel do prédio](v1-003-construcoes/historia/h-004-tarefa-002-painel-do-predio.md)
 
-- [ ] **[v1-010 · H-002 — Produzir recursos nos prédios](v1-010-recursos-e-producao/historia/h-002-produzir-recursos-nos-predios.md)**
-  - [ ] [B] [Tarefa 001 — Cálculo de eficiência do trabalhador](v1-010-recursos-e-producao/historia/h-002-tarefa-001-calculo-de-eficiencia-do-trabalhador.md)
-  - [ ] [B] [Tarefa 002 — Produção de coleta e rural](v1-010-recursos-e-producao/historia/h-002-tarefa-002-producao-de-coleta-e-rural.md)
-  - [ ] [B] [Tarefa 003 — Produção das fábricas](v1-010-recursos-e-producao/historia/h-002-tarefa-003-producao-das-fabricas.md)
+- [x] **[v1-010 · H-002 — Produzir recursos nos prédios](v1-010-recursos-e-producao/historia/h-002-produzir-recursos-nos-predios.md)**
+  - [x] [B] [Tarefa 001 — Cálculo de eficiência do trabalhador](v1-010-recursos-e-producao/historia/h-002-tarefa-001-calculo-de-eficiencia-do-trabalhador.md)
+  - [x] [B] [Tarefa 002 — Produção de coleta e rural](v1-010-recursos-e-producao/historia/h-002-tarefa-002-producao-de-coleta-e-rural.md)
+  - [x] [B] [Tarefa 003 — Produção das fábricas](v1-010-recursos-e-producao/historia/h-002-tarefa-003-producao-das-fabricas.md)
 
-- [ ] **[v1-010 · H-003 — Alimentar a população](v1-010-recursos-e-producao/historia/h-003-alimentar-a-populacao.md)**
-  - [ ] [B] [Tarefa 001 — Consumo de comida e fome](v1-010-recursos-e-producao/historia/h-003-tarefa-001-consumo-de-comida-e-fome.md)
+- [x] **[v1-010 · H-003 — Alimentar a população](v1-010-recursos-e-producao/historia/h-003-alimentar-a-populacao.md)**
+  - [x] [B] [Tarefa 001 — Consumo de comida e fome](v1-010-recursos-e-producao/historia/h-003-tarefa-001-consumo-de-comida-e-fome.md)
 
-- [ ] **[v1-010 · H-004 — Negociar recursos no mercado (continuação)](v1-010-recursos-e-producao/historia/h-004-negociar-recursos-no-mercado.md)**
-  - [ ] [B] [Tarefa 003 — Ouro passivo, imposto e estalagem](v1-010-recursos-e-producao/historia/h-004-tarefa-003-ouro-passivo-imposto-e-estalagem.md)
+- [x] **[v1-010 · H-004 — Negociar recursos no mercado (continuação)](v1-010-recursos-e-producao/historia/h-004-negociar-recursos-no-mercado.md)**
+  - [x] [B] [Tarefa 003 — Ouro passivo, imposto e estalagem](v1-010-recursos-e-producao/historia/h-004-tarefa-003-ouro-passivo-imposto-e-estalagem.md)
 
 ## Fase 3 — Itens e ofícios
 

@@ -10,4 +10,8 @@ public interface ConstrucaoRepository extends JpaRepository<Construcao, Long> {
 
 	List<Construcao> findByVilaIdAndRegiaoIndice(Long vilaId, Integer regiaoIndice);
 
+	List<Construcao> findByVilaIdAndEstado(Long vilaId, EstadoConstrucao estado);
+
+	java.util.Optional<Construcao> findByIdAndVilaId(Long id, Long vilaId);
+
 }

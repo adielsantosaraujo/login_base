@@ -5,6 +5,11 @@ import Jogo from '../views/Jogo.vue'
 import CriacaoVila from '../views/CriacaoVila.vue'
 import Mapa from '../views/Mapa.vue'
 import JogoEstoque from '../views/JogoEstoque.vue'
+import DistribuicaoPopulacao from '../views/DistribuicaoPopulacao.vue'
+import JogoFamilias from '../views/JogoFamilias.vue'
+import PainelCidadao from '../views/PainelCidadao.vue'
+import RegiaoVila from '../views/RegiaoVila.vue'
+import JogoMercado from '../views/JogoMercado.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -18,6 +23,11 @@ const router = createRouter({
         { path: 'criar-vila', name: 'criar-vila', component: CriacaoVila },
         { path: 'mapa', name: 'mapa', component: Mapa },
         { path: 'estoque', name: 'estoque', component: JogoEstoque },
+        { path: 'populacao', name: 'populacao', component: DistribuicaoPopulacao },
+        { path: 'familias', name: 'familias', component: JogoFamilias },
+        { path: 'cidadao/:id', name: 'cidadao', component: PainelCidadao },
+        { path: 'regiao/:indice', name: 'regiao', component: RegiaoVila },
+        { path: 'mercado', name: 'mercado', component: JogoMercado },
       ],
     },
   ],

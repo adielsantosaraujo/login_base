@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('../api/http', () => ({ get: vi.fn() }))
 
 import { get } from '../api/http'
-import { guardaVila, resetarGuardaVila } from './guardaVila'
+import { guardaVila, marcarPopulacaoConfirmada, resetarGuardaVila } from './guardaVila'
 
 const getMock = vi.mocked(get)
 
@@ -36,5 +36,19 @@ describe('guardaVila', () => {
     getMock.mockResolvedValue({ vilaId: 1 })
     expect(await ir('/jogo/mapa')).toBe(true)
     expect(await ir('/jogo/criar-vila')).toBe('/jogo/mapa')
+  })
+
+  it('população não confirmada leva qualquer rota do jogo para /jogo/populacao', async () => {
+    getMock.mockResolvedValue({ vilaId: 1, populacaoConfirmada: false })
+    expect(await ir('/jogo/mapa')).toBe('/jogo/populacao')
+    expect(await ir('/jogo/criar-vila')).toBe('/jogo/populacao')
+    expect(await ir('/jogo/populacao')).toBe(true)
+  })
+
+  it('população confirmada libera o mapa e após confirmar o cache é atualizado', async () => {
+    getMock.mockResolvedValue({ vilaId: 1, populacaoConfirmada: false })
+    expect(await ir('/jogo/mapa')).toBe('/jogo/populacao')
+    marcarPopulacaoConfirmada()
+    expect(await ir('/jogo/mapa')).toBe(true)
   })
 })

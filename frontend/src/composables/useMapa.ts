@@ -21,6 +21,9 @@ export interface Construcao {
   tipo: string
   nivel: string
   tamanho: number
+  estado?: 'EM_OBRA' | 'ATIVA' | 'EM_UPGRADE'
+  poAtual?: number
+  poTotal?: number
 }
 
 export interface Ladrilho {
@@ -54,6 +57,35 @@ export const ROTULOS_JAZIDA: Record<string, string> = {
 
 export const ROTULOS_CONSTRUCAO: Record<string, string> = {
   CASA: 'Casa',
+  ARMAZEM: 'Armazém',
+  SERRARIA: 'Serraria',
+  OLARIA: 'Olaria',
+  FUNDICAO: 'Fundição',
+  TECELAGEM: 'Tecelagem',
+  CURTUME: 'Curtume',
+  COZINHA: 'Cozinha',
+  FERRARIA: 'Ferraria',
+  ALFAIATARIA: 'Alfaiataria',
+  CARPINTARIA: 'Carpintaria',
+  MERCADO: 'Mercado',
+  ESTALAGEM: 'Estalagem',
+  QUARTEL: 'Quartel',
+  FAZENDA_PLANTIO: 'Fazenda de plantio',
+  FAZENDA_CRIACAO: 'Fazenda de criação',
+  ACAMPAMENTO_LENHADORES: 'Acampamento de lenhadores',
+  PEDREIRA: 'Pedreira',
+  BARREIRO: 'Barreiro',
+  MINA_FERRO: 'Mina de ferro',
+  MINA_CARVAO: 'Mina de carvão',
+  SALINA: 'Salina',
+  MINA_ENXOFRE: 'Mina de enxofre',
+  CABANA_CACA: 'Cabana de caça',
+}
+
+export const ROTULOS_ESTADO: Record<string, string> = {
+  EM_OBRA: 'Em obra',
+  ATIVA: 'Ativa',
+  EM_UPGRADE: 'Em upgrade',
 }
 
 export function rotulo(mapa: Record<string, string>, chave: string | null | undefined): string {

@@ -15,4 +15,12 @@ describe('GradeRegiao', () => {
     expect(cel[0]!.attributes('title')).toContain('Casa')
     expect(w.find('[data-x="5"][data-y="5"]').attributes('title')).toContain('Veio de ferro')
   })
+
+  it('emite clique, destaca e marca selecionáveis', async () => {
+    const w = mount(GradeRegiao, { props: { ladrilhos: [], destaques: [{ x: 1, y: 1 }], selecionaveis: true } })
+    expect(w.findAll('.destaque')).toHaveLength(1)
+    expect(w.findAll('.selecionavel')).toHaveLength(100)
+    await w.get('[data-x="2"][data-y="3"]').trigger('click')
+    expect(w.emitted('clique-ladrilho')![0]).toEqual([{ x: 2, y: 3, ladrilho: null }])
+  })
 })

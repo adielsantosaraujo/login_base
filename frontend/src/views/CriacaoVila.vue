@@ -25,7 +25,7 @@ function aoMudarTipo(indice: number, ev: Event) {
 }
 
 async function enviar() {
-  if (await criar()) router.push('/jogo/mapa')
+  if (await criar()) router.push('/jogo/populacao')
 }
 </script>
 

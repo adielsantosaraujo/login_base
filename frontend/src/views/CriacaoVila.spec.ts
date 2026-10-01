@@ -45,7 +45,7 @@ describe('CriacaoVila', () => {
     expect(w.find('[data-testid="aviso-selecao"]').exists()).toBe(true)
   })
 
-  it('habilita o botão e envia, redirecionando ao mapa', async () => {
+  it('habilita o botão e envia, redirecionando à população', async () => {
     postMock.mockResolvedValue({})
     const w = await montar()
     const botao = () => w.get('[data-testid="criar"]')
@@ -59,6 +59,6 @@ describe('CriacaoVila', () => {
     expect(postMock).toHaveBeenCalledWith('/api/jogo/vila', expect.objectContaining({
       regioesEscolhidas: [1, 2, 6], semente: 7,
     }))
-    expect(push).toHaveBeenCalledWith('/jogo/mapa')
+    expect(push).toHaveBeenCalledWith('/jogo/populacao')
   })
 })

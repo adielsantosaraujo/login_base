@@ -83,8 +83,10 @@ class TurnoProcessorPorVilaIntegrationTest {
 
 		assertThat(vilaRepository.findById(v.getId()).orElseThrow().getTurnoProcessado()).isEqualTo(TURNO);
 		List<EventoTurno> eventos = eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(v.getId(), TURNO);
-		assertThat(eventos).hasSize(1);
-		assertThat(eventos.get(0).getDados()).containsEntry("k", 1);
+		// as etapas reais também podem registrar eventos; contam-se só os da etapa de teste
+		List<EventoTurno> doTeste = eventos.stream().filter(e -> e.getDados() != null && e.getDados().containsKey("k")).toList();
+		assertThat(doTeste).hasSize(1);
+		assertThat(doTeste.get(0).getDados()).containsEntry("k", 1);
 	}
 
 	@Test
@@ -99,7 +101,8 @@ class TurnoProcessorPorVilaIntegrationTest {
 		assertThat(eventosRuim).extracting(EventoTurno::getTipo).containsExactly(TipoEventoTurno.FALHA_PROCESSAMENTO);
 		assertThat(vilaRepository.findById(ruim.getId()).orElseThrow().getTurnoProcessado()).isNull();
 		assertThat(vilaRepository.findById(boa.getId()).orElseThrow().getTurnoProcessado()).isEqualTo(TURNO + 1);
-		assertThat(eventoRepository.countByVilaIdAndTurno(boa.getId(), TURNO + 1)).isEqualTo(1);
+		assertThat(eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(boa.getId(), TURNO + 1))
+				.filteredOn(e -> e.getDados() != null && e.getDados().containsKey("k")).hasSize(1);
 	}
 
 }

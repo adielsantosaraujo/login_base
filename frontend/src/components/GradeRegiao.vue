@@ -2,12 +2,27 @@
 import { computed } from 'vue'
 import {
   ROTULOS_CONSTRUCAO,
+  ROTULOS_ESTADO,
   ROTULOS_JAZIDA,
   rotulo,
   type Ladrilho,
 } from '../composables/useMapa'
 
-const props = defineProps<{ ladrilhos: Ladrilho[] }>()
+const props = defineProps<{
+  ladrilhos: Ladrilho[]
+  /** Ladrilhos realçados (ex.: posição escolhida para construir). */
+  destaques?: { x: number; y: number }[]
+  /** Quando true, ladrilhos sem construção são marcados como clicáveis. */
+  selecionaveis?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'clique-ladrilho', payload: { x: number; y: number; ladrilho: Ladrilho | null }): void
+}>()
+
+function destacado(x: number, y: number): boolean {
+  return !!props.destaques?.some((d) => d.x === x && d.y === y)
+}
 
 const TAMANHO = 10
 
@@ -28,6 +43,8 @@ function descricao(x: number, y: number, l: Ladrilho | null): string {
   if (l?.construcao) {
     const c = l.construcao
     partes.push(`${rotulo(ROTULOS_CONSTRUCAO, c.tipo)} ${c.nivel.replace('N', 'nível ')}`)
+    if (c.estado) partes.push(rotulo(ROTULOS_ESTADO, c.estado))
+    if (c.estado === 'EM_OBRA' && c.poTotal) partes.push(`PO ${c.poAtual ?? 0}/${c.poTotal}`)
   }
   if (l?.jazida) partes.push(`Jazida: ${rotulo(ROTULOS_JAZIDA, l.jazida)}`)
   if (partes.length === 1) partes.push('Vazio')
@@ -52,10 +69,11 @@ function simbolo(l: Ladrilho | null): string {
     <div
       v-for="c in celulas"
       :key="`${c.x}-${c.y}`"
-      :class="classe(c.ladrilho)"
+      :class="[...classe(c.ladrilho), { destaque: destacado(c.x, c.y), selecionavel: selecionaveis && !c.ladrilho?.construcao }]"
       :title="descricao(c.x, c.y, c.ladrilho)"
       :aria-label="descricao(c.x, c.y, c.ladrilho)"
       data-testid="ladrilho"
+      @click="emit('clique-ladrilho', { x: c.x, y: c.y, ladrilho: c.ladrilho })"
       :data-x="c.x"
       :data-y="c.y"
     >
@@ -82,7 +100,9 @@ function simbolo(l: Ladrilho | null): string {
   border: 1px solid var(--p-surface-200, #e2e8f0);
   color: #fff;
 }
-.ladrilho-construcao { background: #b45309; }
+.ladrilho.selecionavel { cursor: pointer; }
+.ladrilho.destaque { outline: 3px solid #f59e0b; outline-offset: -3px; }
+.ladrilho-construcao { cursor: pointer; background: #b45309; }
 .ladrilho-jazida-floresta { background: #15803d; }
 .ladrilho-jazida-rocha { background: #64748b; }
 .ladrilho-jazida-barreiro { background: #a16207; }

@@ -91,7 +91,9 @@ public class MapaService {
 		Map<String, ConstrucaoLadrilhoDTO> construcoes = new HashMap<>();
 		for (Construcao c : construcaoRepository.findByVilaIdAndRegiaoIndice(vila.getId(), indice)) {
 			int tam = c.getTamanho() == null ? 1 : Math.max(c.getTamanho(), 1);
-			ConstrucaoLadrilhoDTO dto = new ConstrucaoLadrilhoDTO(c.getId(), c.getTipo(), c.getNivel(), tam);
+			ConstrucaoLadrilhoDTO dto = new ConstrucaoLadrilhoDTO(c.getId(), c.getTipo(), c.getNivel(), tam,
+					c.getEstado(), c.getPoAtual() == null ? 0 : c.getPoAtual(),
+					c.getPoTotal() == null ? 0 : c.getPoTotal());
 			for (int dx = 0; dx < tam; dx++) {
 				for (int dy = 0; dy < tam; dy++) {
 					construcoes.put(GeradorJazidaService.chave(c.getX() + dx, c.getY() + dy), dto);

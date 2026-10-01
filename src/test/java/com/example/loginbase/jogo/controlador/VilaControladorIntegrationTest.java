@@ -23,6 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
+import com.example.loginbase.jogo.cidadao.Cidadao;
+import com.example.loginbase.jogo.cidadao.CidadaoRepository;
+import com.example.loginbase.jogo.cidadao.Familia;
+import com.example.loginbase.jogo.cidadao.FamiliaRepository;
 import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
@@ -40,6 +44,8 @@ class VilaControladorIntegrationTest {
 	@Autowired RegiaoRepository regiaoRepository;
 	@Autowired LadrilhoJazidaRepository ladrilhoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
+	@Autowired FamiliaRepository familiaRepository;
+	@Autowired CidadaoRepository cidadaoRepository;
 
 	private Usuario novoUsuario() {
 		Usuario u = new Usuario();
@@ -56,6 +62,27 @@ class VilaControladorIntegrationTest {
 
 	private static final String VALIDO = """
 			{"regioesEscolhidas":[6,7,2],"tipos":{"6":"URBANA","7":"URBANA","2":"COLETA"},"semente":123}""";
+
+	@Test
+	void criaVilaGeraQuatroFamiliasEmCasasDistintas() throws Exception {
+		Usuario u = novoUsuario();
+		criar(u, VALIDO).andExpect(status().isCreated());
+		var vila = vilaRepository.findByUsuarioId(u.getId()).orElseThrow();
+		assertEquals(false, vila.isPopulacaoConfirmada());
+		var casaIds = construcaoRepository.findAll().stream()
+				.filter(c -> c.getVilaId().equals(vila.getId())).map(Construcao::getId).toList();
+		List<Familia> familias = familiaRepository.findByVilaId(vila.getId());
+		assertEquals(4, familias.size());
+		assertEquals(4, familias.stream().map(Familia::getCasaId).distinct().count());
+		familias.forEach(f -> org.junit.jupiter.api.Assertions.assertTrue(casaIds.contains(f.getCasaId())));
+		List<Cidadao> cidadaos = cidadaoRepository.findByVilaId(vila.getId());
+		assertEquals(16, cidadaos.size());
+		cidadaos.forEach(c -> {
+			assertEquals(20, c.getPontosCarPendentes());
+			assertEquals(10, c.getPontosProfPendentes());
+		});
+		assertEquals(null, vila.getFamiliaLiderId());
+	}
 
 	@Test
 	void criaVilaComRecursosCasasERegioes() throws Exception {

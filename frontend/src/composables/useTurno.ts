@@ -50,6 +50,17 @@ export const ROTULOS_EVENTO: Record<string, string> = {
   IMPOSTO_COBRADO: 'Imposto cobrado',
   ESTALAGEM_RECEITA: 'Receita da estalagem',
   FALHA_PROCESSAMENTO: 'Falha no processamento',
+  OBRA_CONCLUIDA: 'Obra concluída',
+  UPGRADE_CONCLUIDO: 'Upgrade concluído',
+  ALIMENTOS_CONSUMIDOS: 'Alimentos consumidos',
+  BEM_ALIMENTADA: 'Vila bem alimentada',
+  FOME: 'Fome',
+  CONCEPCAO: 'Concepção',
+  ANIVERSARIO: 'Aniversário',
+  IMIGRACAO: 'Imigração',
+  CASAMENTO: 'Casamento',
+  SUCESSAO_LIDER: 'Sucessão de líder',
+  ALOCACAO: 'Alocação',
 }
 
 export const ICONES_EVENTO: Record<string, string> = {

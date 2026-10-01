@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import GradeRegiao from '../components/GradeRegiao.vue'
 import DialogoAnexacao from '../components/DialogoAnexacao.vue'
@@ -8,6 +9,11 @@ import { ROTULOS_TIPO, rotulo, useMapaVila, useRegiaoDetalhes } from '../composa
 
 const { regioes, carregando, erro, carregar } = useMapaVila()
 const detalhe = useRegiaoDetalhes()
+const router = useRouter()
+
+function abrirRegiao(indice: number) {
+  router.push(`/jogo/regiao/${indice}`)
+}
 
 onMounted(carregar)
 
@@ -80,6 +86,13 @@ async function aoAnexar(indice: number) {
               ({{ rotulo(ROTULOS_TIPO, detalhe.regiaoSelecionada.value.regiao.tipo) }})
             </small>
           </h2>
+          <Button
+            v-if="detalhe.regiaoSelecionada.value?.regiao.possuida"
+            label="Abrir região"
+            size="small"
+            data-testid="abrir-regiao"
+            @click="abrirRegiao(detalhe.regiaoSelecionada.value.regiao.indice)"
+          />
           <Button label="Voltar" severity="secondary" size="small" data-testid="voltar" @click="detalhe.limpar()" />
         </div>
         <p v-if="detalhe.erro.value" role="alert" class="erro">{{ detalhe.erro.value }}</p>

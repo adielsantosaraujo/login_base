@@ -2,12 +2,19 @@ package com.example.loginbase.jogo.turno.etapas;
 
 import org.springframework.stereotype.Component;
 
+import com.example.loginbase.jogo.construcao.ObraService;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.turno.EtapaTurno;
 
-/** Passo 5 do pipeline: Obras. Stub: a lógica fica para seu épico/lote. */
+/** Passo 5 do pipeline: Obras. Delega ao ObraService. */
 @Component
 public class EtapaObras implements EtapaTurno {
+
+	private final ObraService obraService;
+
+	public EtapaObras(ObraService obraService) {
+		this.obraService = obraService;
+	}
 
 	@Override
 	public int ordem() {
@@ -21,7 +28,7 @@ public class EtapaObras implements EtapaTurno {
 
 	@Override
 	public void executar(Vila vila, int turno) {
-		// stub
+		obraService.processarObras(vila, turno);
 	}
 
 }

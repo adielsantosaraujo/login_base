@@ -39,6 +39,8 @@ function abrirRelatorio() {
     <nav class="jogo-menu">
       <RouterLink to="/jogo/mapa">Mapa</RouterLink>
       <RouterLink to="/jogo/estoque">Estoque</RouterLink>
+      <RouterLink to="/jogo/familias">Famílias</RouterLink>
+      <RouterLink to="/jogo/mercado">Mercado</RouterLink>
     </nav>
     <RouterView />
   </div>

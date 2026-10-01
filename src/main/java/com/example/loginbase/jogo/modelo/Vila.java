@@ -40,6 +40,9 @@ public class Vila {
 	@Column(name = "bem_alimentada", nullable = false)
 	private boolean bemAlimentada;
 
+	@Column(name = "populacao_confirmada", nullable = false)
+	private boolean populacaoConfirmada;
+
 	/** Último turno processado para esta vila; garante a idempotência do pipeline. */
 	@Column(name = "turno_processado")
 	private Integer turnoProcessado;

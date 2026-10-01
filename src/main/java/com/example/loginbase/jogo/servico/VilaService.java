@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.UsuarioRepository;
+import com.example.loginbase.jogo.cidadao.FamiliaService;
 import com.example.loginbase.jogo.comum.JogoException;
 import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
@@ -70,11 +71,12 @@ public class VilaService {
 	private final UsuarioRepository usuarioRepository;
 	private final GeradorJazidaService gerador;
 	private final EstoqueService estoqueService;
+	private final FamiliaService familiaService;
 
 	public VilaService(VilaRepository vilaRepository, RegiaoRepository regiaoRepository,
 			LadrilhoJazidaRepository ladrilhoRepository, ConstrucaoRepository construcaoRepository,
 			JogoTurnoRepository turnoRepository, UsuarioRepository usuarioRepository,
-			GeradorJazidaService gerador, EstoqueService estoqueService) {
+			GeradorJazidaService gerador, EstoqueService estoqueService, FamiliaService familiaService) {
 		this.vilaRepository = vilaRepository;
 		this.regiaoRepository = regiaoRepository;
 		this.ladrilhoRepository = ladrilhoRepository;
@@ -83,6 +85,7 @@ public class VilaService {
 		this.usuarioRepository = usuarioRepository;
 		this.gerador = gerador;
 		this.estoqueService = estoqueService;
+		this.familiaService = familiaService;
 	}
 
 	@Transactional
@@ -117,9 +120,11 @@ public class VilaService {
 
 		int regiaoUrbana = indices.stream().filter(i -> tipos.get(i) == TipoRegiao.URBANA).findFirst()
 				.orElseThrow();
+		List<Long> casaIds = new ArrayList<>();
 		for (int x : X_CASAS_INICIAIS) {
-			construcaoRepository.save(novaCasa(vila.getId(), regiaoUrbana, x, 0));
+			casaIds.add(construcaoRepository.save(novaCasa(vila.getId(), regiaoUrbana, x, 0)).getId());
 		}
+		familiaService.gerarFamiliasIniciais(vila, casaIds, sementeFinal);
 		return vila;
 	}
 
@@ -139,7 +144,7 @@ public class VilaService {
 		Map<String, BigDecimal> estoque = new LinkedHashMap<>();
 		estoqueService.listar(vila).forEach((r, q) -> estoque.put(r.name(), q));
 		return new VilaResumoDTO(vila.getId(), vila.getNome(), vila.getSemente(), vila.getTurnoCriacao(),
-				regioes, estoque);
+				regioes, estoque, vila.isPopulacaoConfirmada());
 	}
 
 	/** Contagem de jazidas por tipo em cada uma das 16 regiões para a semente (gerada se ausente). */
