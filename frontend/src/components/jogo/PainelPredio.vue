@@ -5,6 +5,7 @@ import Select from 'primevue/select'
 import { useAlocacoes } from '../../composables/useAlocacoes'
 import { ROTULOS_ESTADO, ROTULOS_TIPO, ROTULOS_CONSTRUCAO, rotulo } from '../../composables/useMapa'
 import { ROTULOS_PROFISSAO } from '../../composables/usePopulacao'
+import { ehOficina } from '../../composables/useOficina'
 
 const props = defineProps<{ construcaoId: number }>()
 const emit = defineEmits<{ (e: 'fechar'): void; (e: 'atualizado'): void }>()
@@ -112,6 +113,13 @@ async function desalocar(cidadaoId: number) {
     </template>
     <p v-if="a.erro.value" class="erro" role="alert" data-testid="erro-alocacao">{{ a.erro.value }}</p>
     <div class="acoes">
+      <router-link
+        v-if="a.predio.value && ehOficina(a.predio.value.tipo) && a.predio.value.estado === 'ATIVA'"
+        :to="{ name: 'oficina', params: { id: props.construcaoId } }"
+        data-testid="abrir-oficina"
+      >
+        <Button label="Abrir oficina" as="span" />
+      </router-link>
       <Button label="Fechar" severity="secondary" data-testid="fechar-PainelPredio" @click="emit('fechar')" />
     </div>
   </div>

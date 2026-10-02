@@ -95,3 +95,14 @@ describe('PainelPredio', () => {
     expect(w.get('[data-testid="erro-alocacao"]').text()).toBe('Cidadão já alocado')
   })
 })
+
+describe('PainelPredio - oficina', () => {
+  it('mostra "Abrir oficina" só para oficina ativa', async () => {
+    preparar('ATIVA', 'FERRARIA')
+    let w = await montar()
+    expect(w.find('[data-testid="abrir-oficina"]').exists()).toBe(true)
+    preparar('ATIVA', 'ESTALAGEM')
+    w = await montar()
+    expect(w.find('[data-testid="abrir-oficina"]').exists()).toBe(false)
+  })
+})

@@ -26,7 +26,7 @@ describe('ProfissoesTab', () => {
 })
 
 describe('EquipamentoTab', () => {
-  it('mostra texto de fase futura', () => {
-    expect(mount(EquipamentoTab).text()).toContain('Equipamentos disponíveis na Fase 3')
+  it('mostra slots vazios', () => {
+    expect(mount(EquipamentoTab, { props: { cidadaoId: 1 }, global: { plugins: [PrimeVue] } }).text()).toContain('Vazio')
   })
 })

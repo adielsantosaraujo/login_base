@@ -21,7 +21,9 @@ public record CidadaoDTO(
 		List<ProfissaoDTO> profissoes,
 		Long construcaoId,
 		Profissao profissaoTrabalho,
-		Map<String, Object> equipamento) {
+		Map<String, Object> equipamento,
+		int vidaMaxima,
+		Map<String, Integer> caracteristicasTotais) {
 
 	public record Conjuge(Long id, String nome) {
 	}

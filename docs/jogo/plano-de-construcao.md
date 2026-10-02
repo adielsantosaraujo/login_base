@@ -100,37 +100,37 @@ _Famílias, prédios, trabalhadores, produção, alimentação e ouro passivo._
 
 _Fabricação, catálogos de equipamentos, equipar e inventário._
 
-- [ ] **[v1-011 · H-001 — Fabricar item na oficina](v1-011-itens-e-fabricacao/historia/h-001-fabricar-item-na-oficina.md)**
-  - [ ] [B] [Tarefa 001 — Modelo de dados de itens](v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md)
-  - [ ] [B] [Tarefa 002 — Gerador de itens, qualidade e bônus](v1-011-itens-e-fabricacao/historia/h-001-tarefa-002-gerador-de-itens-qualidade-e-bonus.md)
-  - [ ] [B] [Tarefa 003 — Fila de fabricação no turno](v1-011-itens-e-fabricacao/historia/h-001-tarefa-003-fila-de-fabricacao-no-turno.md)
-  - [ ] [F] [Tarefa 004 — Tela da oficina](v1-011-itens-e-fabricacao/historia/h-001-tarefa-004-tela-da-oficina.md)
+- [x] **[v1-011 · H-001 — Fabricar item na oficina](v1-011-itens-e-fabricacao/historia/h-001-fabricar-item-na-oficina.md)**
+  - [x] [B] [Tarefa 001 — Modelo de dados de itens](v1-011-itens-e-fabricacao/historia/h-001-tarefa-001-modelo-de-dados-de-itens.md)
+  - [x] [B] [Tarefa 002 — Gerador de itens, qualidade e bônus](v1-011-itens-e-fabricacao/historia/h-001-tarefa-002-gerador-de-itens-qualidade-e-bonus.md)
+  - [x] [B] [Tarefa 003 — Fila de fabricação no turno](v1-011-itens-e-fabricacao/historia/h-001-tarefa-003-fila-de-fabricacao-no-turno.md)
+  - [x] [F] [Tarefa 004 — Tela da oficina](v1-011-itens-e-fabricacao/historia/h-001-tarefa-004-tela-da-oficina.md)
 
-- [ ] **[v1-005 · H-001 — Fabricar ferramentas](v1-005-ferramentas/historia/h-001-fabricar-ferramentas.md)**
-  - [ ] [B] [Tarefa 001 — Catálogo de ferramentas](v1-005-ferramentas/historia/h-001-tarefa-001-catalogo-de-ferramentas.md)
+- [x] **[v1-005 · H-001 — Fabricar ferramentas](v1-005-ferramentas/historia/h-001-fabricar-ferramentas.md)**
+  - [x] [B] [Tarefa 001 — Catálogo de ferramentas](v1-005-ferramentas/historia/h-001-tarefa-001-catalogo-de-ferramentas.md)
 
-- [ ] **[v1-005 · H-002 — Aplicar bônus da ferramenta no trabalho](v1-005-ferramentas/historia/h-002-aplicar-bonus-da-ferramenta-no-trabalho.md)**
-  - [ ] [B] [Tarefa 001 — Bônus de ferramenta na eficiência](v1-005-ferramentas/historia/h-002-tarefa-001-bonus-de-ferramenta-na-eficiencia.md)
+- [x] **[v1-005 · H-002 — Aplicar bônus da ferramenta no trabalho](v1-005-ferramentas/historia/h-002-aplicar-bonus-da-ferramenta-no-trabalho.md)**
+  - [x] [B] [Tarefa 001 — Bônus de ferramenta na eficiência](v1-005-ferramentas/historia/h-002-tarefa-001-bonus-de-ferramenta-na-eficiencia.md)
 
-- [ ] **[v1-004 · H-001 — Fabricar Armas](v1-004-armas/historia/h-001-fabricar-armas.md)**
-  - [ ] [B] [Tarefa 001 — Catálogo de Armas](v1-004-armas/historia/h-001-tarefa-001-catalogo-de-armas.md)
+- [x] **[v1-004 · H-001 — Fabricar Armas](v1-004-armas/historia/h-001-fabricar-armas.md)**
+  - [x] [B] [Tarefa 001 — Catálogo de Armas](v1-004-armas/historia/h-001-tarefa-001-catalogo-de-armas.md)
 
-- [ ] **[v1-006 · H-001 — Fabricar armaduras](v1-006-Armaduras/historia/h-001-fabricar-armaduras.md)**
-  - [ ] [B] [Tarefa 001 — Catálogo de armaduras](v1-006-Armaduras/historia/h-001-tarefa-001-catalogo-de-armaduras.md)
+- [x] **[v1-006 · H-001 — Fabricar armaduras](v1-006-Armaduras/historia/h-001-fabricar-armaduras.md)**
+  - [x] [B] [Tarefa 001 — Catálogo de armaduras](v1-006-Armaduras/historia/h-001-tarefa-001-catalogo-de-armaduras.md)
 
-- [ ] **[v1-007 · H-001 — Fabricar joias](v1-007-Joias/historia/h-001-fabricar-joias.md)**
-  - [ ] [B] [Tarefa 001 — Catálogo de joias](v1-007-Joias/historia/h-001-tarefa-001-catalogo-de-joias.md)
+- [x] **[v1-007 · H-001 — Fabricar joias](v1-007-Joias/historia/h-001-fabricar-joias.md)**
+  - [x] [B] [Tarefa 001 — Catálogo de joias](v1-007-Joias/historia/h-001-tarefa-001-catalogo-de-joias.md)
 
-- [ ] **[v1-011 · H-002 — Equipar itens no painel da pessoa](v1-011-itens-e-fabricacao/historia/h-002-equipar-itens-no-painel-da-pessoa.md)**
-  - [ ] [B] [Tarefa 001 — Regras e API de equipar](v1-011-itens-e-fabricacao/historia/h-002-tarefa-001-regras-e-api-de-equipar.md)
-  - [ ] [F] [Tarefa 002 — Interface de equipamento](v1-011-itens-e-fabricacao/historia/h-002-tarefa-002-interface-de-equipamento.md)
+- [x] **[v1-011 · H-002 — Equipar itens no painel da pessoa](v1-011-itens-e-fabricacao/historia/h-002-equipar-itens-no-painel-da-pessoa.md)**
+  - [x] [B] [Tarefa 001 — Regras e API de equipar](v1-011-itens-e-fabricacao/historia/h-002-tarefa-001-regras-e-api-de-equipar.md)
+  - [x] [F] [Tarefa 002 — Interface de equipamento](v1-011-itens-e-fabricacao/historia/h-002-tarefa-002-interface-de-equipamento.md)
 
-- [ ] **[v1-007 · H-002 — Usar colar e anéis](v1-007-Joias/historia/h-002-usar-colar-e-aneis.md)**
-  - [ ] [B] [Tarefa 001 — Slots de joias e efeitos](v1-007-Joias/historia/h-002-tarefa-001-slots-de-joias-e-efeitos.md)
+- [x] **[v1-007 · H-002 — Usar colar e anéis](v1-007-Joias/historia/h-002-usar-colar-e-aneis.md)**
+  - [x] [B] [Tarefa 001 — Slots de joias e efeitos](v1-007-Joias/historia/h-002-tarefa-001-slots-de-joias-e-efeitos.md)
 
-- [ ] **[v1-011 · H-003 — Gerenciar inventário e aprimorar itens](v1-011-itens-e-fabricacao/historia/h-003-gerenciar-inventario-e-aprimorar-itens.md)**
-  - [ ] [B] [Tarefa 001 — API de inventário e aprimoramento](v1-011-itens-e-fabricacao/historia/h-003-tarefa-001-api-de-inventario-e-aprimoramento.md)
-  - [ ] [F] [Tarefa 002 — Tela de inventário](v1-011-itens-e-fabricacao/historia/h-003-tarefa-002-tela-de-inventario.md)
+- [x] **[v1-011 · H-003 — Gerenciar inventário e aprimorar itens](v1-011-itens-e-fabricacao/historia/h-003-gerenciar-inventario-e-aprimorar-itens.md)**
+  - [x] [B] [Tarefa 001 — API de inventário e aprimoramento](v1-011-itens-e-fabricacao/historia/h-003-tarefa-001-api-de-inventario-e-aprimoramento.md)
+  - [x] [F] [Tarefa 002 — Tela de inventário](v1-011-itens-e-fabricacao/historia/h-003-tarefa-002-tela-de-inventario.md)
 
 ## Fase 4 — Militar
 

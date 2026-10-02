@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { get, post } from '../api/http'
+import type { ItemDTO } from './useItens'
 
 export interface ProfissaoCidadao {
   profissao: string
@@ -25,7 +26,10 @@ export interface CidadaoDetalhe {
   profissoes: ProfissaoCidadao[]
   construcaoId: number | null
   profissaoTrabalho: string | null
-  equipamento: Record<string, unknown>
+  equipamento?: Record<string, ItemDTO | null>
+  vidaMaxima?: number
+  caracteristicasTotais?: Record<string, number>
+  emExpedicao?: boolean
 }
 
 export interface DistribuicaoPontos {
@@ -71,5 +75,9 @@ export function useCidadao() {
     }
   }
 
-  return { cidadao, carregando, enviando, erro, carregar, distribuir }
+  function atualizarEquipamento(mapa: Record<string, ItemDTO | null | undefined>) {
+    if (cidadao.value) cidadao.value = { ...cidadao.value, equipamento: mapa as Record<string, ItemDTO | null> }
+  }
+
+  return { cidadao, carregando, enviando, erro, carregar, distribuir, atualizarEquipamento }
 }

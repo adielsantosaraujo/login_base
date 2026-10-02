@@ -16,6 +16,14 @@ import EquipamentoTab from '../components/jogo/EquipamentoTab.vue'
 const route = useRoute()
 const { cidadao, carregando, enviando, erro, carregar, distribuir } = useCidadao()
 
+const CARS = ['VIT', 'FOR', 'VEL', 'INT', 'CAR']
+function totalCar(c: string): string {
+  const base = cidadao.value?.caracteristicas?.[c] ?? 0
+  const total = cidadao.value?.caracteristicasTotais?.[c] ?? base
+  const bonus = total - base
+  return bonus ? `${c} ${total} (${bonus > 0 ? '+' : ''}${bonus})` : `${c} ${total}`
+}
+
 watch(() => route.params.id, (id) => { if (id) carregar(String(id)) }, { immediate: true })
 
 const ESTADOS: Record<string, string> = { SAUDAVEL: 'Saudável', FERIDO: 'Ferido' }
@@ -59,6 +67,11 @@ async function enviar(tipo: 'caracteristicas' | 'profissoes', pontos: Record<str
               <router-link :to="`/jogo/cidadao/${cidadao.conjuge.id}`">{{ cidadao.conjuge.nome }}</router-link>
             </dd>
           </div>
+          <div v-if="cidadao.vidaMaxima != null"><dt>Vida máxima</dt><dd data-testid="vida-maxima">{{ cidadao.vidaMaxima }}</dd></div>
+          <div v-if="cidadao.caracteristicasTotais">
+            <dt>Características totais</dt>
+            <dd data-testid="car-totais">{{ CARS.map(totalCar).join(' · ') }}</dd>
+          </div>
           <div><dt>Alocação</dt><dd data-testid="alocacao">{{ alocacao }}</dd></div>
         </dl>
       </header>
@@ -86,7 +99,12 @@ async function enviar(tipo: 'caracteristicas' | 'profissoes', pontos: Record<str
               @distribuir="(p) => enviar('profissoes', p)"
             />
           </TabPanel>
-          <TabPanel value="equipamento"><EquipamentoTab /></TabPanel>
+          <TabPanel value="equipamento"><EquipamentoTab
+              :cidadao-id="cidadao.id"
+              :equipamento="cidadao.equipamento"
+              :em-expedicao="cidadao.emExpedicao"
+              @atualizado="() => carregar(cidadao!.id)"
+            /></TabPanel>
         </TabPanels>
       </Tabs>
     </template>

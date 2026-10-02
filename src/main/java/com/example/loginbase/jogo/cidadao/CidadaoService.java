@@ -23,15 +23,21 @@ public class CidadaoService {
 	private final FamiliaRepository familiaRepository;
 	private final CalculadoraPeEfetivo calculadoraPeEfetivo;
 	private final EficienciaService eficienciaService;
+	private final com.example.loginbase.jogo.item.EquipamentoService equipamentoService;
+	private final VidaMaximaCalculadora vidaMaximaCalculadora;
 
 	public CidadaoService(CidadaoRepository cidadaoRepository, CidadaoProfissaoRepository cidadaoProfissaoRepository,
 			FamiliaRepository familiaRepository, CalculadoraPeEfetivo calculadoraPeEfetivo,
-			EficienciaService eficienciaService) {
+			EficienciaService eficienciaService,
+			com.example.loginbase.jogo.item.EquipamentoService equipamentoService,
+			VidaMaximaCalculadora vidaMaximaCalculadora) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.cidadaoProfissaoRepository = cidadaoProfissaoRepository;
 		this.familiaRepository = familiaRepository;
 		this.calculadoraPeEfetivo = calculadoraPeEfetivo;
 		this.eficienciaService = eficienciaService;
+		this.equipamentoService = equipamentoService;
+		this.vidaMaximaCalculadora = vidaMaximaCalculadora;
 	}
 
 	@Transactional(readOnly = true)
@@ -118,9 +124,15 @@ public class CidadaoService {
 		CidadaoDTO.Conjuge conjuge = c.getConjugeId() == null ? null
 				: cidadaoRepository.findById(c.getConjugeId()).map(x -> new CidadaoDTO.Conjuge(x.getId(), x.getNome()))
 						.orElse(null);
+		Map<String, Integer> totais = new LinkedHashMap<>();
+		for (Caracteristica k : Caracteristica.values()) {
+			totais.put(k.name(), calculadoraPeEfetivo.caracteristicaTotal(c, k));
+		}
+		Map<String, Object> equipamento = new LinkedHashMap<>(equipamentoService.mapa(c.getId()));
 		return new CidadaoDTO(c.getId(), c.getNome(), c.getSexo(), c.getIdadeAnos(), c.isVivo(), c.getEstado(),
 				c.getFamintoTurnos() > 0, c.getFamiliaId(), familiaNome, conjuge, car, c.getPontosCarPendentes(),
-				c.getPontosProfPendentes(), profissoes, c.getConstrucaoId(), c.getProfissaoTrabalho(), Map.of());
+				c.getPontosProfPendentes(), profissoes, c.getConstrucaoId(), c.getProfissaoTrabalho(), equipamento,
+				vidaMaximaCalculadora.calcular(c), totais);
 	}
 
 	private Cidadao buscar(Vila vila, Long id) {

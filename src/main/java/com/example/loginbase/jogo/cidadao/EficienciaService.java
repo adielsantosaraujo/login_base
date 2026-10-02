@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.loginbase.jogo.item.BonusEquipamentoService;
 import com.example.loginbase.jogo.modelo.Vila;
 
 /**
@@ -25,9 +26,12 @@ public class EficienciaService {
 	private final CalculadoraPeEfetivo calculadoraPeEfetivo;
 	private final CidadaoProfissaoRepository cidadaoProfissaoRepository;
 	private final CidadaoRepository cidadaoRepository;
+	private final BonusEquipamentoService bonusEquipamentoService;
 
 	public EficienciaService(CalculadoraPeEfetivo calculadoraPeEfetivo,
-			CidadaoProfissaoRepository cidadaoProfissaoRepository, CidadaoRepository cidadaoRepository) {
+			CidadaoProfissaoRepository cidadaoProfissaoRepository, CidadaoRepository cidadaoRepository,
+			BonusEquipamentoService bonusEquipamentoService) {
+		this.bonusEquipamentoService = bonusEquipamentoService;
 		this.calculadoraPeEfetivo = calculadoraPeEfetivo;
 		this.cidadaoProfissaoRepository = cidadaoProfissaoRepository;
 		this.cidadaoRepository = cidadaoRepository;
@@ -42,15 +46,23 @@ public class EficienciaService {
 		int peBase = cidadaoProfissaoRepository.findByCidadaoIdAndProfissao(cidadao.getId(), profissao)
 				.map(CidadaoProfissao::getPontosBase).orElse(0);
 		int peEfetivo = calculadoraPeEfetivo.calcular(cidadao, profissao, peBase);
+		boolean temPeItens = calculadoraPeEfetivo.peItens(cidadao, profissao) > 0;
+		double prodItens = cidadao.getId() == null ? 0.0 : bonusEquipamentoService.prodItens(cidadao.getId()) / 100.0;
 		return calcular(peBase, peEfetivo, cidadao.getIdadeAnos(), cidadao.getFamintoTurnos() > 0,
-				vila != null && vila.isBemAlimentada(), bonusLider(vila), 0.0, multiplicadorNivel);
+				vila != null && vila.isBemAlimentada(), bonusLider(vila), prodItens, multiplicadorNivel, temPeItens);
+	}
+
+	static double calcular(int peBase, int peEfetivo, int idadeAnos, boolean faminto, boolean bemAlimentada,
+			double bonusLider, double prodItens, double multiplicadorNivel) {
+		return calcular(peBase, peEfetivo, idadeAnos, faminto, bemAlimentada, bonusLider, prodItens,
+				multiplicadorNivel, false);
 	}
 
 	/** Fórmula pura. Bônus de líder e PROD% em fração (0,05 = 5%). */
 	static double calcular(int peBase, int peEfetivo, int idadeAnos, boolean faminto, boolean bemAlimentada,
-			double bonusLider, double prodItens, double multiplicadorNivel) {
-		// Sem PE base na profissão (e sem PE de itens, hoje sempre 0): rende 0,5.
-		double base = peBase == 0 ? 0.5 : 0.5 + 0.1 * peEfetivo;
+			double bonusLider, double prodItens, double multiplicadorNivel, boolean temPeItens) {
+		// Sem PE base na profissão e sem PE de itens: rende 0,5.
+		double base = peBase == 0 && !temPeItens ? 0.5 : 0.5 + 0.1 * peEfetivo;
 		double r = Math.min(LIMITE, base);
 		if (idadeAnos >= 14 && idadeAnos <= 17) {
 			r *= 0.5;

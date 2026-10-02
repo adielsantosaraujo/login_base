@@ -43,4 +43,5 @@ async function requisitar<T>(metodo: string, url: string, corpo?: unknown): Prom
 export const get = <T>(url: string) => requisitar<T>('GET', url)
 export const post = <T>(url: string, corpo?: unknown) => requisitar<T>('POST', url, corpo)
 export const put = <T>(url: string, corpo?: unknown) => requisitar<T>('PUT', url, corpo)
+export const patch = <T>(url: string, corpo?: unknown) => requisitar<T>('PATCH', url, corpo)
 export const del = <T>(url: string) => requisitar<T>('DELETE', url)

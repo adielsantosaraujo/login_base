@@ -14,7 +14,7 @@ import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
 /**
  * Serviço compartilhado de morte (idade, fome, batalha): marca morto, desaloca, viúva o cônjuge,
- * registra o evento MORTE e faz a sucessão do líder. Itens ainda não existem (nada a devolver).
+ * registra o evento MORTE e faz a sucessão do líder. Itens equipados voltam ao inventário.
  */
 @Service
 public class MorteService {
@@ -25,13 +25,16 @@ public class MorteService {
 	private final VilaRepository vilaRepository;
 	private final JogoTurnoRepository turnoRepository;
 	private final RegistroEventoTurnoService registro;
+	private final com.example.loginbase.jogo.item.ItemRepository itemRepository;
 
 	public MorteService(CidadaoRepository cidadaoRepository, VilaRepository vilaRepository,
-			JogoTurnoRepository turnoRepository, RegistroEventoTurnoService registro) {
+			JogoTurnoRepository turnoRepository, RegistroEventoTurnoService registro,
+			com.example.loginbase.jogo.item.ItemRepository itemRepository) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.vilaRepository = vilaRepository;
 		this.turnoRepository = turnoRepository;
 		this.registro = registro;
+		this.itemRepository = itemRepository;
 	}
 
 	/** Usa a vila do cidadão e o turno corrente (maior número de turno). */
@@ -51,6 +54,11 @@ public class MorteService {
 		Long conjugeId = cidadao.getConjugeId();
 		cidadao.setConjugeId(null);
 		cidadaoRepository.save(cidadao);
+		itemRepository.findByCidadaoId(cidadao.getId()).forEach(i -> {
+			i.setCidadaoId(null);
+			i.setSlot(null);
+			itemRepository.saveAndFlush(i);
+		});
 		if (conjugeId != null) {
 			cidadaoRepository.findById(conjugeId).ifPresent(c -> {
 				c.setConjugeId(null);

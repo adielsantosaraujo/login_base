@@ -61,6 +61,9 @@ export const ROTULOS_EVENTO: Record<string, string> = {
   CASAMENTO: 'Casamento',
   SUCESSAO_LIDER: 'Sucessão de líder',
   ALOCACAO: 'Alocação',
+  FABRICACAO_CONCLUIDA: 'Fabricação concluída',
+  FABRICACAO_PAUSADA: 'Fabricação pausada',
+  APRIMORAMENTO_CONCLUIDO: 'Aprimoramento concluído',
 }
 
 export const ICONES_EVENTO: Record<string, string> = {

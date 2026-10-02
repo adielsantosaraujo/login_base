@@ -13,12 +13,14 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.example.loginbase.jogo.item.BonusEquipamentoService;
 import com.example.loginbase.jogo.modelo.Vila;
 
 class EficienciaServiceTest {
 
 	private CidadaoProfissaoRepository profRepo;
 	private CidadaoRepository cidRepo;
+	private BonusEquipamentoService bonusEq;
 	private EficienciaService service;
 	private Vila vila;
 
@@ -26,7 +28,8 @@ class EficienciaServiceTest {
 	void setUp() {
 		profRepo = mock(CidadaoProfissaoRepository.class);
 		cidRepo = mock(CidadaoRepository.class);
-		service = new EficienciaService(new CalculadoraPeEfetivo(), profRepo, cidRepo);
+		bonusEq = mock(BonusEquipamentoService.class);
+		service = new EficienciaService(new CalculadoraPeEfetivo(bonusEq), profRepo, cidRepo, bonusEq);
 		vila = new Vila(1L, "V", 1L, 0);
 	}
 
@@ -122,6 +125,36 @@ class EficienciaServiceTest {
 		c.setId(5L);
 		when(profRepo.findByCidadaoIdAndProfissao(anyLong(), any())).thenReturn(Optional.empty());
 		assertThat(ef(c)).isCloseTo(0.5, within(1e-9));
+	}
+
+	@Test
+	void ferramentaSomaPeNaFormula() {
+		Cidadao c = cidadao(1, 30, 2);
+		when(bonusEq.bonusFerramenta(1L, Profissao.AGRICULTOR)).thenReturn(3);
+		assertThat(ef(c)).isCloseTo(1.0, within(1e-9));
+	}
+
+	@Test
+	void prodItensMultiplica() {
+		Cidadao c = cidadao(1, 30, 5);
+		when(bonusEq.prodItens(1L)).thenReturn(8);
+		assertThat(ef(c)).isCloseTo(1.08, within(1e-9));
+	}
+
+	@Test
+	void peBaseZeroComFerramentaAplicaFormula() {
+		Cidadao c = new Cidadao(1L, 1L, "A", Sexo.M, 30 * 12);
+		c.setId(5L);
+		when(profRepo.findByCidadaoIdAndProfissao(anyLong(), any())).thenReturn(Optional.empty());
+		when(bonusEq.bonusFerramenta(5L, Profissao.AGRICULTOR)).thenReturn(4);
+		assertThat(ef(c)).isCloseTo(0.9, within(1e-9));
+	}
+
+	@Test
+	void tetoPreservadoComFerramentaGrande() {
+		Cidadao c = cidadao(1, 30, 25);
+		when(bonusEq.bonusFerramenta(1L, Profissao.AGRICULTOR)).thenReturn(10);
+		assertThat(ef(c)).isEqualTo(3.0);
 	}
 
 }
