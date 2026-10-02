@@ -5,7 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * Controller responsável pelas páginas públicas e seguras de navegação:
- * a página de login e a página inicial protegida.
+ * a página de login, a SPA protegida em {@code /app/index} e o redirecionamento
+ * de {@code /}, {@code /app} e {@code /app/} para ela (a barra final é mapeada
+ * explicitamente, pois o Spring 6+ não a casa automaticamente).
  */
 @Controller
 public class PaginaController {
@@ -15,8 +17,13 @@ public class PaginaController {
         return "sistema/public/login";
     }
 
-    @GetMapping("/")
+    @GetMapping({"/", "/app", "/app/"})
+    String raiz() {
+        return "redirect:/app/index";
+    }
+
+    @GetMapping("/app/index")
     String index() {
-        return "sistema/seguro/index";
+        return "sistema/seguro/app/index";
     }
 }

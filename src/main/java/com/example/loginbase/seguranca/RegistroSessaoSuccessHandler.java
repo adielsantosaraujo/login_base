@@ -26,7 +26,7 @@ public class RegistroSessaoSuccessHandler extends SavedRequestAwareAuthenticatio
 
 	public RegistroSessaoSuccessHandler(SessaoService sessaoService) {
 		this.sessaoService = sessaoService;
-		setDefaultTargetUrl("/");
+		setDefaultTargetUrl("/app/index");
 	}
 
 	@Override

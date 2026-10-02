@@ -1,22 +1,21 @@
 package com.example.loginbase.seguranca;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.util.matcher.AnyRequestMatcher;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
  * Configuração de segurança da aplicação: autenticação por formulário (e-mail
@@ -31,14 +30,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, RegistroSessaoSuccessHandler handler)
             throws Exception {
         RequestMatcher api = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
-        HttpSessionRequestCache requestCache = new HttpSessionRequestCache() {
-            @Override
-            public void saveRequest(HttpServletRequest request, HttpServletResponse response) {
-                if (!api.matches(request)) {
-                    super.saveRequest(request, response);
-                }
-            }
-        };
+        // Requisições automáticas (DevTools, assets, favicon) não devem virar
+        // "página salva" e sequestrar o redirecionamento pós-login.
+        RequestMatcher naoSalvar = new OrRequestMatcher(
+                api,
+                PathPatternRequestMatcher.withDefaults().matcher("/.well-known/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/app/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/favicon.ico"));
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        requestCache.setRequestMatcher(request -> !naoSalvar.matches(request));
 
         http
                 .csrf(csrf -> csrf.spa())
@@ -48,7 +48,8 @@ public class SecurityConfig {
                         .defaultAuthenticationEntryPointFor(new LoginUrlAuthenticationEntryPoint("/login"),
                                 AnyRequestMatcher.INSTANCE))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error")
+                        .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error",
+                                "/.well-known/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form

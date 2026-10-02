@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +28,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -127,7 +130,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorEmailAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("ana@exemplo.com").password(SENHA))
-				.andExpect(redirectedUrl("/"))
+				.andExpect(redirectedUrl("/app/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -137,7 +140,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorEmailComCaixaEEspacosDiferentesAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user(" Ana@Exemplo.COM ").password(SENHA))
-				.andExpect(redirectedUrl("/"))
+				.andExpect(redirectedUrl("/app/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -147,7 +150,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorCelularSemMascaraAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("11987654321").password(SENHA))
-				.andExpect(redirectedUrl("/"))
+				.andExpect(redirectedUrl("/app/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -157,7 +160,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorCelularComMascaraAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("(11) 98765-4321").password(SENHA))
-				.andExpect(redirectedUrl("/"))
+				.andExpect(redirectedUrl("/app/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -252,10 +255,20 @@ class AutenticacaoWebMvcTest {
 	}
 
 	@Test
-	void usuarioAutenticadoVeSejaBemVindo() throws Exception {
-		mockMvc.perform(get("/").with(user("ana@exemplo.com")))
+	void usuarioAutenticadoAcessaPaginaInicial() throws Exception {
+		// O index.html real (SPA Vue) é gerado pelo build do frontend e não existe
+		// num clone limpo; o teste usa o stub de src/test/resources/templates.
+		mockMvc.perform(get("/app/index").with(user("ana@exemplo.com")))
 				.andExpect(status().isOk())
-				.andExpect(content().string(containsString("Seja bem vindo")));
+				.andExpect(view().name("sistema/seguro/app/index"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/", "/app", "/app/" })
+	void raizEAppAutenticadosRedirecionamParaAppIndex(String caminho) throws Exception {
+		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/app/index"));
 	}
 
 	@Test
@@ -269,6 +282,19 @@ class AutenticacaoWebMvcTest {
 		MvcResult resultado = mockMvc.perform(get("/css/x.css")).andReturn();
 
 		assertThat(resultado.getResponse().getStatus()).isNotEqualTo(302);
+	}
+
+	@Test
+	void wellKnownAnonimoNaoRedirecionaParaLogin() throws Exception {
+		mockMvc.perform(get("/.well-known/appspecific/com.chrome.devtools.json"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void apiAnonimaRetorna401SemRedirecionar() throws Exception {
+		mockMvc.perform(get("/api/qualquer"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(redirectedUrl(null));
 	}
 
 }
