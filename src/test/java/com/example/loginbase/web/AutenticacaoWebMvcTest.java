@@ -271,6 +271,35 @@ class AutenticacaoWebMvcTest {
 				.andExpect(redirectedUrl("/app/index"));
 	}
 
+	@ParameterizedTest
+	@ValueSource(strings = { "/app/jogo", "/app/jogo/mapa", "/app/jogo/batalhas/42", "/app/a/b/c/d/e" })
+	void rotasDoClienteSobAppServemASpa(String caminho) throws Exception {
+		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/seguro/app/index"));
+	}
+
+	@Test
+	void assetEstaticoExistenteNaoEhSubstituidoPelaSpa() throws Exception {
+		mockMvc.perform(get("/app/assets/teste-estatico.js").with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("// estatico")));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/app/assets/inexistente-abc.js", "/app/inexistente-abc.svg" })
+	void estaticoInexistenteComExtensaoRetorna404(String caminho) throws Exception {
+		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	void anonimoEmRotaDoClienteRedirecionaParaLogin() throws Exception {
+		mockMvc.perform(get("/app/jogo/mapa"))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrlPattern("/**/login"));
+	}
+
 	@Test
 	void logoutRedirecionaParaLoginComMensagem() throws Exception {
 		mockMvc.perform(post("/logout").with(csrf()).with(user("ana@exemplo.com")))

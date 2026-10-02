@@ -1,48 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { guardaVila } from './guardaVila'
 import HomeView from '../views/HomeView.vue'
-import Jogo from '../views/Jogo.vue'
-import CriacaoVila from '../views/CriacaoVila.vue'
-import Mapa from '../views/Mapa.vue'
-import JogoEstoque from '../views/JogoEstoque.vue'
-import DistribuicaoPopulacao from '../views/DistribuicaoPopulacao.vue'
-import JogoFamilias from '../views/JogoFamilias.vue'
-import PainelCidadao from '../views/PainelCidadao.vue'
-import RegiaoVila from '../views/RegiaoVila.vue'
-import JogoMercado from '../views/JogoMercado.vue'
-import OficinaTela from '../views/OficinaTela.vue'
-import QuartelTela from '../views/QuartelTela.vue'
-import JogoInventario from '../views/JogoInventario.vue'
-import JogoBatalhas from '../views/JogoBatalhas.vue'
-import BatalhaDetalhe from '../views/BatalhaDetalhe.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  // No build a SPA é servida em /app/ (BASE_URL); no dev server, em /
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', name: 'home', component: HomeView },
-    {
-      path: '/jogo',
-      component: Jogo,
-      redirect: '/jogo/mapa',
-      children: [
-        { path: 'criar-vila', name: 'criar-vila', component: CriacaoVila },
-        { path: 'mapa', name: 'mapa', component: Mapa },
-        { path: 'estoque', name: 'estoque', component: JogoEstoque },
-        { path: 'populacao', name: 'populacao', component: DistribuicaoPopulacao },
-        { path: 'familias', name: 'familias', component: JogoFamilias },
-        { path: 'cidadao/:id', name: 'cidadao', component: PainelCidadao },
-        { path: 'regiao/:indice', name: 'regiao', component: RegiaoVila },
-        { path: 'mercado', name: 'mercado', component: JogoMercado },
-        { path: 'oficina/:id', name: 'oficina', component: OficinaTela },
-        { path: 'quartel/:id', name: 'quartel', component: QuartelTela },
-        { path: 'inventario', name: 'inventario', component: JogoInventario },
-        { path: 'batalhas', name: 'batalhas', component: JogoBatalhas },
-        { path: 'batalhas/:id', name: 'batalha', component: BatalhaDetalhe },
-      ],
-    },
+    // O backend entrega a SPA em /app/index, por isso '/index' é alias da home
+    { path: '/', name: 'home', component: HomeView, alias: '/index' },
   ],
 })
-
-router.beforeEach(guardaVila)
 
 export default router
