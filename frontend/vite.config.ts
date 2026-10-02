@@ -9,7 +9,9 @@ const backend = process.env.VITE_BACKEND_URL ?? 'http://localhost:8080'
 const proxy = { target: backend, changeOrigin: false }
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // Em producao os assets sao servidos pelo backend em /app/; no dev server a base continua '/'
+  base: command === 'build' ? '/app/' : '/',
   plugins: [vue()],
   server: {
     watch: {
@@ -26,4 +28,4 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.spec.ts'],
   },
-})
+}))
