@@ -30,6 +30,10 @@ export interface CidadaoDetalhe {
   vidaMaxima?: number
   caracteristicasTotais?: Record<string, number>
   emExpedicao?: boolean
+  tropaId?: number | null
+  posicaoTropa?: 'FRENTE' | 'RETAGUARDA' | null
+  xpGuerreiro?: number
+  feridoAteTurno?: number | null
 }
 
 export interface DistribuicaoPontos {

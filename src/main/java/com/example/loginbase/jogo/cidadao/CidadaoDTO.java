@@ -23,7 +23,12 @@ public record CidadaoDTO(
 		Profissao profissaoTrabalho,
 		Map<String, Object> equipamento,
 		int vidaMaxima,
-		Map<String, Integer> caracteristicasTotais) {
+		Map<String, Integer> caracteristicasTotais,
+		boolean emExpedicao,
+		Long tropaId,
+		com.example.loginbase.jogo.quartel.PosicaoTropa posicaoTropa,
+		java.math.BigDecimal xpGuerreiro,
+		Integer feridoAteTurno) {
 
 	public record Conjuge(Long id, String nome) {
 	}

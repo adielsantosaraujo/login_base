@@ -49,6 +49,19 @@ class ConstrucaoCatalogoTest {
 	}
 
 	@Test
+	void quartelPorNivel() {
+		assertEquals(1, ConstrucaoCatalogo.vagasInstrutorQuartel(NivelConstrucao.N1));
+		assertEquals(2, ConstrucaoCatalogo.vagasInstrutorQuartel(NivelConstrucao.N2));
+		assertEquals(3, ConstrucaoCatalogo.vagasInstrutorQuartel(NivelConstrucao.N3));
+		assertEquals(5, ConstrucaoCatalogo.capacidadeQuartel(NivelConstrucao.N1));
+		assertEquals(8, ConstrucaoCatalogo.capacidadeQuartel(NivelConstrucao.N2));
+		assertEquals(10, ConstrucaoCatalogo.capacidadeQuartel(NivelConstrucao.N3));
+		assertEquals(1, ConstrucaoCatalogo.maxTropasQuartel(NivelConstrucao.N1));
+		assertEquals(2, ConstrucaoCatalogo.maxTropasQuartel(NivelConstrucao.N2));
+		assertEquals(4, ConstrucaoCatalogo.maxTropasQuartel(NivelConstrucao.N3));
+	}
+
+	@Test
 	void bonificacoesPorNivel() {
 		assertEquals(2, ConstrucaoCatalogo.vagas(NivelConstrucao.N1));
 		assertEquals(5, ConstrucaoCatalogo.vagas(NivelConstrucao.N2));

@@ -30,6 +30,9 @@ public final class ConstrucaoCatalogo {
 	private static final Map<TipoConstrucao, Entrada> ENTRADAS = new EnumMap<>(TipoConstrucao.class);
 
 	private static final int[] VAGAS = {2, 5, 10};
+	private static final int[] VAGAS_INSTRUTOR_QUARTEL = {1, 2, 3};
+	private static final int[] CAPACIDADE_QUARTEL = {5, 8, 10};
+	private static final int[] MAX_TROPAS_QUARTEL = {1, 2, 4};
 	private static final double[] MULTIPLICADOR = {1.0, 1.2, 1.5};
 	private static final int[] LADRILHOS_MARCADOS = {4, 10, 20};
 	private static final int[] TRABALHADORES_OBRA = {2, 4, 6};
@@ -156,6 +159,21 @@ public final class ConstrucaoCatalogo {
 	/** Vagas de trabalho (2/5/10). */
 	public static int vagas(NivelConstrucao nivel) {
 		return VAGAS[idx(nivel)];
+	}
+
+	/** Vagas de instrutor (Guerreiro) do Quartel (1/2/3). */
+	public static int vagasInstrutorQuartel(NivelConstrucao nivel) {
+		return VAGAS_INSTRUTOR_QUARTEL[idx(nivel)];
+	}
+
+	/** Capacidade total de membros de tropa por Quartel (5/8/10). */
+	public static int capacidadeQuartel(NivelConstrucao nivel) {
+		return CAPACIDADE_QUARTEL[idx(nivel)];
+	}
+
+	/** Máximo de tropas simultâneas por Quartel (1/2/4). */
+	public static int maxTropasQuartel(NivelConstrucao nivel) {
+		return MAX_TROPAS_QUARTEL[idx(nivel)];
 	}
 
 	/** Multiplicador de produção (1,0/1,2/1,5). */

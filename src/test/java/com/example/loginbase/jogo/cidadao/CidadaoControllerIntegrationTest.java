@@ -133,8 +133,8 @@ class CidadaoControllerIntegrationTest {
 		Cidadao alheio = cidadao(30);
 		usuario = meu;
 		vila = vilaRepository.findAll().stream().filter(v -> v.getUsuarioId().equals(meu.getId())).findFirst().orElseThrow();
-		obter("/api/jogo/cidadao/" + alheio.getId()).andExpect(status().isForbidden());
-		distribuir(alheio.getId(), "{\"caracteristicas\":{\"VIT\":1}}").andExpect(status().isForbidden());
+		obter("/api/jogo/cidadao/" + alheio.getId()).andExpect(status().isNotFound());
+		distribuir(alheio.getId(), "{\"caracteristicas\":{\"VIT\":1}}").andExpect(status().isNotFound());
 		obter("/api/jogo/cidadao/" + meuCid.getId()).andExpect(status().isOk());
 	}
 

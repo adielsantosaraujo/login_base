@@ -71,7 +71,8 @@ public class AlocacaoService {
 			} else {
 				escolhida = profissao;
 			}
-			limite = ConstrucaoCatalogo.vagas(c.getNivel());
+			limite = c.getTipo() == TipoConstrucao.QUARTEL ? ConstrucaoCatalogo.vagasInstrutorQuartel(c.getNivel())
+					: ConstrucaoCatalogo.vagas(c.getNivel());
 		} else {
 			if (profissao != Profissao.CONSTRUTOR && profissao != Profissao.CARREGADOR) {
 				throw erro("Em obra só é possível alocar Construtor ou Carregador");

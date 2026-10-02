@@ -51,6 +51,8 @@ public class MorteService {
 		}
 		cidadao.setVivo(false);
 		cidadao.setConstrucaoId(null);
+		cidadao.setTropaId(null);
+		cidadao.setPosicaoTropa(null);
 		Long conjugeId = cidadao.getConjugeId();
 		cidadao.setConjugeId(null);
 		cidadaoRepository.save(cidadao);

@@ -72,6 +72,15 @@ public class BonusEquipamentoService {
 		return total;
 	}
 
+	/** Soma do intrínseco informado em todos os itens equipados (ATK%, DEF%, INI, CRIT...). */
+	public int somaBonus(Long cidadaoId, CodigoBonus codigo) {
+		int total = 0;
+		for (Item item : equipados(cidadaoId)) {
+			total += soma(item, codigo);
+		}
+		return total;
+	}
+
 	private List<Item> equipados(Long cidadaoId) {
 		if (cidadaoId == null) {
 			return List.of();

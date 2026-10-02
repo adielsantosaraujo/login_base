@@ -1,5 +1,9 @@
 package com.example.loginbase.jogo.cidadao;
 
+import java.math.BigDecimal;
+
+import com.example.loginbase.jogo.quartel.PosicaoTropa;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -97,12 +101,16 @@ public class Cidadao {
 	@Column(name = "profissao_trabalho", length = 30)
 	private Profissao profissaoTrabalho;
 
-	/** Sem FK por enquanto (tabela de tropas ainda não existe). */
+	/** Tropa da qual o cidadão é membro (null quando não está em tropa). */
 	@Column(name = "tropa_id")
 	private Long tropaId;
 
-	@Column(name = "xp_guerreiro", nullable = false)
-	private int xpGuerreiro;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "posicao_tropa", length = 20)
+	private PosicaoTropa posicaoTropa;
+
+	@Column(name = "xp_guerreiro", nullable = false, precision = 6, scale = 2)
+	private BigDecimal xpGuerreiro = BigDecimal.ZERO;
 
 	public Cidadao(Long vilaId, Long familiaId, String nome, Sexo sexo, int idadeMeses) {
 		this.vilaId = vilaId;

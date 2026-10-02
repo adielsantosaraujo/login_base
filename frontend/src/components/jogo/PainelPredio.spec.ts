@@ -106,3 +106,17 @@ describe('PainelPredio - oficina', () => {
     expect(w.find('[data-testid="abrir-oficina"]').exists()).toBe(false)
   })
 })
+
+describe('PainelPredio - quartel', () => {
+  it('mostra "Abrir quartel" só para quartel ativo', async () => {
+    preparar('ATIVA', 'QUARTEL')
+    let w = await montar()
+    expect(w.find('[data-testid="abrir-quartel"]').exists()).toBe(true)
+    preparar('EM_OBRA', 'QUARTEL')
+    w = await montar()
+    expect(w.find('[data-testid="abrir-quartel"]').exists()).toBe(false)
+    preparar('ATIVA', 'ESTALAGEM')
+    w = await montar()
+    expect(w.find('[data-testid="abrir-quartel"]').exists()).toBe(false)
+  })
+})

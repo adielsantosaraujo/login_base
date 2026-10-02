@@ -33,6 +33,8 @@ import com.example.loginbase.jogo.cidadao.FamiliaRepository;
 import com.example.loginbase.jogo.cidadao.Profissao;
 import com.example.loginbase.jogo.cidadao.Sexo;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.quartel.Tropa;
+import com.example.loginbase.jogo.quartel.TropaRepository;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
@@ -49,6 +51,7 @@ class AlocacaoIntegrationTest {
 	@Autowired CidadaoRepository cidadaoRepository;
 	@Autowired CidadaoProfissaoRepository cidadaoProfissaoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
+	@Autowired TropaRepository tropaRepository;
 	@Autowired ConsultaTrabalhadores consulta;
 	@Autowired EstoqueService estoqueService;
 
@@ -121,7 +124,8 @@ class AlocacaoIntegrationTest {
 		alocar(outra.getId(), cidadao(13).getId(), null).andExpect(status().isBadRequest());
 		alocar(outra.getId(), cidadao(65).getId(), null).andExpect(status().isBadRequest());
 		Cidadao tropa = cidadao(30);
-		tropa.setTropaId(1L);
+		Construcao quartel = construcao(TipoConstrucao.QUARTEL, NivelConstrucao.N1, EstadoConstrucao.ATIVA);
+		tropa.setTropaId(tropaRepository.saveAndFlush(new Tropa(vila.getId(), quartel.getId(), "T")).getId());
 		cidadaoRepository.saveAndFlush(tropa);
 		alocar(outra.getId(), tropa.getId(), null).andExpect(status().isBadRequest());
 		alocar(outra.getId(), dois.getId(), null).andExpect(status().isBadRequest());
@@ -129,6 +133,24 @@ class AlocacaoIntegrationTest {
 		morto.setVivo(false);
 		cidadaoRepository.saveAndFlush(morto);
 		alocar(outra.getId(), morto.getId(), null).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void quartelTemVagasDeInstrutor1_2_3() throws Exception {
+		novaVila();
+		Construcao n1 = construcao(TipoConstrucao.QUARTEL, NivelConstrucao.N1, EstadoConstrucao.ATIVA);
+		alocar(n1.getId(), cidadao(30).getId(), null).andExpect(status().isCreated());
+		alocar(n1.getId(), cidadao(30).getId(), null).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.erro").value("Sem vagas disponíveis"));
+		Construcao n2 = construcao(TipoConstrucao.QUARTEL, NivelConstrucao.N2, EstadoConstrucao.ATIVA);
+		alocar(n2.getId(), cidadao(30).getId(), null).andExpect(status().isCreated());
+		alocar(n2.getId(), cidadao(30).getId(), null).andExpect(status().isCreated());
+		alocar(n2.getId(), cidadao(30).getId(), null).andExpect(status().isBadRequest());
+		Construcao n3 = construcao(TipoConstrucao.QUARTEL, NivelConstrucao.N3, EstadoConstrucao.ATIVA);
+		for (int i = 0; i < 3; i++) {
+			alocar(n3.getId(), cidadao(30).getId(), null).andExpect(status().isCreated());
+		}
+		alocar(n3.getId(), cidadao(30).getId(), null).andExpect(status().isBadRequest());
 	}
 
 	@Test

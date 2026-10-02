@@ -19,6 +19,12 @@ public interface CidadaoRepository extends JpaRepository<Cidadao, Long> {
 
 	List<Cidadao> findByConstrucaoIdAndVivoTrue(Long construcaoId);
 
+	List<Cidadao> findByTropaId(Long tropaId);
+
+	List<Cidadao> findByVilaIdAndVivoTrueAndEstado(Long vilaId, EstadoCidadao estado);
+
+	long countByTropaId(Long tropaId);
+
 	List<Cidadao> findByConjugeId(Long conjugeId);
 
 	/** Casais vivos da vila: um registro por casal (o cônjuge de sexo M). */

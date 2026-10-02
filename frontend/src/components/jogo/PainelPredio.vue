@@ -120,6 +120,13 @@ async function desalocar(cidadaoId: number) {
       >
         <Button label="Abrir oficina" as="span" />
       </router-link>
+      <router-link
+        v-if="a.predio.value && a.predio.value.tipo === 'QUARTEL' && a.predio.value.estado === 'ATIVA'"
+        :to="{ name: 'quartel', params: { id: props.construcaoId } }"
+        data-testid="abrir-quartel"
+      >
+        <Button label="Abrir quartel" as="span" />
+      </router-link>
       <Button label="Fechar" severity="secondary" data-testid="fechar-PainelPredio" @click="emit('fechar')" />
     </div>
   </div>

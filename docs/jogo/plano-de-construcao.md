@@ -136,31 +136,31 @@ _Fabricação, catálogos de equipamentos, equipar e inventário._
 
 _Tropas, expedições e motor de batalha._
 
-- [ ] **[v1-013 · H-001 — Formar tropa no quartel](v1-013-quartel-e-tropas/historia/h-001-formar-tropa-no-quartel.md)**
-  - [ ] [B] [Tarefa 001 — Modelo e regras de tropa](v1-013-quartel-e-tropas/historia/h-001-tarefa-001-modelo-e-regras-de-tropa.md)
-  - [ ] [F] [Tarefa 002 — Tela do quartel](v1-013-quartel-e-tropas/historia/h-001-tarefa-002-tela-do-quartel.md)
+- [x] **[v1-013 · H-001 — Formar tropa no quartel](v1-013-quartel-e-tropas/historia/h-001-formar-tropa-no-quartel.md)**
+  - [x] [B] [Tarefa 001 — Modelo e regras de tropa](v1-013-quartel-e-tropas/historia/h-001-tarefa-001-modelo-e-regras-de-tropa.md)
+  - [x] [F] [Tarefa 002 — Tela do quartel](v1-013-quartel-e-tropas/historia/h-001-tarefa-002-tela-do-quartel.md)
 
-- [ ] **[v1-013 · H-002 — Treinar guerreiros no quartel](v1-013-quartel-e-tropas/historia/h-002-treinar-guerreiros-no-quartel.md)**
-  - [ ] [B] [Tarefa 001 — XP de treinamento no turno](v1-013-quartel-e-tropas/historia/h-002-tarefa-001-xp-de-treinamento-no-turno.md)
+- [x] **[v1-013 · H-002 — Treinar guerreiros no quartel](v1-013-quartel-e-tropas/historia/h-002-treinar-guerreiros-no-quartel.md)**
+  - [x] [B] [Tarefa 001 — XP de treinamento no turno](v1-013-quartel-e-tropas/historia/h-002-tarefa-001-xp-de-treinamento-no-turno.md)
 
-- [ ] **[v1-013 · H-003 — Enviar tropa em expedição](v1-013-quartel-e-tropas/historia/h-003-enviar-tropa-em-expedicao.md)**
-  - [ ] [B] [Tarefa 001 — Viagem de tropas no turno](v1-013-quartel-e-tropas/historia/h-003-tarefa-001-viagem-de-tropas-no-turno.md)
-  - [ ] [F] [Tarefa 002 — Tela de expedição](v1-013-quartel-e-tropas/historia/h-003-tarefa-002-tela-de-expedicao.md)
+- [x] **[v1-013 · H-003 — Enviar tropa em expedição](v1-013-quartel-e-tropas/historia/h-003-enviar-tropa-em-expedicao.md)**
+  - [x] [B] [Tarefa 001 — Viagem de tropas no turno](v1-013-quartel-e-tropas/historia/h-003-tarefa-001-viagem-de-tropas-no-turno.md)
+  - [x] [F] [Tarefa 002 — Tela de expedição](v1-013-quartel-e-tropas/historia/h-003-tarefa-002-tela-de-expedicao.md)
 
-- [ ] **[v1-014 · H-001 — Resolver batalha por rodadas](v1-014-batalha/historia/h-001-resolver-batalha-por-rodadas.md)**
-  - [ ] [B] [Tarefa 001 — Cálculo de atributos de combate](v1-014-batalha/historia/h-001-tarefa-001-calculo-de-atributos-de-combate.md)
-  - [ ] [B] [Tarefa 002 — Motor de batalha](v1-014-batalha/historia/h-001-tarefa-002-motor-de-batalha.md)
-  - [ ] [B] [Tarefa 003 — Consequências para abatidos](v1-014-batalha/historia/h-001-tarefa-003-consequencias-para-abatidos.md)
+- [x] **[v1-014 · H-001 — Resolver batalha por rodadas](v1-014-batalha/historia/h-001-resolver-batalha-por-rodadas.md)**
+  - [x] [B] [Tarefa 001 — Cálculo de atributos de combate](v1-014-batalha/historia/h-001-tarefa-001-calculo-de-atributos-de-combate.md)
+  - [x] [B] [Tarefa 002 — Motor de batalha](v1-014-batalha/historia/h-001-tarefa-002-motor-de-batalha.md)
+  - [x] [B] [Tarefa 003 — Consequências para abatidos](v1-014-batalha/historia/h-001-tarefa-003-consequencias-para-abatidos.md)
 
-- [ ] **[v1-004 · H-002 — Usar Arma em Combate](v1-004-armas/historia/h-002-usar-arma-em-combate.md)**
-  - [ ] [B] [Tarefa 001 — Regras de Alcance e Modificadores de Arma](v1-004-armas/historia/h-002-tarefa-001-regras-de-alcance-e-modificadores-de-arma.md)
+- [x] **[v1-004 · H-002 — Usar Arma em Combate](v1-004-armas/historia/h-002-usar-arma-em-combate.md)**
+  - [x] [B] [Tarefa 001 — Regras de Alcance e Modificadores de Arma](v1-004-armas/historia/h-002-tarefa-001-regras-de-alcance-e-modificadores-de-arma.md)
 
-- [ ] **[v1-006 · H-002 — Defesa das armaduras na batalha](v1-006-Armaduras/historia/h-002-defesa-das-armaduras-na-batalha.md)**
-  - [ ] [B] [Tarefa 001 — Cálculo de defesa com armaduras](v1-006-Armaduras/historia/h-002-tarefa-001-calculo-de-defesa-com-armaduras.md)
+- [x] **[v1-006 · H-002 — Defesa das armaduras na batalha](v1-006-Armaduras/historia/h-002-defesa-das-armaduras-na-batalha.md)**
+  - [x] [B] [Tarefa 001 — Cálculo de defesa com armaduras](v1-006-Armaduras/historia/h-002-tarefa-001-calculo-de-defesa-com-armaduras.md)
 
-- [ ] **[v1-014 · H-002 — Ver relatório de batalha](v1-014-batalha/historia/h-002-ver-relatorio-de-batalha.md)**
-  - [ ] [B] [Tarefa 001 — API de relatório de batalha](v1-014-batalha/historia/h-002-tarefa-001-api-de-relatorio-de-batalha.md)
-  - [ ] [F] [Tarefa 002 — Tela de replay da batalha](v1-014-batalha/historia/h-002-tarefa-002-tela-de-replay-da-batalha.md)
+- [x] **[v1-014 · H-002 — Ver relatório de batalha](v1-014-batalha/historia/h-002-ver-relatorio-de-batalha.md)**
+  - [x] [B] [Tarefa 001 — API de relatório de batalha](v1-014-batalha/historia/h-002-tarefa-001-api-de-relatorio-de-batalha.md)
+  - [x] [F] [Tarefa 002 — Tela de replay da batalha](v1-014-batalha/historia/h-002-tarefa-002-tela-de-replay-da-batalha.md)
 
 ## Fase 5 — Masmorras
 

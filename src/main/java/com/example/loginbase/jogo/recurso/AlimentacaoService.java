@@ -8,14 +8,21 @@ import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.jogo.cidadao.Cidadao;
 import com.example.loginbase.jogo.cidadao.CidadaoRepository;
 import com.example.loginbase.jogo.cidadao.MorteService;
+import com.example.loginbase.jogo.comum.JogoException;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.quartel.EstadoTropa;
+import com.example.loginbase.jogo.quartel.Tropa;
+import com.example.loginbase.jogo.quartel.TropaRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
@@ -39,14 +46,17 @@ public class AlimentacaoService {
 	private final EstoqueService estoqueService;
 	private final MorteService morteService;
 	private final RegistroEventoTurnoService registro;
+	private final TropaRepository tropaRepository;
 
 	public AlimentacaoService(CidadaoRepository cidadaoRepository, VilaRepository vilaRepository,
-			EstoqueService estoqueService, MorteService morteService, RegistroEventoTurnoService registro) {
+			EstoqueService estoqueService, MorteService morteService, RegistroEventoTurnoService registro,
+			TropaRepository tropaRepository) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.vilaRepository = vilaRepository;
 		this.estoqueService = estoqueService;
 		this.morteService = morteService;
 		this.registro = registro;
+		this.tropaRepository = tropaRepository;
 	}
 
 	static BigDecimal demanda(Cidadao c) {
@@ -55,7 +65,11 @@ public class AlimentacaoService {
 
 	@Transactional
 	public void processarConsumoAlimentacao(Vila vila, int turno) {
+		// quem está em tropa em viagem (ida/volta) já pagou a comida no envio: não consome no passo 3
+		Set<Long> tropasEmViagem = tropaRepository.findByVilaId(vila.getId()).stream()
+				.filter(t -> t.getEstado() != EstadoTropa.AQUARTELADA).map(Tropa::getId).collect(Collectors.toSet());
 		List<Cidadao> vivos = new ArrayList<>(cidadaoRepository.findByVilaIdAndVivoTrue(vila.getId()));
+		vivos.removeIf(c -> c.getTropaId() != null && tropasEmViagem.contains(c.getTropaId()));
 		vivos.sort(Comparator.comparing((Cidadao c) -> c.getIdadeAnos() >= IDADE_ADULTO_ANOS)
 				.thenComparing(Cidadao::getId));
 
@@ -86,15 +100,7 @@ public class AlimentacaoService {
 		}
 
 		// débito na ordem Refeição -> Grãos -> Carne
-		Map<Recurso, BigDecimal> debitos = new EnumMap<>(Recurso.class);
-		BigDecimal falta = consumido;
-		for (Recurso r : ORDEM) {
-			BigDecimal tira = estoque.get(r).min(falta);
-			if (tira.signum() > 0) {
-				debitos.put(r, tira);
-				falta = falta.subtract(tira);
-			}
-		}
+		Map<Recurso, BigDecimal> debitos = distribuirDebito(estoque, consumido);
 		estoqueService.debitar(vila, debitos);
 
 		BigDecimal refeicao = debitos.getOrDefault(Recurso.REFEICAO, BigDecimal.ZERO);
@@ -140,6 +146,46 @@ public class AlimentacaoService {
 				cidadaoRepository.save(c);
 			}
 		}
+	}
+
+	/** Soma de Refeição + Grãos + Carne disponível na vila. */
+	@Transactional(readOnly = true)
+	public BigDecimal alimentosDisponiveis(Vila vila) {
+		Map<Recurso, BigDecimal> estoque = estoqueService.listar(vila);
+		BigDecimal total = BigDecimal.ZERO;
+		for (Recurso r : ORDEM) {
+			total = total.add(estoque.get(r));
+		}
+		return total;
+	}
+
+	/**
+	 * Debita a quantidade de alimentos na ordem Refeição -> Grãos -> Carne (usado pelo envio de expedições).
+	 * Comida insuficiente: 400 e nada é debitado.
+	 */
+	@Transactional
+	public Map<Recurso, BigDecimal> debitarAlimentos(Vila vila, int quantidade) {
+		BigDecimal qtd = BigDecimal.valueOf(quantidade);
+		Map<Recurso, BigDecimal> estoque = estoqueService.listar(vila);
+		if (alimentosDisponiveis(vila).compareTo(qtd) < 0) {
+			throw new JogoException(HttpStatus.BAD_REQUEST, "Comida insuficiente para a expedição");
+		}
+		Map<Recurso, BigDecimal> debitos = distribuirDebito(estoque, qtd);
+		estoqueService.debitar(vila, debitos);
+		return debitos;
+	}
+
+	private static Map<Recurso, BigDecimal> distribuirDebito(Map<Recurso, BigDecimal> estoque, BigDecimal quantidade) {
+		Map<Recurso, BigDecimal> debitos = new EnumMap<>(Recurso.class);
+		BigDecimal falta = quantidade;
+		for (Recurso r : ORDEM) {
+			BigDecimal tira = estoque.get(r).min(falta);
+			if (tira.signum() > 0) {
+				debitos.put(r, tira);
+				falta = falta.subtract(tira);
+			}
+		}
+		return debitos;
 	}
 
 	private static String fmt(BigDecimal v) {

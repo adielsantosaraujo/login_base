@@ -25,12 +25,14 @@ public class CidadaoService {
 	private final EficienciaService eficienciaService;
 	private final com.example.loginbase.jogo.item.EquipamentoService equipamentoService;
 	private final VidaMaximaCalculadora vidaMaximaCalculadora;
+	private final com.example.loginbase.jogo.item.ConsultaTropas consultaTropas;
 
 	public CidadaoService(CidadaoRepository cidadaoRepository, CidadaoProfissaoRepository cidadaoProfissaoRepository,
 			FamiliaRepository familiaRepository, CalculadoraPeEfetivo calculadoraPeEfetivo,
 			EficienciaService eficienciaService,
 			com.example.loginbase.jogo.item.EquipamentoService equipamentoService,
-			VidaMaximaCalculadora vidaMaximaCalculadora) {
+			VidaMaximaCalculadora vidaMaximaCalculadora,
+			com.example.loginbase.jogo.item.ConsultaTropas consultaTropas) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.cidadaoProfissaoRepository = cidadaoProfissaoRepository;
 		this.familiaRepository = familiaRepository;
@@ -38,6 +40,7 @@ public class CidadaoService {
 		this.eficienciaService = eficienciaService;
 		this.equipamentoService = equipamentoService;
 		this.vidaMaximaCalculadora = vidaMaximaCalculadora;
+		this.consultaTropas = consultaTropas;
 	}
 
 	@Transactional(readOnly = true)
@@ -132,16 +135,14 @@ public class CidadaoService {
 		return new CidadaoDTO(c.getId(), c.getNome(), c.getSexo(), c.getIdadeAnos(), c.isVivo(), c.getEstado(),
 				c.getFamintoTurnos() > 0, c.getFamiliaId(), familiaNome, conjuge, car, c.getPontosCarPendentes(),
 				c.getPontosProfPendentes(), profissoes, c.getConstrucaoId(), c.getProfissaoTrabalho(), equipamento,
-				vidaMaximaCalculadora.calcular(c), totais);
+				vidaMaximaCalculadora.calcular(c), totais, consultaTropas.emExpedicao(c.getId()), c.getTropaId(),
+				c.getPosicaoTropa(), c.getXpGuerreiro(), c.getFeridoAteTurno());
 	}
 
 	private Cidadao buscar(Vila vila, Long id) {
-		Cidadao c = cidadaoRepository.findById(id)
+		// cidadão de outra vila é indistinguível de inexistente (404)
+		return cidadaoRepository.findById(id).filter(c -> c.getVilaId().equals(vila.getId()))
 				.orElseThrow(() -> new JogoException(HttpStatus.NOT_FOUND, "Cidadão não encontrado"));
-		if (!c.getVilaId().equals(vila.getId())) {
-			throw new JogoException(HttpStatus.FORBIDDEN, "Cidadão pertence a outra vila");
-		}
-		return c;
 	}
 
 	private static int valor(Integer v) {
