@@ -28,6 +28,16 @@ describe('useMapa', () => {
     expect(m.regioes.value).toHaveLength(1)
   })
 
+  it('expõe masmorraId nas regiões', async () => {
+    getMock.mockResolvedValue({
+      vila: { id: 1, nome: 'V' },
+      regioes: [{ indice: 3, tipo: null, possuida: false, masmorraAtiva: true, nivelMasmorra: 4, masmorraId: 7 }],
+    })
+    const m = useMapaVila()
+    await m.carregar()
+    expect(m.regioes.value[0].masmorraId).toBe(7)
+  })
+
   it('registra erro ao falhar', async () => {
     falhar = true
     const m = useMapaVila()

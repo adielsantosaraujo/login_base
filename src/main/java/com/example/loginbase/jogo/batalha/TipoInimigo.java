@@ -80,10 +80,15 @@ public enum TipoInimigo {
 	}
 
 	/** Cria o combatente inimigo; linha Frente = corpo a corpo, Retaguarda = distância; VEL 0. */
+	public int alvosPorAtaque() {
+		return this == DRAGAO_JOVEM ? 2 : 1;
+	}
+
 	public Combatente criar(long indice, int nivelMasmorra) {
 		AtributosCombate a = atributos(nivelMasmorra);
 		Alcance alcance = linha == LinhaCombate.FRENTE ? Alcance.CORPO_A_CORPO_FRENTE : Alcance.DISTANCIA;
 		return new Combatente(indice, LadoCombate.INIMIGO, nome, linha, a.pvMax(), a.ataque(), a.defesa(),
-				a.iniciativaBase(), a.criticoPp(), 0, alcance, ignoraDefesa25);
+				a.iniciativaBase(), a.criticoPp(), 0, alcance, ignoraDefesa25,
+				alvosPorAtaque());
 	}
 }

@@ -9,7 +9,14 @@ import com.example.loginbase.jogo.item.catalogo.Alcance;
  * @param vel VEL total (desempate de iniciativa); 0 para inimigos
  * @param alcance alcance da arma (inimigos: FRENTE = corpo a corpo, RETAGUARDA = distância)
  * @param ignoraDefesa25 true para Besta e Xamã orc (defesa efetiva = defesa x 0,75)
+ * @param alvosPorAtaque quantos alvos distintos cada ataque atinge (1 por padrão; Dragão jovem = 2)
  */
 public record Combatente(long id, LadoCombate lado, String nome, LinhaCombate linha, int pvMax, double ataque,
-		double defesa, int iniciativaBase, double criticoPp, int vel, Alcance alcance, boolean ignoraDefesa25) {
+		double defesa, int iniciativaBase, double criticoPp, int vel, Alcance alcance, boolean ignoraDefesa25, int alvosPorAtaque) {
+
+	/** Combatente comum: 1 alvo por ataque. */
+	public Combatente(long id, LadoCombate lado, String nome, LinhaCombate linha, int pvMax, double ataque,
+			double defesa, int iniciativaBase, double criticoPp, int vel, Alcance alcance, boolean ignoraDefesa25) {
+		this(id, lado, nome, linha, pvMax, ataque, defesa, iniciativaBase, criticoPp, vel, alcance, ignoraDefesa25, 1);
+	}
 }

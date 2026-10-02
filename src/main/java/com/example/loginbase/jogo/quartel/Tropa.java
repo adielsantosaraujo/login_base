@@ -40,7 +40,6 @@ public class Tropa {
 	@Column(nullable = false, length = 20)
 	private EstadoTropa estado = EstadoTropa.AQUARTELADA;
 
-	/** Sem FK: masmorras só existem a partir da Fase 5. */
 	@Column(name = "masmorra_id")
 	private Long masmorraId;
 

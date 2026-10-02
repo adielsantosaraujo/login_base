@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import GradeRegiao from '../components/GradeRegiao.vue'
 import DialogoAnexacao from '../components/DialogoAnexacao.vue'
+import MasmorraIndicador from '../components/jogo/MasmorraIndicador.vue'
 import { ehAnexavel } from '../composables/useAnexacao'
 import { ROTULOS_TIPO, rotulo, useMapaVila, useRegiaoDetalhes } from '../composables/useMapa'
 
@@ -27,6 +28,11 @@ const mensagem = ref<string | null>(null)
 
 function anexavel(indice: number): boolean {
   return ehAnexavel(indice, regioes.value)
+}
+
+function masmorraDa(indice: number) {
+  const r = regioes.value.find((x) => x.indice === indice)
+  return r && !r.possuida && r.masmorraAtiva ? r : null
 }
 
 function abrir(indice: number) {
@@ -61,16 +67,14 @@ async function aoAnexar(indice: number) {
           :key="r.indice"
           type="button"
           class="celula"
-          :class="[classe(r.tipo, r.possuida), { anexavel: anexavel(r.indice), selecionada: detalhe.regiaoSelecionada.value?.regiao.indice === r.indice }]"
+          :class="[classe(r.tipo, r.possuida), { 'com-masmorra': r.masmorraAtiva, anexavel: anexavel(r.indice), selecionada: detalhe.regiaoSelecionada.value?.regiao.indice === r.indice }]"
           :data-testid="`regiao-${r.indice}`"
           :aria-label="`Região ${r.indice}${r.possuida ? ' - ' + rotulo(ROTULOS_TIPO, r.tipo) : ' - não possuída'}`"
           @click="abrir(r.indice)"
         >
           <span class="numero">{{ r.indice }}</span>
           <span class="tipo">{{ r.possuida ? rotulo(ROTULOS_TIPO, r.tipo) : 'Vazio' }}</span>
-          <span v-if="r.masmorraAtiva" class="masmorra" data-testid="masmorra">
-            <i class="pi pi-bolt" aria-hidden="true"></i> Nv {{ r.nivelMasmorra }}
-          </span>
+          <MasmorraIndicador v-if="r.masmorraAtiva && r.nivelMasmorra != null" :nivel="r.nivelMasmorra" />
         </button>
       </div>
 
@@ -98,7 +102,13 @@ async function aoAnexar(indice: number) {
         <p v-if="detalhe.erro.value" role="alert" class="erro">{{ detalhe.erro.value }}</p>
         <p v-else-if="detalhe.carregando.value">Carregando...</p>
         <template v-else-if="detalhe.regiaoSelecionada.value">
-          <p v-if="!detalhe.regiaoSelecionada.value.regiao.possuida" data-testid="regiao-nao-possuida">
+          <p
+            v-if="!detalhe.regiaoSelecionada.value.regiao.possuida && masmorraDa(detalhe.regiaoSelecionada.value.regiao.indice)"
+            data-testid="regiao-masmorra"
+          >
+            Masmorra nível {{ masmorraDa(detalhe.regiaoSelecionada.value.regiao.indice)?.nivelMasmorra }} — não pode ser anexada
+          </p>
+          <p v-else-if="!detalhe.regiaoSelecionada.value.regiao.possuida" data-testid="regiao-nao-possuida">
             Região não possuída, clicar para anexar
           </p>
           <GradeRegiao v-else :ladrilhos="detalhe.regiaoSelecionada.value.ladrilhos" />
@@ -134,7 +144,7 @@ async function aoAnexar(indice: number) {
 .sucesso { color: #15803d; }
 .numero { font-size: 1.25rem; font-weight: 700; }
 .tipo { font-size: 0.75rem; }
-.masmorra { font-size: 0.7rem; }
+.celula.com-masmorra { border-color: #b91c1c; }
 .tipo-rural { background: #16a34a; }
 .tipo-urbana { background: #2563eb; }
 .tipo-coleta { background: #92400e; }

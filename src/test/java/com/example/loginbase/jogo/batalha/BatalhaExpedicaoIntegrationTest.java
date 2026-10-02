@@ -127,7 +127,7 @@ class BatalhaExpedicaoIntegrationTest {
 
 		assertThat(b.getId()).isNotNull();
 		assertThat(b.getResultado()).isEqualTo(ResultadoCombate.VITORIA);
-		assertThat(b.getRecompensas()).isNull();
+		assertThat(b.getRecompensas()).isNotNull();
 		assertThat(b.getMasmorraNivel()).isEqualTo(2);
 		assertThat(b.getRegiaoIndice()).isEqualTo(3);
 		assertThat(b.getTropaNome()).isEqualTo(t.getNome());

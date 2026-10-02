@@ -39,6 +39,7 @@ class MapaControladorIntegrationTest {
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
+	@Autowired com.example.loginbase.jogo.masmorra.MasmorraRepository masmorraRepository;
 
 	private Usuario novoUsuario() {
 		Usuario u = new Usuario();
@@ -115,6 +116,22 @@ class MapaControladorIntegrationTest {
 				.andExpect(jsonPath("$.regioes[9].tipo").value("RURAL"))
 				.andExpect(jsonPath("$.regioes[0].tipo").value(nullValue()))
 				.andExpect(jsonPath("$.regioes[5].masmorraAtiva").value(false));
+	}
+
+	@Test
+	void regiaoNaoPossuidaComMasmorraMostraNivelEId() throws Exception {
+		Usuario u = novoUsuario();
+		Vila vila = vilaCom(u);
+		var m = masmorraRepository.saveAndFlush(
+				new com.example.loginbase.jogo.masmorra.Masmorra(vila.getId(), 3, 4, 12));
+		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.regioes[2].possuida").value(false))
+				.andExpect(jsonPath("$.regioes[2].masmorraAtiva").value(true))
+				.andExpect(jsonPath("$.regioes[2].nivelMasmorra").value(4))
+				.andExpect(jsonPath("$.regioes[2].masmorraId").value(m.getId()))
+				.andExpect(jsonPath("$.regioes[3].masmorraAtiva").value(false))
+				.andExpect(jsonPath("$.regioes[3].masmorraId").value(nullValue()));
 	}
 
 	@Test

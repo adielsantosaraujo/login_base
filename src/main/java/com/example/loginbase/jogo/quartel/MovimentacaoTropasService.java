@@ -92,8 +92,11 @@ public class MovimentacaoTropasService {
 				"A tropa " + t.getNome() + " retornou ao quartel.", dados);
 	}
 
-	/** Gancho para o saque de recursos da Fase 5 (hoje sem efeito). */
+	/**
+	 * Gancho executado quando a tropa retorna ao quartel (sem efeito por padrão). As recompensas de
+	 * masmorra são entregues na própria batalha, não na volta da tropa.
+	 */
 	protected void aoRetornar(Vila vila, Tropa tropa, int turno) {
-		// Fase 5: transferir o saque da expedição ao estoque
+		// Intencionalmente vazio.
 	}
 }

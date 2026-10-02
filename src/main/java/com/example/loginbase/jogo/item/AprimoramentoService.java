@@ -13,6 +13,8 @@ import com.example.loginbase.jogo.comum.JogoException;
 import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.pedra.PedraDTO;
+import com.example.loginbase.jogo.pedra.PedraRepository;
 import com.example.loginbase.jogo.turno.TurnoService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,11 +31,12 @@ public class AprimoramentoService {
 	private final FabricacaoService fabricacaoService;
 	private final CatalogoItens catalogo;
 	private final TurnoService turnoService;
+	private final PedraRepository pedraRepository;
 
 	public record InventarioDTO(List<ItemDTO> itens, long total, int page, int pageSize) {
 	}
 
-	public record ItemDetalheDTO(ItemDTO item, List<Object> pedras) {
+	public record ItemDetalheDTO(ItemDTO item, List<PedraDTO> pedras) {
 	}
 
 	public record AprimorarRequest(Long oficinaId, Long artesaoId) {
@@ -51,7 +54,8 @@ public class AprimoramentoService {
 
 	@Transactional(readOnly = true)
 	public ItemDetalheDTO detalhe(Vila vila, Long itemId) {
-		return new ItemDetalheDTO(ItemDTO.de(itemDaVila(vila, itemId)), List.of());
+		Item item = itemDaVila(vila, itemId);
+		return new ItemDetalheDTO(ItemDTO.de(item), pedraRepository.findByItemId(item.getId()).stream().map(PedraDTO::de).toList());
 	}
 
 	@Transactional

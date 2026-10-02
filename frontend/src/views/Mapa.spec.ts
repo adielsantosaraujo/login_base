@@ -18,6 +18,7 @@ const regioes = Array.from({ length: 16 }, (_, i) => ({
   possuida: i + 1 === 6 || i + 1 === 7,
   masmorraAtiva: i + 1 === 3,
   nivelMasmorra: i + 1 === 3 ? 2 : null,
+  masmorraId: i + 1 === 3 ? 9 : null,
 }))
 
 function montar() {
@@ -42,6 +43,7 @@ describe('Mapa', () => {
           })),
         }
       }
+      if (url === '/api/jogo/regioes/3') return { regiao: { id: null, indice: 3, tipo: null, possuida: false }, ladrilhos: [] }
       if (url === '/api/jogo/regioes/2/custo-anexacao') return { ouro: 100, madeira: 50, pedra: 20 }
       if (url === '/api/jogo/estoque') {
         return {
@@ -63,7 +65,9 @@ describe('Mapa', () => {
     expect(w.findAll('.celula')).toHaveLength(16)
     expect(w.findAll('.tipo-vazio')).toHaveLength(14)
     expect(w.find('.tipo-urbana').exists()).toBe(true)
-    expect(w.find('[data-testid="masmorra"]').text()).toContain('Nv 2')
+    expect(w.find('[data-testid="masmorra"]').text()).toContain('N2')
+    expect(w.find('[data-testid="masmorra"]').attributes('aria-label')).toBe('Masmorra nível 2')
+    expect(w.find('[data-testid="regiao-3"]').classes()).toContain('com-masmorra')
   })
 
   it('abre a região possuída com 100 ladrilhos e volta', async () => {
@@ -125,6 +129,17 @@ describe('Mapa', () => {
     await flushPromises()
     await w.find('[data-testid="regiao-1"]').trigger('click')
     await flushPromises()
+    expect(w.find('[data-testid="dialogo-anexacao"]').exists()).toBe(false)
+  })
+
+  it('região com masmorra não é anexável: mostra aviso e não abre o diálogo', async () => {
+    const w = montar()
+    await flushPromises()
+    expect(w.find('[data-testid="regiao-3"]').classes()).not.toContain('anexavel')
+    await w.find('[data-testid="regiao-3"]').trigger('click')
+    await flushPromises()
+    expect(w.find('[data-testid="regiao-masmorra"]').text()).toContain('Masmorra nível 2 — não pode ser anexada')
+    expect(w.find('[data-testid="regiao-nao-possuida"]').exists()).toBe(false)
     expect(w.find('[data-testid="dialogo-anexacao"]').exists()).toBe(false)
   })
 })

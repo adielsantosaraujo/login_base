@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.loginbase.jogo.comum.JogoException;
 import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
+import com.example.loginbase.jogo.masmorra.Masmorra;
+import com.example.loginbase.jogo.masmorra.MasmorraRepository;
 import com.example.loginbase.jogo.dto.LadrilhoDTO;
 import com.example.loginbase.jogo.dto.LadrilhoDTO.ConstrucaoLadrilhoDTO;
 import com.example.loginbase.jogo.dto.MapaDTO;
@@ -41,27 +43,34 @@ public class MapaService {
 	private final ConstrucaoRepository construcaoRepository;
 	private final GeradorJazidaService geradorJazida;
 	private final ConsultaMasmorras consultaMasmorras;
+	private final MasmorraRepository masmorraRepository;
 
 	public MapaService(RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository,
 			ConstrucaoRepository construcaoRepository, GeradorJazidaService geradorJazida,
-			ConsultaMasmorras consultaMasmorras) {
+			ConsultaMasmorras consultaMasmorras, MasmorraRepository masmorraRepository) {
 		this.regiaoRepository = regiaoRepository;
 		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
 		this.construcaoRepository = construcaoRepository;
 		this.geradorJazida = geradorJazida;
 		this.consultaMasmorras = consultaMasmorras;
+		this.masmorraRepository = masmorraRepository;
 	}
 
 	public MapaDTO obterMapaVila(Vila vila) {
 		Map<Integer, Regiao> porIndice = new HashMap<>();
 		regiaoRepository.findAllByVilaId(vila.getId()).forEach(r -> porIndice.put(r.getIndice(), r));
+		Map<Integer, Long> masmorraIds = new HashMap<>();
+		for (Masmorra m : masmorraRepository.findByVilaIdAndAtivaTrueOrderByIdAsc(vila.getId())) {
+			masmorraIds.put(m.getRegiaoIndice(), m.getId());
+		}
 		List<RegiaoResumoDTO> regioes = new ArrayList<>(GradeRegioes.TOTAL);
 		for (int i = 1; i <= GradeRegioes.TOTAL; i++) {
 			Regiao r = porIndice.get(i);
 			boolean possuida = r != null && r.isPossuida();
 			TipoRegiao tipo = possuida ? r.getTipo() : null;
-			Optional<Integer> nivel = possuida ? consultaMasmorras.nivelMasmorraAtiva(vila, i) : Optional.empty();
-			regioes.add(new RegiaoResumoDTO(i, tipo, possuida, nivel.isPresent(), nivel.orElse(null)));
+			Optional<Integer> nivel = !possuida ? consultaMasmorras.nivelMasmorraAtiva(vila, i) : Optional.empty();
+			regioes.add(new RegiaoResumoDTO(i, tipo, possuida, nivel.isPresent(), nivel.orElse(null),
+					nivel.isPresent() ? masmorraIds.get(i) : null));
 		}
 		return new MapaDTO(new VilaResumoDTO(vila.getId(), vila.getNome()), regioes);
 	}

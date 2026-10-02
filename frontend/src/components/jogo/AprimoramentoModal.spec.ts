@@ -78,4 +78,13 @@ describe('DetalhesItemModal', () => {
     const s = mount(DetalhesItemModal, { props: { item: item({ qualidade: 'SIMPLES' }) }, global: { plugins: [PrimeVue] } })
     expect(s.find('[data-testid="sem-slots"]').exists()).toBe(true)
   })
+
+  it('mostra pedras engastadas e permite remover só se não equipado', () => {
+    const pedras = [{ id: 7, qualidade: 'BOA', custoEngaste: 25, bonus: [{ codigo: 'FOR', magnitude: 'BAIXA', valor: 2 }] }]
+    const livre = mount(DetalhesItemModal, { props: { item: item({ qualidade: 'EXCELENTE' }), pedras: pedras as never }, global: { plugins: [PrimeVue] } })
+    expect(livre.find('[data-testid="remover-7"]').exists()).toBe(true)
+    expect(livre.findAll('[data-testid="slot-vazio"]')).toHaveLength(2)
+    const equipado = mount(DetalhesItemModal, { props: { item: item({ qualidade: 'EXCELENTE', cidadaoId: 4 }), pedras: pedras as never }, global: { plugins: [PrimeVue] } })
+    expect(equipado.find('[data-testid="remover-7"]').exists()).toBe(false)
+  })
 })

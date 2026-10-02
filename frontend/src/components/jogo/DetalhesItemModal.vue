@@ -4,13 +4,13 @@ import Button from 'primevue/button'
 import {
   corQualidade, rotuloBonus, rotuloCategoria, rotuloQualidade, rotuloSlot, type ItemDTO,
 } from '../../composables/useItens'
-import { slotsPedra } from '../../composables/useInventario'
+import type { PedraDTO } from '../../composables/usePedras'
+import SlotsPedras from './SlotsPedras.vue'
 
-const props = defineProps<{ item: ItemDTO; pedras?: unknown[] }>()
-const emit = defineEmits<{ (e: 'fechar'): void }>()
+const props = defineProps<{ item: ItemDTO; pedras?: PedraDTO[] }>()
+const emit = defineEmits<{ (e: 'fechar'): void; (e: 'pedra-removida', pedraId: number): void }>()
 
-const slots = computed(() => slotsPedra(props.item.qualidade))
-const vazios = computed(() => Math.max(0, slots.value - (props.pedras?.length ?? 0)))
+const editavel = computed(() => props.item.cidadaoId == null)
 </script>
 
 <template>
@@ -30,10 +30,7 @@ const vazios = computed(() => Math.max(0, slots.value - (props.pedras?.length ??
       <li v-for="b in item.bonus" :key="b.codigo">{{ rotuloBonus(b.codigo) }}: +{{ b.valor }}</li>
     </ul>
     <h4>Pedras</h4>
-    <p v-if="!slots" data-testid="sem-slots">Esta qualidade não possui slots de pedra.</p>
-    <ul v-else data-testid="slots-pedra">
-      <li v-for="n in vazios" :key="n" data-testid="slot-vazio">Slot {{ n }}: vazio</li>
-    </ul>
+    <SlotsPedras :item="item" :pedras="pedras" :editavel="editavel" @removida="emit('pedra-removida', $event)" />
     <div class="acoes">
       <Button label="Fechar" severity="secondary" data-testid="fechar-DetalhesItemModal" @click="emit('fechar')" />
     </div>

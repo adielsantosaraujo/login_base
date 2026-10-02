@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.loginbase.jogo.cidadao.Cidadao;
 import com.example.loginbase.jogo.cidadao.CidadaoRepository;
 import com.example.loginbase.jogo.cidadao.EstadoCidadao;
+import com.example.loginbase.jogo.masmorra.EntregaRecompensasService;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.quartel.PosicaoTropa;
 import com.example.loginbase.jogo.quartel.Tropa;
@@ -36,11 +37,12 @@ public class BatalhaExpedicaoService {
 	private final TropaRepository tropaRepository;
 	private final VilaRepository vilaRepository;
 	private final RegistroEventoTurnoService registro;
+	private final EntregaRecompensasService entregaRecompensas;
 
 	public BatalhaExpedicaoService(FonteMasmorras fonteMasmorras, FabricaCombatente fabrica, MotorBatalha motor,
 			ConsequenciasBatalhaService consequencias, BatalhaRepository batalhaRepository,
 			CidadaoRepository cidadaoRepository, TropaRepository tropaRepository, VilaRepository vilaRepository,
-			RegistroEventoTurnoService registro) {
+			RegistroEventoTurnoService registro, EntregaRecompensasService entregaRecompensas) {
 		this.fonteMasmorras = fonteMasmorras;
 		this.fabrica = fabrica;
 		this.motor = motor;
@@ -50,6 +52,7 @@ public class BatalhaExpedicaoService {
 		this.tropaRepository = tropaRepository;
 		this.vilaRepository = vilaRepository;
 		this.registro = registro;
+		this.entregaRecompensas = entregaRecompensas;
 	}
 
 	/** Semente determinística de (vilaId, tropaId, turno). */
@@ -81,6 +84,15 @@ public class BatalhaExpedicaoService {
 		ResultadoBatalha resultado = motor.resolver(combatentes, inimigos, semente);
 		var conseq = consequencias.aplicar(resultado, vila, turno, semente);
 
+		boolean vitoria = resultado.resultado() == ResultadoCombate.VITORIA;
+		Map<String, Object> recompensas = null;
+		if (vitoria) {
+			// Quem lutou menos os mortos; feridos recebem XP.
+			List<Long> guerreirosXp = combatentes.stream().filter(c -> c.lado() == LadoCombate.TROPA)
+					.map(Combatente::id).filter(id -> !conseq.mortos().contains(id)).toList();
+			recompensas = entregaRecompensas.entregar(vila, turno, alvo.nivel(), semente, guerreirosXp);
+		}
+
 		Batalha b = new Batalha();
 		b.setVilaId(vila.getId());
 		b.setTropaId(tropa.getId());
@@ -93,13 +105,12 @@ public class BatalhaExpedicaoService {
 		b.setResultado(resultado.resultado());
 		b.setRodadas(resultado.rodadas());
 		b.setLog(new LogBatalha(resultado.pvFinal(), resultado.log()));
-		b.setRecompensas(null);
+		b.setRecompensas(recompensas);
 		b = batalhaRepository.saveAndFlush(b);
 
 		tropa.setUltimaBatalhaId(b.getId());
 		tropaRepository.save(tropa);
 
-		boolean vitoria = resultado.resultado() == ResultadoCombate.VITORIA;
 		fonteMasmorras.registrarResultado(alvo.id(), vitoria, turno);
 
 		Map<String, Object> dados = new LinkedHashMap<>();

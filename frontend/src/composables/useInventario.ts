@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { get, post } from '../api/http'
 import type { ItemDTO } from './useItens'
+import type { PedraDTO } from './usePedras'
 import type { ArtesaoDTO, FabricacaoDTO, OficinaDTO, ReceitaDTO } from './useOficina'
 import { custoDoNivelItem } from './useOficina'
 import type { Construcao, Ladrilho, MapaVila, RegiaoDetalhe } from './useMapa'
@@ -14,7 +15,7 @@ export interface InventarioDTO {
 
 export interface ItemDetalheDTO {
   item: ItemDTO
-  pedras: unknown[]
+  pedras: PedraDTO[]
 }
 
 export const NIVEL_MAXIMO_ITEM = 10

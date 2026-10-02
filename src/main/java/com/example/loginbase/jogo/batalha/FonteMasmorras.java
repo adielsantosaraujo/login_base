@@ -3,10 +3,7 @@ package com.example.loginbase.jogo.batalha;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Porta para as masmorras (implementadas só na Fase 5). A Fase 5 fornece um bean desta interface e a implementação
- * vazia {@link FonteMasmorrasVazia} deixa de ser registrada ({@code @ConditionalOnMissingBean}).
- */
+/** Porta para as masmorras; implementada por {@code masmorra.FonteMasmorrasJpa}. */
 public interface FonteMasmorras {
 
 	/** Masmorras ativas da vila. */

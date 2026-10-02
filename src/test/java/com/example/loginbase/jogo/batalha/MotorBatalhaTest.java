@@ -149,4 +149,46 @@ class MotorBatalhaTest {
 		assertThat(r.log().stream().filter(a -> a.atacanteId() == 1 && a.atacanteLado() == LadoCombate.TROPA).count())
 				.isLessThanOrEqualTo(1);
 	}
+
+	private static Combatente dragao(int alvos) {
+		Combatente d = TipoInimigo.DRAGAO_JOVEM.criar(0, 10);
+		return new Combatente(d.id(), d.lado(), d.nome(), d.linha(), 100000, 5, d.defesa(), d.iniciativaBase(), 0, 0,
+				d.alcance(), false, alvos);
+	}
+
+	private static Combatente guerreiro(long id) {
+		return c(id, LadoCombate.TROPA, LinhaCombate.FRENTE, Alcance.CORPO_A_CORPO_FRENTE, 100000, 1, 10, 1, 0, 0);
+	}
+
+	@Test
+	void dragaoJovemTemDoisAlvosPorAtaque() {
+		assertThat(TipoInimigo.DRAGAO_JOVEM.criar(0, 10).alvosPorAtaque()).isEqualTo(2);
+		assertThat(TipoInimigo.GOBLIN.criar(0, 1).alvosPorAtaque()).isEqualTo(1);
+	}
+
+	@Test
+	void dragaoAtingeDoisAlvosDistintosPorAtaque() {
+		var t = List.of(guerreiro(1), guerreiro(2), guerreiro(3));
+		ResultadoBatalha r = motor.resolver(t, List.of(dragao(2)), 9L);
+		var golpes = r.log().stream().filter(a -> a.atacanteLado() == LadoCombate.INIMIGO).toList();
+		assertThat(golpes).hasSize(r.rodadas() * 2);
+		for (int k = 0; k < golpes.size(); k += 2) {
+			assertThat(golpes.get(k).rodada()).isEqualTo(golpes.get(k + 1).rodada());
+			assertThat(golpes.get(k).alvoId()).isNotEqualTo(golpes.get(k + 1).alvoId());
+		}
+		assertThat(motor.resolver(t, List.of(dragao(2)), 9L)).isEqualTo(r);
+	}
+
+	@Test
+	void dragaoComUmUnicoAlvoVivoAtacaSoUm() {
+		ResultadoBatalha r = motor.resolver(List.of(guerreiro(1)), List.of(dragao(2)), 9L);
+		assertThat(r.log().stream().filter(a -> a.atacanteLado() == LadoCombate.INIMIGO)).hasSize(r.rodadas());
+	}
+
+	@Test
+	void combatenteNormalAtacaUmAlvo() {
+		var t = List.of(guerreiro(1), guerreiro(2), guerreiro(3));
+		ResultadoBatalha r = motor.resolver(t, List.of(dragao(1)), 9L);
+		assertThat(r.log().stream().filter(a -> a.atacanteLado() == LadoCombate.INIMIGO)).hasSize(r.rodadas());
+	}
 }

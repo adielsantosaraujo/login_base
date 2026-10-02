@@ -17,6 +17,11 @@ public class ItemBonusGerador {
 	/** Sorteia a qualidade pela margem de PE. Fora do N3, a chance de DIVINA soma-se à de EXCELENTE. */
 	public Qualidade gerarQualidade(int peEfetivo, int nivel, NivelConstrucao nivelOficina, long semente) {
 		int m = peEfetivo - RegrasFabricacao.peMinimo(nivel);
+		return gerarQualidadePorMargem(m, nivelOficina == NivelConstrucao.N3, semente);
+	}
+
+	/** Sorteia a qualidade pela margem; sem Divina, a chance dela soma-se à de EXCELENTE. */
+	public Qualidade gerarQualidadePorMargem(int m, boolean permiteDivina, long semente) {
 		int simples;
 		int boa;
 		int excelente;
@@ -38,7 +43,7 @@ public class ItemBonusGerador {
 			excelente = 25;
 		}
 		int divina = 100 - simples - boa - excelente;
-		if (nivelOficina != NivelConstrucao.N3) {
+		if (!permiteDivina) {
 			excelente += divina;
 			divina = 0;
 		}

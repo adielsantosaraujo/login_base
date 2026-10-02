@@ -166,24 +166,24 @@ _Tropas, expedições e motor de batalha._
 
 _Masmorras, recompensas e pedras de bônus._
 
-- [ ] **[v1-012 · H-001 — Obter pedras nas masmorras](v1-012-pedras-de-bonus/historia/h-001-obter-pedras-nas-masmorras.md)**
-  - [ ] [B] [Tarefa 001 — Modelo e gerador de pedras](v1-012-pedras-de-bonus/historia/h-001-tarefa-001-modelo-e-gerador-de-pedras.md)
+- [x] **[v1-012 · H-001 — Obter pedras nas masmorras](v1-012-pedras-de-bonus/historia/h-001-obter-pedras-nas-masmorras.md)**
+  - [x] [B] [Tarefa 001 — Modelo e gerador de pedras](v1-012-pedras-de-bonus/historia/h-001-tarefa-001-modelo-e-gerador-de-pedras.md)
 
-- [ ] **[v1-001 · H-001 — Surgimento e evolução de masmorras](v1-001-masmorras/historia/h-001-surgimento-e-evolucao-de-masmorras.md)**
-  - [ ] [B] [Tarefa 001 — Modelo de dados de masmorras](v1-001-masmorras/historia/h-001-tarefa-001-modelo-de-dados-de-masmorras.md)
-  - [ ] [B] [Tarefa 002 — Surgimento e evolução no turno](v1-001-masmorras/historia/h-001-tarefa-002-surgimento-e-evolucao-no-turno.md)
-  - [ ] [F] [Tarefa 003 — Masmorras no mapa](v1-001-masmorras/historia/h-001-tarefa-003-masmorras-no-mapa.md)
+- [x] **[v1-001 · H-001 — Surgimento e evolução de masmorras](v1-001-masmorras/historia/h-001-surgimento-e-evolucao-de-masmorras.md)**
+  - [x] [B] [Tarefa 001 — Modelo de dados de masmorras](v1-001-masmorras/historia/h-001-tarefa-001-modelo-de-dados-de-masmorras.md)
+  - [x] [B] [Tarefa 002 — Surgimento e evolução no turno](v1-001-masmorras/historia/h-001-tarefa-002-surgimento-e-evolucao-no-turno.md)
+  - [x] [F] [Tarefa 003 — Masmorras no mapa](v1-001-masmorras/historia/h-001-tarefa-003-masmorras-no-mapa.md)
 
-- [ ] **[v1-001 · H-002 — Atacar masmorra](v1-001-masmorras/historia/h-002-atacar-masmorra.md)**
-  - [ ] [B] [Tarefa 001 — Geração dos inimigos por nível](v1-001-masmorras/historia/h-002-tarefa-001-geracao-dos-inimigos-por-nivel.md)
-  - [ ] [B] [Tarefa 002 — Integração expedição e batalha](v1-001-masmorras/historia/h-002-tarefa-002-integracao-expedicao-e-batalha.md)
+- [x] **[v1-001 · H-002 — Atacar masmorra](v1-001-masmorras/historia/h-002-atacar-masmorra.md)**
+  - [x] [B] [Tarefa 001 — Geração dos inimigos por nível](v1-001-masmorras/historia/h-002-tarefa-001-geracao-dos-inimigos-por-nivel.md)
+  - [x] [B] [Tarefa 002 — Integração expedição e batalha](v1-001-masmorras/historia/h-002-tarefa-002-integracao-expedicao-e-batalha.md)
 
-- [ ] **[v1-001 · H-003 — Receber recompensas da masmorra](v1-001-masmorras/historia/h-003-receber-recompensas-da-masmorra.md)**
-  - [ ] [B] [Tarefa 001 — Tabela de recompensas e drop](v1-001-masmorras/historia/h-003-tarefa-001-tabela-de-recompensas-e-drop.md)
+- [x] **[v1-001 · H-003 — Receber recompensas da masmorra](v1-001-masmorras/historia/h-003-receber-recompensas-da-masmorra.md)**
+  - [x] [B] [Tarefa 001 — Tabela de recompensas e drop](v1-001-masmorras/historia/h-003-tarefa-001-tabela-de-recompensas-e-drop.md)
 
-- [ ] **[v1-012 · H-002 — Engastar pedra em item](v1-012-pedras-de-bonus/historia/h-002-engastar-pedra-em-item.md)**
-  - [ ] [B] [Tarefa 001 — API de engaste](v1-012-pedras-de-bonus/historia/h-002-tarefa-001-api-de-engaste.md)
-  - [ ] [F] [Tarefa 002 — Interface de engaste](v1-012-pedras-de-bonus/historia/h-002-tarefa-002-interface-de-engaste.md)
+- [x] **[v1-012 · H-002 — Engastar pedra em item](v1-012-pedras-de-bonus/historia/h-002-engastar-pedra-em-item.md)**
+  - [x] [B] [Tarefa 001 — API de engaste](v1-012-pedras-de-bonus/historia/h-002-tarefa-001-api-de-engaste.md)
+  - [x] [F] [Tarefa 002 — Interface de engaste](v1-012-pedras-de-bonus/historia/h-002-tarefa-002-interface-de-engaste.md)
 
 ---
 

@@ -31,10 +31,10 @@ export function vizinhas(indice: number): number[] {
 
 export function ehAnexavel(
   indice: number,
-  regioes: { indice: number; possuida: boolean }[],
+  regioes: { indice: number; possuida: boolean; masmorraAtiva?: boolean }[],
 ): boolean {
   const alvo = regioes.find((r) => r.indice === indice)
-  if (!alvo || alvo.possuida) return false
+  if (!alvo || alvo.possuida || alvo.masmorraAtiva) return false
   const possuidas = new Set(regioes.filter((r) => r.possuida).map((r) => r.indice))
   return vizinhas(indice).some((v) => possuidas.has(v))
 }

@@ -9,6 +9,7 @@ export interface RegiaoResumo {
   possuida: boolean
   masmorraAtiva: boolean
   nivelMasmorra: number | null
+  masmorraId: number | null
 }
 
 export interface MapaVila {

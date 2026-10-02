@@ -40,7 +40,6 @@ public class Batalha {
 	@Column(name = "tropa_nome", nullable = false, length = 100)
 	private String tropaNome;
 
-	/** Sem FK: masmorras só existem a partir da Fase 5. */
 	@Column(name = "masmorra_id")
 	private Long masmorraId;
 
@@ -67,7 +66,11 @@ public class Batalha {
 	@Column(nullable = false, columnDefinition = "jsonb")
 	private LogBatalha log;
 
-	/** Fase 4 grava sempre null; recompensas e XP de vitória ficam para a Fase 5. */
+	/**
+	 * Recompensas entregues na vitória (null na derrota): {ouro, recursos{RECURSO:qtd}, item{itemId, subtipo, categoria,
+	 * nivel, qualidade, bonus[{codigo,valor}], atributoEscolhido} | null, xpPorGuerreiro, guerreirosXp[ids],
+	 * pedras[{pedraId, qualidade, bonus[{codigo,magnitude,valor}]}]}.
+	 */
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(columnDefinition = "jsonb")
 	private Map<String, Object> recompensas;

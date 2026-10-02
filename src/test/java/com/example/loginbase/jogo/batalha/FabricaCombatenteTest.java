@@ -32,7 +32,7 @@ class FabricaCombatenteTest {
 
 	private final ItemRepository itens = mock(ItemRepository.class);
 	private final CidadaoProfissaoRepository profs = mock(CidadaoProfissaoRepository.class);
-	private final BonusEquipamentoService bonus = new BonusEquipamentoService(itens);
+	private final BonusEquipamentoService bonus = new BonusEquipamentoService(itens, mock(com.example.loginbase.jogo.pedra.PedraRepository.class));
 	private final FabricaCombatente fabrica = new FabricaCombatente(new CalculadoraPeEfetivo(bonus), bonus, profs,
 			itens, new CombateAtributos());
 

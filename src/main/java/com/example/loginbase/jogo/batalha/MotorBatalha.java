@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  *
  * <p>Ordem fixa de consumo do {@link Random}(semente): por rodada, 1d6 de cada vivo (tropa na ordem recebida, depois
  * inimigos); por ação: sorteio de alvo (só inimigos, {@code nextInt}), dano ({@code nextDouble}), crítico
- * ({@code nextDouble}). Quem não tem alvo válido perde a ação sem consumir sorteios.
+ * ({@code nextDouble}); atacantes com mais de um alvo repetem sorteio/dano/crítico para cada alvo distinto. Quem não tem alvo válido perde a ação sem consumir sorteios.
  */
 @Component
 public class MotorBatalha {
@@ -52,26 +52,33 @@ public class MotorBatalha {
 				if (permitidos.isEmpty()) {
 					continue;
 				}
-				Combatente alvo = ator.lado() == LadoCombate.TROPA ? menorPv(permitidos, pv)
-						: permitidos.get(rng.nextInt(permitidos.size()));
-				int dano = CalculoDano.dano(ator.ataque(), CalculoDano.defesaEfetiva(alvo.defesa(), ator.ignoraDefesa25()),
-						rng);
-				boolean critico = rng.nextDouble() * 100 < ator.criticoPp();
-				if (critico) {
-					dano = (int) Math.round(dano * MULT_CRITICO);
+				List<Combatente> candidatos = new ArrayList<>(permitidos);
+				for (int golpe = 0; golpe < Math.max(1, ator.alvosPorAtaque()) && !candidatos.isEmpty(); golpe++) {
+					Combatente alvo = ator.lado() == LadoCombate.TROPA ? menorPv(candidatos, pv)
+							: candidatos.get(rng.nextInt(candidatos.size()));
+					candidatos.remove(alvo);
+					int dano = CalculoDano.dano(ator.ataque(),
+							CalculoDano.defesaEfetiva(alvo.defesa(), ator.ignoraDefesa25()), rng);
+					boolean critico = rng.nextDouble() * 100 < ator.criticoPp();
+					if (critico) {
+						dano = (int) Math.round(dano * MULT_CRITICO);
+					}
+					int antes = pv.get(alvo);
+					int depois = Math.max(0, antes - dano);
+					pv.put(alvo, depois);
+					boolean abatido = depois == 0;
+					log.add(new AcaoBatalha(rodada, ator.id(), ator.lado(), alvo.id(), alvo.lado(), dano, critico,
+							antes, depois, abatido));
+					if (abatido && alvo.lado() == LadoCombate.TROPA) {
+						abatidosTropa.add(alvo.id());
+					}
+					if (vivosDoLado(todos, pv, alvo.lado()).isEmpty()) {
+						resultado = alvo.lado() == LadoCombate.INIMIGO ? ResultadoCombate.VITORIA
+								: ResultadoCombate.DERROTA;
+						break;
+					}
 				}
-				int antes = pv.get(alvo);
-				int depois = Math.max(0, antes - dano);
-				pv.put(alvo, depois);
-				boolean abatido = depois == 0;
-				log.add(new AcaoBatalha(rodada, ator.id(), ator.lado(), alvo.id(), alvo.lado(), dano, critico, antes,
-						depois, abatido));
-				if (abatido && alvo.lado() == LadoCombate.TROPA) {
-					abatidosTropa.add(alvo.id());
-				}
-				if (vivosDoLado(todos, pv, alvo.lado()).isEmpty()) {
-					resultado = alvo.lado() == LadoCombate.INIMIGO ? ResultadoCombate.VITORIA
-							: ResultadoCombate.DERROTA;
+				if (resultado != null) {
 					break;
 				}
 			}

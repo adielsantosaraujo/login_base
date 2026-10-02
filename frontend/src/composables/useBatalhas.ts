@@ -46,6 +46,36 @@ export interface RodadaDTO {
   acoes: AcaoDTO[]
 }
 
+export interface BonusRecompensaDTO {
+  codigo: string
+  valor: number
+}
+
+export interface ItemRecompensaDTO {
+  itemId: number
+  subtipo: string
+  categoria: string
+  nivel: number
+  qualidade: string
+  bonus: BonusRecompensaDTO[]
+  atributoEscolhido: string | null
+}
+
+export interface PedraRecompensaDTO {
+  pedraId: number
+  qualidade: string
+  bonus: { codigo: string; magnitude: string; valor: number }[]
+}
+
+export interface RecompensasBatalhaDTO {
+  ouro: number
+  recursos: Record<string, number>
+  item: ItemRecompensaDTO | null
+  xpPorGuerreiro: number
+  guerreirosXp: number[]
+  pedras: PedraRecompensaDTO[]
+}
+
 export interface BatalhaDetalheDTO {
   id: number
   turno: number
@@ -59,7 +89,7 @@ export interface BatalhaDetalheDTO {
   criadoEm: string
   participantes: ParticipanteDTO[]
   rodadas: RodadaDTO[]
-  recompensas: Record<string, unknown> | null
+  recompensas: RecompensasBatalhaDTO | null
 }
 
 export const ROTULOS_RESULTADO: Record<string, string> = { VITORIA: 'VITÓRIA', DERROTA: 'DERROTA' }
