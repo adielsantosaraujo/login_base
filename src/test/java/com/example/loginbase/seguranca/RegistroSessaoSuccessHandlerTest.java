@@ -33,7 +33,7 @@ class RegistroSessaoSuccessHandlerTest {
 		handler.onAuthenticationSuccess(request, response, authentication);
 
 		verify(sessaoService).registrarInicio("ana@exemplo.com", session.getId(), "127.0.0.1", "algum-agente");
-		assertThat(response.getRedirectedUrl()).isEqualTo("/");
+		assertThat(response.getRedirectedUrl()).isEqualTo("/app/index");
 	}
 
 	@Test
@@ -51,7 +51,7 @@ class RegistroSessaoSuccessHandlerTest {
 
 		handler.onAuthenticationSuccess(request, response, authentication);
 
-		assertThat(response.getRedirectedUrl()).isEqualTo("/");
+		assertThat(response.getRedirectedUrl()).isEqualTo("/app/index");
 	}
 
 }

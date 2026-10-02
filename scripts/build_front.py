@@ -18,7 +18,7 @@ from cores import BLUE_COLOR, CYAN_COLOR, RED_COLOR, RESET_COLOR
 DIST_DIR = Path("frontend/dist")
 INDEX_FILE = DIST_DIR / "index.html"
 STATIC_APP_DIR = Path("src/main/resources/static/app")
-TEMPLATE_FILE = Path("src/main/resources/templates/sistema/seguro/index.html")
+TEMPLATE_FILE = Path("src/main/resources/templates/sistema/seguro/app/index.html")
 BUILD_LOG = Path("build.log")
 
 
