@@ -87,15 +87,15 @@ sequenceDiagram
     R->>BD: SessaoService.registrarInicio(email, sessionId, ip, userAgent)
     R->>BD: INSERT INTO sessoes (usuario_id, token, ...)
     Note over BD: token = SHA-256(sessionId)
-    R->>B: Redireciona para /app/index ou página anterior
+    R->>B: Redireciona para /patrimonio/index (ou página anterior)
     deactivate R
     deactivate S
     
-    B->>S: GET /app/index (com JSESSIONID cookie)
+    B->>S: GET /patrimonio/index (com JSESSIONID cookie)
     S->>B: Retorna SPA (index.html)
     
     par Navegação normal
-        B->>B: Vue router mapeia rotas em /app/**
+        B->>B: Vue router mapeia rotas em /patrimonio/** (e outras SPAs)
         B->>S: Fetch/POST (requisições da SPA)
         S->>B: Resposta JSON
     and Inatividade
@@ -107,8 +107,8 @@ sequenceDiagram
     S->>L: HttpSessionDestroyedEvent
     L->>BD: SessaoService.registrarFim(sessionId)
     
-    U->>B: Tenta acessar /app/index
-    B->>S: GET /app/index (sem ou cookie expirado)
+    U->>B: Tenta acessar /patrimonio/index
+    B->>S: GET /patrimonio/index (sem ou cookie expirado)
     S->>B: /login (redirecionamento)
 ```
 

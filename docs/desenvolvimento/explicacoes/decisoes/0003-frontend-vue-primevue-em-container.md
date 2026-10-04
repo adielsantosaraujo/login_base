@@ -6,10 +6,13 @@ status: Aceita
 data: 2026-09-23
 atualizado_em: 2026-10-04
 fontes:
-  - frontend/Dockerfile
+  - frontend/public/cadastro_usuario/Dockerfile
+  - frontend/seguro/patrimonio/Dockerfile
   - docker-compose.yml
-  - frontend/vite.config.ts
-  - frontend/src/main.ts
+  - frontend/public/cadastro_usuario/vite.config.ts
+  - frontend/seguro/patrimonio/vite.config.ts
+  - frontend/public/cadastro_usuario/src/main.ts
+  - frontend/seguro/patrimonio/src/main.ts
   - .env.example
 ---
 

@@ -58,12 +58,15 @@ src/main/
     ├── templates/
     │   └── sistema/
     │       ├── public/
-    │       │   └── login.html              — Formulário de login
+    │       │   ├── login.html              — Formulário de login
+    │       │   └── cadastro_usuario/
+    │       │       └── index.html          — Template da SPA pública (gerado por build_front.py)
     │       └── seguro/
-    │           └── app/
-    │               └── index.html          — Template da SPA (gerado por build_front.py)
+    │           └── patrimonio/
+    │               └── index.html          — Template da SPA segura (gerado por build_front.py)
     └── static/                             — Recursos estáticos (CSS, imagens, etc.)
-        └── app/                            — Assets do frontend (gerados por build_front.py)
+        ├── cadastro_usuario/               — Assets do frontend público (gerados por build_front.py)
+        └── patrimonio/                     — Assets do frontend seguro (gerados por build_front.py)
 ```
 
 ## Testes
@@ -88,41 +91,53 @@ src/test/
 │   │   └── UsuarioDetailsServiceTest.java
 │   └── LoginBaseApplicationTests.java      — Testes de integração (requer Postgres)
 └── resources/
-    ├── static/app/assets/
-    │   └── teste-estatico.js               — Recurso estático para testes
+    ├── static/
+    │   ├── cadastro_usuario/assets/
+    │   │   └── teste-estatico.js           — Recurso estático para testes
+    │   └── patrimonio/assets/
+    │       └── teste-estatico.js           — Recurso estático para testes
     └── templates/
-        └── sistema/seguro/app/
-            └── index.html                  — Stub do template para testes
+        └── sistema/
+            ├── public/cadastro_usuario/
+            │   └── index.html              — Stub do template para testes
+            └── seguro/patrimonio/
+                └── index.html              — Stub do template para testes
 ```
 
 ## Frontend (Vue 3)
 
 ```
 frontend/
-├── src/
-│   ├── main.ts                            — Inicialização do Vue
-│   ├── App.vue                            — Componente raiz
-│   ├── vite-env.d.ts                      — Tipos do Vite
-│   ├── views/
-│   │   ├── HomeView.vue                   — Página de boas-vindas
-│   │   └── HomeView.spec.ts               — Testes do HomeView
-│   └── router/
-│       ├── index.ts                       — Configuração de rotas
-│       └── index.spec.ts                  — Testes de rotas
-├── public/                                — Recursos públicos (favicon, etc.)
-├── index.html                             — Ponto de entrada do Vite
-├── package.json                           — Dependências do npm
-├── package-lock.json                      — Lock de dependências
-├── vite.config.ts                         — Configuração do Vite
-├── tsconfig.json                          — Configuração global do TypeScript
-├── tsconfig.app.json                      — Configuração do TypeScript para app
-├── tsconfig.node.json                     — Configuração do TypeScript para build
-├── Dockerfile                             — Imagem de desenvolvimento do frontend
-├── .dockerignore
-├── .gitignore
-├── dist/                                  — Build de produção (gerado, ignorado)
-└── README.md                              — Documentação do Vite (boilerplate)
+├── public/
+│   └── cadastro_usuario/                  — App Vue pública (sem login)
+│       ├── src/
+│       │   ├── main.ts
+│       │   ├── App.vue
+│       │   ├── vite-env.d.ts
+│       │   ├── views/
+│       │   │   ├── HomeView.vue
+│       │   │   └── HomeView.spec.ts
+│       │   └── router/
+│       │       ├── index.ts
+│       │       └── index.spec.ts
+│       ├── public/
+│       ├── index.html
+│       ├── package.json
+│       ├── package-lock.json
+│       ├── vite.config.ts                 — Define base: /<nome>/ em produção
+│       ├── tsconfig.json
+│       ├── Dockerfile
+│       ├── .dockerignore
+│       ├── .gitignore
+│       ├── dist/                          — Build de produção (gerado)
+│       ├── node_modules/
+│       └── README.md
+└── seguro/
+    └── patrimonio/                        — App Vue segura (exige login)
+        └── (mesma estrutura de cadastro_usuario)
 ```
+
+Cada app é um mini-projeto Vue/Vite independente com seu próprio `package.json`, `vite.config.ts`, e build isolado.
 
 ## Configuração
 
@@ -148,7 +163,9 @@ frontend/
 
 ```
 scripts/
-├── build_front.py                         — Build do frontend integrado ao backend
+├── build_front.py                         — Build de todos os frontends integrado ao backend
+├── apps_front.py                          — Descoberta de apps em frontend/public/* e frontend/seguro/*
+├── limpar_front.py                        — Limpeza de artefatos de build
 ├── executar.py                            — Menu interativo de execução
 └── cores.py                               — Utilitário de cores para scripts
 ```
@@ -178,11 +195,15 @@ Os seguintes arquivos e pastas são gerados durante o desenvolvimento ou build e
 | `.env` | Copiado de `.env.example` e customizado | `.gitignore` |
 | `target/` | Build Maven | `.gitignore` |
 | `build.log` | Script `build_front.py` | `.gitignore` |
-| `frontend/dist/` | Build do Vite | `frontend/.gitignore` |
-| `frontend/node_modules/` | npm ci/install | `frontend/.gitignore` |
-| `src/main/resources/static/app/` | Script `build_front.py` | `.gitignore` |
-| `src/main/resources/templates/sistema/seguro/app/index.html` | Script `build_front.py` | `src/main/resources/templates/sistema/seguro/.gitignore` |
-| `src/test/resources/templates/sistema/seguro/app/index.html` | Stub para testes | `.gitignore` (linha 39: `/src/test/resources/templates/sistema/seguro/app/*`) |
+| `frontend/public/*/dist/` | Build do Vite | `frontend/.gitignore` |
+| `frontend/seguro/*/dist/` | Build do Vite | `frontend/.gitignore` |
+| `frontend/public/*/node_modules/` | npm ci/install | `frontend/.gitignore` |
+| `frontend/seguro/*/node_modules/` | npm ci/install | `frontend/.gitignore` |
+| `src/main/resources/static/<nome>/` | Script `build_front.py` | `.gitignore` |
+| `src/main/resources/templates/sistema/public/<nome>/index.html` | Script `build_front.py` | `src/main/resources/templates/sistema/public/.gitignore` |
+| `src/main/resources/templates/sistema/seguro/<nome>/index.html` | Script `build_front.py` | `src/main/resources/templates/sistema/seguro/.gitignore` |
+| `src/test/resources/templates/sistema/public/<nome>/index.html` | Stub para testes | `.gitignore` |
+| `src/test/resources/templates/sistema/seguro/<nome>/index.html` | Stub para testes | `.gitignore` |
 | `frontend-node-modules` (volume Docker) | Docker Compose | N/A |
 | `db-data` (volume Docker) | PostgreSQL | N/A |
 

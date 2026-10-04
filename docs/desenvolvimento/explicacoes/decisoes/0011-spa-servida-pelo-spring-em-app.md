@@ -2,20 +2,22 @@
 titulo: SPA servida pelo Spring em /app
 publico: desenvolvimento
 tipo: adr
-status: Aceita
+status: Substituída pela 0014
 data: 2026-10-02
 atualizado_em: 2026-10-04
 fontes:
   - src/main/java/com/example/loginbase/web/PaginaController.java
   - scripts/build_front.py
-  - frontend/vite.config.ts
-  - frontend/src/router/index.ts
+  - frontend/public/cadastro_usuario/vite.config.ts
+  - frontend/seguro/patrimonio/vite.config.ts
+  - frontend/public/cadastro_usuario/src/router/index.ts
+  - frontend/seguro/patrimonio/src/router/index.ts
   - src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
 ---
 
 # 0011 — SPA servida pelo Spring em /app
 
-**Status:** Aceita · **Data:** 2026-10-02
+**Status:** Substituída pela [0014 — Múltiplos frontends em public/seguro](./0014-multiplos-frontends-em-public-seguro.md) · **Data:** 2026-10-02
 
 ## Contexto
 

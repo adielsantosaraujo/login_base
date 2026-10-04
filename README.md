@@ -15,7 +15,7 @@ set -a && . ./.env && set +a
 ./mvnw spring-boot:run
 ```
 
-Depois, abra `http://localhost:8080/login` e entre com `admin@loginbase.local` e sua senha.
+Depois, abra `http://localhost:8080/login` e entre com `admin@loginbase.local` e sua senha. Após o login, você será redirecionado para `http://localhost:8080/patrimonio/index`.
 
 ## Documentação
 

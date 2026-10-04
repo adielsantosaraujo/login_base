@@ -9,6 +9,7 @@ fontes:
   - src/main/resources/application.properties
   - .dockerignore
   - scripts/build_front.py
+  - src/main/java/com/example/loginbase/web/PaginaController.java
 ---
 
 # Executar a aplicação em container
@@ -32,7 +33,7 @@ Este guia descreve como subir a aplicação Spring Boot (serviço `app`) dentro 
    make build_front
    ```
 
-   Isto gera `frontend/dist/`, copia os assets para `src/main/resources/static/app/` e o HTML para `src/main/resources/templates/sistema/seguro/app/index.html`. Sem este passo, a rota `/app/index` falhará com erro de template ausente.
+   Isto descobre os apps em `frontend/public/<nome>/` e `frontend/seguro/<nome>/`, roda o build de cada um, e copia os assets para `src/main/resources/static/<nome>/` e o HTML para `src/main/resources/templates/sistema/<area>/<nome>/index.html`. Sem este passo, as rotas `/<nome>/index` falharão com erro de template ausente.
 
 2. Configure o profile do serviço `app` no `.env`:
 
@@ -88,7 +89,7 @@ Este guia descreve como subir a aplicação Spring Boot (serviço `app`) dentro 
 
   Verifique que `app` tem status `Up`.
 
-- Tente acessar a aplicação via navegador (a URL padrão seria `http://localhost:80` conforme o `docker-compose.yml`, mas há inconsistência de porta — ver aviso abaixo).
+- Tente acessar a aplicação via navegador (p. ex., `http://localhost/cadastro_usuario/index` para o app público ou `http://localhost/patrimonio/index` para o app seguro; porém há inconsistência de porta — ver aviso abaixo).
 
 - Ou faça uma requisição simples:
 
@@ -101,6 +102,8 @@ Este guia descreve como subir a aplicação Spring Boot (serviço `app`) dentro 
 > **Problema conhecido:** O `docker-compose.yml` mapeia a porta `80:80` e o `Dockerfile` faz `EXPOSE 80`. Porém, em `application.properties`, `server.port=${SERVER_PORT:8080}`, e o compose não repassa `SERVER_PORT` ao container. O arquivo `.env` também é excluído da imagem por `.dockerignore`. Resultado: o container provavelmente escuta em `8080` internamente, e o mapeamento `80:80` não funciona como pretendido. (fonte: docker-compose.yml, Dockerfile, application.properties, .dockerignore)
 
 > **A confirmar com o responsável:** Qual deve ser a porta exposta e repassada? Deve-se adicionar `SERVER_PORT` ao `docker-compose.yml` ou ajustar o mapeamento de portas?
+
+> **Nota:** Com múltiplos apps frontend (público e seguro), as rotas mudam de `/app/index` para `/<nome>/index`. Exemplos: `/cadastro_usuario/index` (público, sem login) e `/patrimonio/index` (seguro, exige login).
 
 ## Quando reconstruir a imagem
 

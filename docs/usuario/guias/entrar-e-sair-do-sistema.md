@@ -7,7 +7,7 @@ fontes:
   - src/main/resources/templates/sistema/public/login.html
   - src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
   - src/main/resources/application.properties
-  - frontend/src/views/HomeView.vue
+  - src/main/java/com/example/loginbase/web/PaginaController.java
 ---
 
 # Entrar e sair do sistema
@@ -35,7 +35,7 @@ Consulte este guia quando precisar fazer login, quando receber uma mensagem de e
 
 4. Clique em "Entrar".
 
-5. Se o login foi bem-sucedido, você será levado para a tela "Seja bem-vindo".
+5. Se o login foi bem-sucedido, você será redirecionado automaticamente para a tela principal do sistema (rota `/patrimonio/index`).
 
 ### Para sair do sistema
 
@@ -52,8 +52,8 @@ Se a sessão expirar, você será redirecionado para a página de login.
 ## Como verificar
 
 **Você entrou corretamente quando:**
-- Você vê a tela com o card "Seja bem-vindo"
-- O endereço na barra do navegador é `http://localhost:8080/app/index` (ou semelhante)
+- Você vê a tela principal do sistema
+- O endereço na barra do navegador é `http://localhost:8080/patrimonio/index` (ou similar, conforme o app em uso)
 
 **Você saiu corretamente quando:**
 - Você é redirecionado para a página de login

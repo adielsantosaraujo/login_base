@@ -7,6 +7,8 @@ fontes:
   - src/main/java/com/example/loginbase/seguranca/SecurityConfig.java
   - src/main/java/com/example/loginbase/web/PaginaController.java
   - src/main/resources/templates/sistema/public/login.html
+  - src/test/resources/templates/sistema/public/cadastro_usuario/index.html
+  - src/test/resources/templates/sistema/seguro/patrimonio/index.html
   - src/main/resources/application.properties
   - src/test/java/com/example/loginbase/web/AutenticacaoWebMvcTest.java
 ---
@@ -20,18 +22,22 @@ Mapa das rotas HTTP, métodos permitidos, requisitos de autenticação e comport
 | Rota | Método | Acesso | Corpo | Resposta | Observações |
 |---|---|---|---|---|---|
 | `/login` | `GET` | Público | — | HTML (formulário) | Página de login com campos "E-mail ou celular" e "Senha"; CSRF token injetado pelo Thymeleaf |
-| `/login` | `POST` | Público | `login` (e-mail ou celular), `senha`, `_csrf` | Sucesso: `302` para página salva ou `/app/index`; erro: `302` para `/login?error` | Validação no backend: `IdentificadorLogin` classifica entrada; mensagem genérica (mesma para usuário inexistente, senha errada ou conta desabilitada) |
+| `/login` | `POST` | Público | `login` (e-mail ou celular), `senha`, `_csrf` | Sucesso: `302` para página salva ou `/patrimonio/index`; erro: `302` para `/login?error` | Validação no backend: `IdentificadorLogin` classifica entrada; mensagem genérica (mesma para usuário inexistente, senha errada ou conta desabilitada) |
 | `/logout` | `POST` | Público | `_csrf` | `302` para `/login?logout` | Invalida a sessão HTTP, apaga o cookie `JSESSIONID`; configurado com `.permitAll()` |
 
 ## Rotas de navegação
 
 | Rota | Método | Acesso | Resposta | Observações |
 |---|---|---|---|---|
-| `/` | `GET` | Autenticado | `302` para `/app/index`; anônimo recebe `302` para `/login` | Redirecionamento da raiz |
-| `/app` | `GET` | Autenticado | `302` para `/app/index`; anônimo recebe `302` para `/login` | Redirecionamento para a SPA |
-| `/app/` | `GET` | Autenticado | `302` para `/app/index`; anônimo recebe `302` para `/login` | Redirecionamento (barra final mapeada explicitamente) |
-| `/app/index` | `GET` | Autenticado | HTML (SPA) | Servida pelo `PaginaController` via template `sistema/seguro/app/index.html`; anônimo recebe `302` para `/login` |
-| `/app/{s1}` a `/app/{s1}/{s2}/{s3}/{s4}/{s5}` | `GET` | Autenticado | HTML (SPA) | Rotas do cliente Vue, casadas até 5 níveis, sem extensão no último segmento (ex.: `/app/perfis`, `/app/usuarios/123/editar`); anônimo recebe `302` para `/login` |
+| `/` | `GET` | Autenticado | `302` para `/patrimonio/index`; anônimo recebe `302` para `/login` | Redirecionamento da raiz para a página inicial (SPA segura) |
+| `/cadastro_usuario` | `GET` | Público | `302` para `/cadastro_usuario/index`; não requer login | Redirecionamento para a SPA pública |
+| `/cadastro_usuario/` | `GET` | Público | `302` para `/cadastro_usuario/index` | Redirecionamento (barra final mapeada explicitamente) |
+| `/cadastro_usuario/index` | `GET` | Público | HTML (SPA) | Servida pelo `PaginaController` via template `sistema/public/cadastro_usuario/index.html`; sem requer autenticação |
+| `/cadastro_usuario/{s1}` a `/cadastro_usuario/{s1}/{s2}/{s3}/{s4}/{s5}` | `GET` | Público | HTML (SPA) | Rotas do cliente Vue, casadas até 5 níveis, sem extensão no último segmento (ex.: `/cadastro_usuario/termos`); sem requer autenticação |
+| `/patrimonio` | `GET` | Autenticado | `302` para `/patrimonio/index`; anônimo recebe `302` para `/login` | Redirecionamento para a SPA segura |
+| `/patrimonio/` | `GET` | Autenticado | `302` para `/patrimonio/index`; anônimo recebe `302` para `/login` | Redirecionamento (barra final mapeada explicitamente) |
+| `/patrimonio/index` | `GET` | Autenticado | HTML (SPA) | Servida pelo `PaginaController` via template `sistema/seguro/patrimonio/index.html`; anônimo recebe `302` para `/login` |
+| `/patrimonio/{s1}` a `/patrimonio/{s1}/{s2}/{s3}/{s4}/{s5}` | `GET` | Autenticado | HTML (SPA) | Rotas do cliente Vue, casadas até 5 níveis, sem extensão no último segmento (ex.: `/patrimonio/bens`, `/patrimonio/bens/123/editar`); anônimo recebe `302` para `/login` |
 
 ## Recursos estáticos e públicos
 
@@ -77,7 +83,7 @@ Após login bem-sucedido, o ID da sessão é trocado (`changeSessionId()`), evit
 
 ### Cache de requisições
 
-Requisições para `/api/**`, `/v3/api-docs/**`, `/.well-known/**`, `/app/**` (todas) e `/favicon.ico` **não são salvas** como página anterior. Isso impede que requisições automáticas ou XHR sequestrem o redirecionamento pós-login. Todas as outras requisições (formulários, navegação) são salvas e respeitadas após login (redirecionamento para `SavedRequest`).
+Requisições para `/api/**`, `/v3/api-docs/**`, `/.well-known/**`, `/cadastro_usuario/**`, `/patrimonio/**` (todas as SPAs) e `/favicon.ico` **não são salvas** como página anterior. Isso impede que requisições automáticas ou XHR sequestrem o redirecionamento pós-login. Todas as outras requisições (formulários, navegação) são salvas e respeitadas após login (redirecionamento para `SavedRequest`).
 
 ## Comportamento após login
 
@@ -86,8 +92,8 @@ Requisições para `/api/**`, `/v3/api-docs/**`, `/.well-known/**`, `/app/**` (t
 3. Se válido, `RegistroSessaoSuccessHandler` registra a sessão em `sessoes`.
 4. O navegador é redirecionado para:
    - A página que estava tentando acessar (se salva), ou
-   - `/app/index` (padrão)
-5. Após login, a SPA em `/app/index` carrega e pode usar cookies de autenticação automaticamente.
+   - `/patrimonio/index` (padrão, página inicial do app seguro)
+5. Após login, a SPA em `/patrimonio/index` carrega e pode usar cookies de autenticação automaticamente.
 
 ## Comportamento após logout
 

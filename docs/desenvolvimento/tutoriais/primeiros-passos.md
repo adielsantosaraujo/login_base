@@ -11,6 +11,7 @@ fontes:
   - src/main/resources/application.properties
   - src/main/java/com/example/loginbase/seguranca/AdminInicialRunner.java
   - scripts/build_front.py
+  - scripts/apps_front.py
   - src/main/java/com/example/loginbase/web/PaginaController.java
 ---
 
@@ -89,31 +90,35 @@ Você pode verificar que o banco está pronto assim:
 docker compose logs db | grep "database system is ready to accept connections"
 ```
 
-## Passo 4 — Compilar o frontend
+## Passo 4 — Compilar os frontends
 
-O frontend precisa ser compilado antes da primeira execução, porque o template Thymeleaf em `templates/sistema/seguro/app/index.html` é gerado pelo build:
+Os frontends precisam ser compilados antes da primeira execução, porque os templates Thymeleaf (ex.: `templates/sistema/seguro/patrimonio/index.html`) são gerados pelo build:
 
 ```bash
 make build_front
 ```
 
 Esse comando:
-- Remove builds anteriores (`frontend/dist`, `static/app`, `templates/sistema/seguro/index.html`).
-- Executa `npm run build` dentro de um container.
-- Copia assets e scripts para `src/main/resources/static/app/` (não copia `index.html`, que fica em `templates/`).
-- Gera o template `templates/sistema/seguro/app/index.html` necessário para servir a SPA integrada ao backend.
+- Descobre todos os apps em `frontend/public/*/` e `frontend/seguro/*/` (ex.: `cadastro_usuario`, `patrimonio`).
+- Para cada app:
+  - Remove builds anteriores (`frontend/<app>/dist`, `static/<nome>/`).
+  - Executa `npm run build` dentro de um container com variáveis `FRONT_APP` e `FRONT_APP_NOME`.
+  - Copia assets para `src/main/resources/static/<nome>/`.
+  - Gera o template `src/main/resources/templates/sistema/<area>/<nome>/index.html`.
 
 A saída mostra o progresso e finaliza com:
 
 ```
-Build concluido com sucesso.
+Build concluido com sucesso: cadastro_usuario, patrimonio.
 ```
 
 Você pode verificar que os arquivos foram criados:
 
 ```bash
-ls -la src/main/resources/static/app/
-ls -la src/main/resources/templates/sistema/seguro/app/
+ls -la src/main/resources/static/cadastro_usuario/
+ls -la src/main/resources/static/patrimonio/
+ls -la src/main/resources/templates/sistema/public/cadastro_usuario/
+ls -la src/main/resources/templates/sistema/seguro/patrimonio/
 ```
 
 ## Passo 5 — Rodar a aplicação

@@ -130,7 +130,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorEmailAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("ana@exemplo.com").password(SENHA))
-				.andExpect(redirectedUrl("/app/index"))
+				.andExpect(redirectedUrl("/patrimonio/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -140,7 +140,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorEmailComCaixaEEspacosDiferentesAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user(" Ana@Exemplo.COM ").password(SENHA))
-				.andExpect(redirectedUrl("/app/index"))
+				.andExpect(redirectedUrl("/patrimonio/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -150,7 +150,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorCelularSemMascaraAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("11987654321").password(SENHA))
-				.andExpect(redirectedUrl("/app/index"))
+				.andExpect(redirectedUrl("/patrimonio/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -160,7 +160,7 @@ class AutenticacaoWebMvcTest {
 	void loginPorCelularComMascaraAutentica() throws Exception {
 		mockMvc.perform(formLogin("/login").userParameter("login").passwordParam("senha")
 						.user("(11) 98765-4321").password(SENHA))
-				.andExpect(redirectedUrl("/app/index"))
+				.andExpect(redirectedUrl("/patrimonio/index"))
 				.andExpect(authenticated().withUsername("ana@exemplo.com"));
 
 		verify(sessaoService).registrarInicio(eq("ana@exemplo.com"), anyString(), eq("127.0.0.1"), any());
@@ -258,44 +258,85 @@ class AutenticacaoWebMvcTest {
 	void usuarioAutenticadoAcessaPaginaInicial() throws Exception {
 		// O index.html real (SPA Vue) é gerado pelo build do frontend e não existe
 		// num clone limpo; o teste usa o stub de src/test/resources/templates.
-		mockMvc.perform(get("/app/index").with(user("ana@exemplo.com")))
+		mockMvc.perform(get("/patrimonio/index").with(user("ana@exemplo.com")))
 				.andExpect(status().isOk())
-				.andExpect(view().name("sistema/seguro/app/index"));
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "/", "/app", "/app/" })
-	void raizEAppAutenticadosRedirecionamParaAppIndex(String caminho) throws Exception {
-		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
-				.andExpect(status().isFound())
-				.andExpect(redirectedUrl("/app/index"));
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "/app/jogo", "/app/jogo/mapa", "/app/jogo/batalhas/42", "/app/a/b/c/d/e" })
-	void rotasDoClienteSobAppServemASpa(String caminho) throws Exception {
-		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
-				.andExpect(status().isOk())
-				.andExpect(view().name("sistema/seguro/app/index"));
+				.andExpect(view().name("sistema/seguro/patrimonio/index"));
 	}
 
 	@Test
-	void assetEstaticoExistenteNaoEhSubstituidoPelaSpa() throws Exception {
-		mockMvc.perform(get("/app/assets/teste-estatico.js").with(user("ana@exemplo.com")))
+	void raizAutenticadaRedirecionaParaPaginaInicial() throws Exception {
+		mockMvc.perform(get("/").with(user("ana@exemplo.com")))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/patrimonio/index"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "cadastro_usuario", "patrimonio" })
+	void raizDoAppRedirecionaParaIndex(String app) throws Exception {
+		for (String caminho : new String[] { "/" + app, "/" + app + "/" }) {
+			mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
+					.andExpect(status().isFound())
+					.andExpect(redirectedUrl("/" + app + "/index"));
+		}
+	}
+
+	@Test
+	void anonimoAcessaCadastroUsuarioIndex() throws Exception {
+		mockMvc.perform(get("/cadastro_usuario/index"))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/public/cadastro_usuario/index"));
+	}
+
+	@Test
+	void anonimoEmRaizDeCadastroUsuarioRedirecionaParaIndexPublico() throws Exception {
+		mockMvc.perform(get("/cadastro_usuario"))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrl("/cadastro_usuario/index"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/cadastro_usuario/novo", "/cadastro_usuario/a/b/c/d/e" })
+	void anonimoEmRotaDoClienteDeCadastroUsuarioServeASpa(String caminho) throws Exception {
+		mockMvc.perform(get(caminho))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/public/cadastro_usuario/index"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/patrimonio/jogo", "/patrimonio/jogo/mapa", "/patrimonio/jogo/batalhas/42",
+			"/patrimonio/a/b/c/d/e" })
+	void rotasDoClienteSobPatrimonioServemASpa(String caminho) throws Exception {
+		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
+				.andExpect(status().isOk())
+				.andExpect(view().name("sistema/seguro/patrimonio/index"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "/cadastro_usuario/assets/teste-estatico.js", "/patrimonio/assets/teste-estatico.js" })
+	void assetEstaticoExistenteNaoEhSubstituidoPelaSpa(String caminho) throws Exception {
+		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
 				.andExpect(status().isOk())
 				.andExpect(content().string(containsString("// estatico")));
 	}
 
+	@Test
+	void assetPublicoDeCadastroUsuarioNaoExigeLogin() throws Exception {
+		mockMvc.perform(get("/cadastro_usuario/assets/teste-estatico.js"))
+				.andExpect(status().isOk());
+	}
+
 	@ParameterizedTest
-	@ValueSource(strings = { "/app/assets/inexistente-abc.js", "/app/inexistente-abc.svg" })
+	@ValueSource(strings = { "/cadastro_usuario/assets/inexistente-abc.js", "/cadastro_usuario/inexistente-abc.svg",
+			"/patrimonio/assets/inexistente-abc.js", "/patrimonio/inexistente-abc.svg" })
 	void estaticoInexistenteComExtensaoRetorna404(String caminho) throws Exception {
 		mockMvc.perform(get(caminho).with(user("ana@exemplo.com")))
 				.andExpect(status().isNotFound());
 	}
 
-	@Test
-	void anonimoEmRotaDoClienteRedirecionaParaLogin() throws Exception {
-		mockMvc.perform(get("/app/jogo/mapa"))
+	@ParameterizedTest
+	@ValueSource(strings = { "/patrimonio/index", "/patrimonio/jogo/mapa", "/patrimonio" })
+	void anonimoEmPatrimonioRedirecionaParaLogin(String caminho) throws Exception {
+		mockMvc.perform(get(caminho))
 				.andExpect(status().isFound())
 				.andExpect(redirectedUrlPattern("/**/login"));
 	}

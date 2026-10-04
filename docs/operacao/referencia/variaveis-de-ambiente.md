@@ -8,8 +8,10 @@ fontes:
   - docker-compose.yml
   - .env.example
   - Makefile
-  - frontend/vite.config.ts
-  - frontend/src/main.ts
+  - frontend/seguro/patrimonio/vite.config.ts
+  - frontend/public/cadastro_usuario/vite.config.ts
+  - frontend/seguro/patrimonio/src/main.ts
+  - frontend/public/cadastro_usuario/src/main.ts
 ---
 
 # Variáveis de ambiente
@@ -61,9 +63,11 @@ Estas variáveis controlam quais serviços Docker Compose são ativados:
 
 | Variável | Padrão | Descrição | Onde é lido |
 |---|---|---|---|
-| `VITE_PRIMEUI_LICENSE` | (vazio) | Chave de licença do PrimeUI. Vazio = aviso no console. | `frontend/src/main.ts`, `docker-compose.yml` |
-| `VITE_USE_POLLING` | `false` | Se `true`, usa polling para hot-reload em ambientes como WSL/DrvFs. O `docker-compose.yml` fixa o valor em `"true"` para o container `frontend`. | `frontend/vite.config.ts`, `docker-compose.yml` |
-| `VITE_BACKEND_URL` | `http://localhost:8080` | URL base do backend para proxy de requisições (`/api`, `/login`, etc.) no dev server. | `frontend/vite.config.ts` |
+| `FRONT_APP` | `seguro/patrimonio` | Caminho do app dentro de `frontend/` usado pelos serviços `frontend` (dev server) e `frontend-build` (build de produção). Ex.: `seguro/patrimonio`, `public/cadastro_usuario`. | `docker-compose.yml`, `scripts/build_front.py`, `Makefile` |
+| `FRONT_APP_NOME` | `patrimonio` | Nome do app usado pelo `vite.config.ts` para definir `base: /<nome>/` no build de produção. Deve ser único entre os apps de `frontend/public/` e `frontend/seguro/`. Ex.: `patrimonio`, `cadastro_usuario`. | `docker-compose.yml`, `scripts/build_front.py`, `frontend/*/vite.config.ts` |
+| `VITE_PRIMEUI_LICENSE` | (vazio) | Chave de licença do PrimeUI. Vazio = aviso no console. | `frontend/seguro/patrimonio/src/main.ts`, `docker-compose.yml` |
+| `VITE_USE_POLLING` | `false` | Se `true`, usa polling para hot-reload em ambientes como WSL/DrvFs. O `docker-compose.yml` fixa o valor em `"true"` para o container `frontend`. | `frontend/seguro/patrimonio/vite.config.ts`, `docker-compose.yml` |
+| `VITE_BACKEND_URL` | `http://localhost:8080` | URL base do backend para proxy de requisições (`/api`, `/login`, etc.) no dev server. | `frontend/seguro/patrimonio/vite.config.ts` |
 | `BACKEND_URL` | `http://host.docker.internal` | URL do backend passada ao serviço `frontend` em Docker. **Problema conhecido:** o `docker-compose.yml` passa `BACKEND_URL` (sem prefixo `VITE_`), que Vite não lê; o proxy do container aponta para `localhost:8080` do próprio container. Nenhum código da aplicação lê `BACKEND_URL`. | `docker-compose.yml` |
 
 ## Variáveis sem uso (a confirmar)

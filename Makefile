@@ -1,5 +1,7 @@
 # Uso: make <alvo> [PROFILE=local] [PROFILE_DB=local] [PROFILE_APP=local] [PROFILE_FRONTEND=local]
 # Exemplo: make up PROFILE_APP=local
+# Frontend de dev: make up FRONT_APP=public/cadastro_usuario (caminho do app dentro de frontend/)
+# Build: make build_front [APPS="cadastro_usuario patrimonio"]
 
 -include .env
 
@@ -35,8 +37,12 @@ logs_front: ## Acompanha os logs do frontend (Ctrl+C para sair)
 	$(COMPOSE) logs -f frontend
 
 .PHONY: build_front
-build_front: ## Gera o build do frontend e copia para o backend
-	python3 ./scripts/build_front.py
+build_front: ## Gera o build de todos os frontends e copia para o backend (APPS=... para filtrar)
+	python3 ./scripts/build_front.py $(APPS)
+
+.PHONY: limpar_front
+limpar_front: ## Remove os artefatos do build do frontend do backend
+	python3 ./scripts/limpar_front.py
 
 
 e:

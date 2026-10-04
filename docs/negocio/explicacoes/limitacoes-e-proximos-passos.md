@@ -4,7 +4,7 @@ publico: negocio
 tipo: explicacao
 atualizado_em: 2026-10-04
 fontes:
-  - frontend/src/views/HomeView.vue
+  - frontend/seguro/patrimonio/src/views/HomeView.vue
 ---
 
 # Limitações e próximos passos

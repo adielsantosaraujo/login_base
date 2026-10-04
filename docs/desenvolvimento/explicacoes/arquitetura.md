@@ -5,7 +5,10 @@ tipo: explicacao
 atualizado_em: 2026-10-04
 fontes:
   - docker-compose.yml
-  - frontend/vite.config.ts
+  - frontend/seguro/patrimonio/vite.config.ts
+  - frontend/public/cadastro_usuario/vite.config.ts
+  - scripts/build_front.py
+  - scripts/apps_front.py
   - src/main/java/com/example/loginbase/web/PaginaController.java
   - src/main/java/com/example/loginbase/acesso/Usuario.java
   - src/main/java/com/example/loginbase/auditoria/EntidadeAuditavel.java
@@ -14,14 +17,14 @@ fontes:
 
 # Arquitetura
 
-Visão geral da arquitetura do projeto em dois cenários: desenvolvimento e integrado em produção.
+Visão geral da arquitetura do projeto em dois cenários: desenvolvimento e integrado em produção, com suporte a múltiplos frontends.
 
 ## Contexto
 
 O login_base é uma aplicação de autenticação reutilizável que combina:
 
 - Um **backend Java/Spring Boot** que fornece formulário de login, controle de sessões, auditoria e documentação de API.
-- Um **frontend Vue 3** servido pelo mesmo backend ou em desenvolvimento separado via Vite.
+- **Múltiplos frontends Vue 3** (público, seguro, etc.), servidos pelo mesmo backend em produção ou em desenvolvimento separado via Vite.
 - Um **banco PostgreSQL** que persiste usuários, perfis, permissões e sessões.
 
 A arquitetura é dividida em domínios (pacotes): `acesso`, `auditoria`, `seguranca` e `web`.
@@ -32,9 +35,9 @@ O diagrama abaixo mostra os dois cenários principais de implantação:
 
 ```mermaid
 flowchart TD
-    subgraph Dev ["Desenvolvimento"]
+    subgraph Dev ["Desenvolvimento (um app por vez)"]
         Browser1["Navegador<br/>(localhost:5173)"]
-        Vite["Vite Dev Server<br/>:5173"]
+        Vite["Vite Dev Server<br/>:5173<br/>(cadastro_usuario,<br/>patrimonio, ...)"]
         ViteProxy["Proxy para<br/>/api, /login<br/>http://localhost:8080"]
         Backend1["Spring Boot<br/>:8080"]
         DB1["PostgreSQL<br/>:5432"]
@@ -46,17 +49,21 @@ flowchart TD
         Backend1 -->|SQL| DB1
     end
     
-    subgraph Prod ["Integrado / Produção"]
+    subgraph Prod ["Integrado / Produção (todos os apps)"]
         Browser2["Navegador<br/>(localhost:8080)"]
-        Backend2["Spring Boot<br/>:8080<br/>serve SPA"]
-        Template["templates/sistema<br/>seguro/app/index.html"]
-        Static["static/app/<br/>assets"]
+        Backend2["Spring Boot<br/>:8080<br/>serve múltiplos apps"]
+        Public["templates/sistema/public/<br/>cadastro_usuario/index.html<br/>(público)"]
+        Seguro["templates/sistema/seguro/<br/>patrimonio/index.html<br/>(autenticado)"]
+        StaticPub["static/cadastro_usuario/<br/>assets"]
+        StaticSeg["static/patrimonio/<br/>assets"]
         DB2["PostgreSQL<br/>:5432"]
         
         Browser2 -->|GET /login| Backend2
-        Browser2 -->|GET /app/index| Backend2
-        Backend2 -->|Renderiza| Template
-        Backend2 -->|Serve| Static
+        Browser2 -->|GET /<nome>/index| Backend2
+        Backend2 -->|Renderiza| Public
+        Backend2 -->|Renderiza| Seguro
+        Backend2 -->|Serve| StaticPub
+        Backend2 -->|Serve| StaticSeg
         Backend2 -->|SQL| DB2
         Browser2 -->|POST /login,<br/>/logout| Backend2
     end
@@ -74,21 +81,24 @@ flowchart TD
 
 ### Integrado / Produção
 
-1. **Build do frontend** (`make build_front` ou `python3 scripts/build_front.py`):
-   - Gera `frontend/dist/` com todos os assets otimizados.
-   - Copia assets (CSS, JS, imagens) para `src/main/resources/static/app/`.
-   - Copia `index.html` para `src/main/resources/templates/sistema/seguro/app/index.html`.
+1. **Build dos frontends** (`make build_front` ou `python3 scripts/build_front.py`):
+   - Descobre apps em `frontend/public/*/` e `frontend/seguro/*/` (via `scripts/apps_front.py`).
+   - Para cada app, gera `frontend/<app>/dist/` com assets otimizados.
+   - Copia assets (CSS, JS, imagens) para `src/main/resources/static/<nome>/`.
+   - Copia `index.html` para `src/main/resources/templates/sistema/<area>/<nome>/index.html`.
+   - Exemplo: `frontend/seguro/patrimonio/dist/` → `static/patrimonio/` e `templates/sistema/seguro/patrimonio/index.html`.
 
 2. **Build do backend** (`./mvnw package`):
-   - Empacota a aplicação Java com o frontend integrado no JAR.
+   - Empacota a aplicação Java com todos os frontends integrados no JAR.
 
 3. **Execução**:
    - Uma única porta (8080 por padrão) serve tudo.
    - Navegador acessa `http://localhost:8080/login` (formulário HTML).
-   - Após login, é redirecionado para `/app/index` (SPA servida pelo Spring).
-   - A SPA carrega assets de `/app/assets/`, servidos como `static/app/`.
+   - Apps públicos: `http://localhost:8080/cadastro_usuario/index` (sem autenticação obrigatória).
+   - Apps seguros: `http://localhost:8080/patrimonio/index` (exige autenticação; pós-login redireciona aqui).
+   - Cada app carrega assets de seu próprio caminho (ex.: `/patrimonio/assets/`, servidos como `static/patrimonio/`).
 
-**Vantagem:** uma única aplicação, sem proxy, deploy mais simples.
+**Vantagem:** uma única aplicação com múltiplos apps, sem proxy, deploy mais simples. Apps isolados por escopo (público vs. seguro).
 
 ## Pacotes e responsabilidades
 
@@ -116,13 +126,13 @@ com.example.loginbase
 │   └── SessaoEncerradaListener        — Listener de eventos
 │
 └── web/
-    ├── PaginaController               — Rotas /login, /, /app, /app/index
+    ├── PaginaController               — Rotas /login, /, /<nome>/, /<nome>/index (público e seguro)
     └── OpenApiConfig                  — Metadados OpenAPI/Swagger
 ```
 
 ## Fluxo de uma sessão
 
-1. **Acesso a `/app/index`** (anônimo) → redirecionado para `/login`.
+1. **Acesso a `/<nome>/index`** (anônimo a app seguro) → redirecionado para `/login`.
 2. **Preenchimento do formulário** (e-mail/celular e senha) → POST `/login`.
 3. **Validação** no `UsuarioDetailsService`:
    - `IdentificadorLogin` classifica o input (e-mail ou celular).
@@ -131,9 +141,9 @@ com.example.loginbase
    - Valida senha com `PasswordEncoder` (bcrypt).
 4. **Sucesso** → `RegistroSessaoSuccessHandler`:
    - Cria registro em `sessoes` com hash SHA-256 do ID.
-   - Redireciona para `/app/index` ou página anterior.
+   - Redireciona para `/patrimonio/index` (app seguro, página inicial) ou página anterior.
 5. **Navegação na SPA**:
-   - Vue router mapeia rotas de `/app/**`.
+   - Vue router mapeia rotas de `/<nome>/**` (ex.: `/patrimonio/**`, `/cadastro_usuario/**`).
    - Quaisquer chamadas à API passam pelo proxy (dev) ou direto (prod).
 6. **Logout**: POST `/logout` → invalida sessão, redireciona para `/login?logout`.
 7. **Encerramento automático**:
@@ -154,9 +164,10 @@ Decisões-chave registradas em ADRs:
 - **[0008 — Senhas com DelegatingPasswordEncoder](./decisoes/0008-senhas-com-delegating-password-encoder.md):** Bcrypt com suporte a migração futura.
 - **[0009 — Registro de sessões em tabela](./decisoes/0009-registro-de-sessoes-em-tabela-propria.md):** Tabela `sessoes` com hash do token.
 - **[0010 — Admin inicial por variáveis](./decisoes/0010-administrador-inicial-por-variaveis-de-ambiente.md):** `AdminInicialRunner` lê env vars.
-- **[0011 — SPA servida pelo Spring](./decisoes/0011-spa-servida-pelo-spring-em-app.md):** Build integrado, não Nginx separado.
+- **[0011 — SPA servida pelo Spring](./decisoes/0011-spa-servida-pelo-spring-em-app.md):** Build integrado, não Nginx separado (substituída pela 0014).
 - **[0012 — Documentação da API com springdoc](./decisoes/0012-documentacao-da-api-com-springdoc.md):** OpenAPI 3, Swagger UI integrado em `/swagger-ui.html`.
 - **[0013 — Documentação em docs por público e Diátaxis](./decisoes/0013-documentacao-em-docs-por-publico-e-diataxis.md):** Estrutura por público e tipo de documento.
+- **[0014 — Múltiplos frontends em public/seguro](./decisoes/0014-multiplos-frontends-em-public-seguro.md):** Organização de apps por área (público/seguro), descoberta automática, builds independentes.
 
 ## Limitações e trade-offs
 

@@ -5,7 +5,7 @@ tipo: tutorial
 atualizado_em: 2026-10-04
 fontes:
   - src/main/resources/templates/sistema/public/login.html
-  - frontend/src/views/HomeView.vue
+  - frontend/seguro/patrimonio/src/views/HomeView.vue
 ---
 
 # Fazer seu primeiro acesso

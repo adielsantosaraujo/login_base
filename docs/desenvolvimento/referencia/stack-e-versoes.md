@@ -6,8 +6,10 @@ atualizado_em: 2026-10-04
 fontes:
   - pom.xml
   - Dockerfile
-  - frontend/Dockerfile
-  - frontend/package.json
+  - frontend/seguro/patrimonio/Dockerfile
+  - frontend/public/cadastro_usuario/Dockerfile
+  - frontend/seguro/patrimonio/package.json
+  - frontend/public/cadastro_usuario/package.json
   - docker-compose.yml
 ---
 
@@ -43,19 +45,19 @@ Lista dos componentes do projeto e suas versões, com o arquivo ou localização
 
 | Componente | Versão | Onde está definida |
 |---|---|---|
-| Node.js | 26 | `frontend/Dockerfile` (image `node:26-trixie-slim`) |
-| npm | 12 | `frontend/Dockerfile` (instalado via `npm install -g npm@12`) |
-| Vue | 3.5.42 | `frontend/package.json` (dependencies) |
-| vue-router | 5.3.1 | `frontend/package.json` (dependencies) |
-| PrimeVue | 5.0.1 | `frontend/package.json` (dependencies) |
-| @primeuix/themes | 3.0.1 | `frontend/package.json` (dependencies) |
-| primeicons | 8.0.2 | `frontend/package.json` (dependencies) |
-| Vite | 8.3.0 | `frontend/package.json` (devDependencies) |
-| TypeScript | 6.0.2 | `frontend/package.json` (devDependencies) |
-| Vitest | 5.0.3 | `frontend/package.json` (devDependencies) |
-| @vue/test-utils | 2.5.1 | `frontend/package.json` (devDependencies) |
+| Node.js | 26 | `frontend/seguro/patrimonio/Dockerfile` (image `node:26-trixie-slim`); mesmo em `frontend/public/cadastro_usuario/Dockerfile` |
+| npm | 12 | `frontend/seguro/patrimonio/Dockerfile` (instalado via `npm install -g npm@12`); mesmo em `frontend/public/cadastro_usuario/Dockerfile` |
+| Vue | 3.5.42 | `frontend/seguro/patrimonio/package.json` (dependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| vue-router | 5.3.1 | `frontend/seguro/patrimonio/package.json` (dependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| PrimeVue | 5.0.1 | `frontend/seguro/patrimonio/package.json` (dependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| @primeuix/themes | 3.0.1 | `frontend/seguro/patrimonio/package.json` (dependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| primeicons | 8.0.2 | `frontend/seguro/patrimonio/package.json` (dependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| Vite | 8.3.0 | `frontend/seguro/patrimonio/package.json` (devDependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| TypeScript | 6.0.2 | `frontend/seguro/patrimonio/package.json` (devDependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| Vitest | 5.0.3 | `frontend/seguro/patrimonio/package.json` (devDependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
+| @vue/test-utils | 2.5.1 | `frontend/seguro/patrimonio/package.json` (devDependencies); mesmo em `frontend/public/cadastro_usuario/package.json` |
 
-**Nota:** As versões do `frontend/package.json` são ranges (ex.: `^3.5.42` ou `~5.0.3`), não versões exatas. O símbolo `^` permite minor e patch; `~` permite só patch.
+**Nota:** As versões dos `frontend/*/package.json` são ranges (ex.: `^3.5.42` ou `~5.0.3`), não versões exatas. O símbolo `^` permite minor e patch; `~` permite só patch. Versões iguais em ambos os apps (público e seguro).
 
 ## Docker
 

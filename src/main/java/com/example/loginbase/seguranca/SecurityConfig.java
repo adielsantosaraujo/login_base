@@ -43,7 +43,8 @@ public class SecurityConfig {
                 api,
                 apiDocs,
                 PathPatternRequestMatcher.withDefaults().matcher("/.well-known/**"),
-                PathPatternRequestMatcher.withDefaults().matcher("/app/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/patrimonio/**"),
+                PathPatternRequestMatcher.withDefaults().matcher("/cadastro_usuario/**"),
                 PathPatternRequestMatcher.withDefaults().matcher("/favicon.ico"));
         HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
         requestCache.setRequestMatcher(request -> !naoSalvar.matches(request));
@@ -57,7 +58,7 @@ public class SecurityConfig {
                                 AnyRequestMatcher.INSTANCE))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error",
-                                "/.well-known/**")
+                                "/.well-known/**", "/cadastro_usuario/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form

@@ -6,6 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import com.example.loginbase.web.PaginaController;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,7 +28,7 @@ public class RegistroSessaoSuccessHandler extends SavedRequestAwareAuthenticatio
 
 	public RegistroSessaoSuccessHandler(SessaoService sessaoService) {
 		this.sessaoService = sessaoService;
-		setDefaultTargetUrl("/app/index");
+		setDefaultTargetUrl(PaginaController.PAGINA_INICIAL);
 	}
 
 	@Override

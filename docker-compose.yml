@@ -28,8 +28,10 @@ services:
         ports:
             - "80:80"
     
+    # FRONT_APP: caminho do app dentro de frontend/ (ex.: seguro/patrimonio, public/cadastro_usuario).
+    # FRONT_APP_NOME: nome do app, usado pelo vite.config.ts para definir base: /<nome>/ no build.
     frontend:
-        build: ./frontend
+        build: ./frontend/${FRONT_APP:-seguro/patrimonio}
         profiles: ["${PROFILE_FRONTEND:-local}"]
         environment:
             VITE_PRIMEUI_LICENSE: ${VITE_PRIMEUI_LICENSE:-}
@@ -41,16 +43,18 @@ services:
         ports:
             - "5173:5173"
         volumes:
-            - ./frontend:/app
+            - ./frontend/${FRONT_APP:-seguro/patrimonio}:/app
             - frontend-node-modules:/app/node_modules
     
     frontend-build:
-        build: ./frontend
+        build: ./frontend/${FRONT_APP:-seguro/patrimonio}
         profiles: ["build"]
+        environment:
+            FRONT_APP_NOME: ${FRONT_APP_NOME:-patrimonio}
         working_dir: /app
         command: npm run build
         volumes:
-            - ./frontend:/app
+            - ./frontend/${FRONT_APP:-seguro/patrimonio}:/app
             - /app/node_modules
 
 volumes:

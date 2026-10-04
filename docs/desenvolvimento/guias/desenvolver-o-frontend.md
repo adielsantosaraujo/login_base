@@ -4,12 +4,12 @@ publico: desenvolvimento
 tipo: guia
 atualizado_em: 2026-10-04
 fontes:
-  - frontend/vite.config.ts
-  - frontend/src/main.ts
-  - frontend/src/router/index.ts
-  - frontend/Dockerfile
+  - frontend/seguro/patrimonio/vite.config.ts
+  - frontend/seguro/patrimonio/src/main.ts
+  - frontend/seguro/patrimonio/src/router/index.ts
+  - frontend/seguro/patrimonio/Dockerfile
   - docker-compose.yml
-  - frontend/package.json
+  - frontend/seguro/patrimonio/package.json
   - README.md
 ---
 
@@ -74,9 +74,9 @@ Use este guia quando quiser rodar o dev server Vite em `http://localhost:5173` c
 
    Exemplos de arquivos para editar:
 
-   - `frontend/src/views/HomeView.vue` — view principal da SPA.
-   - `frontend/src/router/index.ts` — definição das rotas.
-   - `frontend/src/main.ts` — setup global (PrimeVue, etc).
+   - `frontend/seguro/patrimonio/src/views/HomeView.vue` — view principal da SPA.
+   - `frontend/seguro/patrimonio/src/router/index.ts` — definição das rotas.
+   - `frontend/seguro/patrimonio/src/main.ts` — setup global (PrimeVue, etc).
 
 4. **Verifique a conexão com o backend.**
 
@@ -125,7 +125,7 @@ Você deve receber uma resposta sem erro de CORS.
 | `VITE dev server connection timed out` ou conecta mas não vê mudanças | Polling desabilitado em DrvFs (ou arquivo não é detectado em watch) | Use `docker compose --profile local up -d frontend` para recriar o container e reativar o polling. |
 | Requisições para `/api` dão 404 ou CORS error | Backend não está rodando ou proxy está desconfigurado | Confira se `http://localhost:8080/api/seu-endpoint` funciona no browser. Reinicie o frontend. |
 | `aviso de licença PrimeUI` no console | Esperado quando `VITE_PRIMEUI_LICENSE` está vazio | Ignorar, ou definir uma chave de licença no `.env`. |
-| Frontend não carrega após login | Host mismatch (proxy com changeOrigin incorreto) | Verifique em `frontend/vite.config.ts` que `changeOrigin: false` está definido. |
+| Frontend não carrega após login | Host mismatch (proxy com changeOrigin incorreto) | Verifique em `frontend/seguro/patrimonio/vite.config.ts` que `changeOrigin: false` está definido. |
 | `node_modules` defasado, falta de dependências | Dependências não foram instaladas ou estão desatualizadas | Rode `docker compose --profile local run --rm --build frontend npm install` e reinicie. |
 
 ## Parar o dev server

@@ -7,8 +7,11 @@ fontes:
   - src/test/java/com/example/loginbase/web/AutenticacaoWebMvcTest.java
   - src/test/java/com/example/loginbase/web/OpenApiIntegracaoTest.java
   - pom.xml
-  - frontend/package.json
-  - frontend/vite.config.ts
+  - frontend/public/cadastro_usuario/package.json
+  - frontend/seguro/patrimonio/package.json
+  - frontend/public/cadastro_usuario/vite.config.ts
+  - frontend/seguro/patrimonio/vite.config.ts
+  - scripts/apps_front.py
   - docker-compose.yml
 ---
 
@@ -141,9 +144,13 @@ A suite cobre:
 
 ## Stub para testes
 
-O arquivo `src/test/resources/templates/sistema/seguro/app/index.html` é um stub HTML mínimo usado pelos testes para servir a SPA. 
+Os stubs HTML mínimos em `src/test/resources/templates/sistema/{public,seguro}/<nome>/index.html` são usados pelos testes para servir as SPAs sem rodar o build completo. 
 
-> **Problema conhecido:** este stub é ignorado pelo git (`.gitignore`: `/src/test/resources/templates/sistema/seguro/app/*`) e não é versionado. Num clone limpo, sem executar `make build_front`, os testes `usuarioAutenticadoAcessaPaginaInicial` e `rotasDoClienteSobAppServemASpa` tendem a falhar. Execute `make build_front` antes dos testes para gerar os templates necessários.
+Exemplos:
+- `src/test/resources/templates/sistema/public/cadastro_usuario/index.html` — stub da SPA pública.
+- `src/test/resources/templates/sistema/seguro/patrimonio/index.html` — stub da SPA segura.
+
+> **Problema conhecido:** estes stubs são ignorados pelo git (`.gitignore`: `/src/test/resources/templates/sistema/{public,seguro}/*`) e não são versionados. Num clone limpo, sem executar `make build_front`, os testes tendem a falhar. Execute `make build_front` antes dos testes para gerar os templates necessários.
 
 ## Como verificar
 

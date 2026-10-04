@@ -6,7 +6,7 @@ atualizado_em: 2026-10-04
 fontes:
   - docker-compose.yml
   - Dockerfile
-  - frontend/Dockerfile
+  - .env.example
 ---
 
 # Serviços Docker Compose
@@ -19,16 +19,16 @@ Lista dos serviços gerenciados pelo `docker-compose.yml`, com imagens, profiles
 |---|---|---|---|---|---|
 | `db` | `postgres:17-trixie` | `PROFILE_DB` (padrão: `local`) | `5432:5432` | `db-data:/var/lib/postgresql/data` | Banco PostgreSQL. Sempre deve estar ativo para desenvolvimento/testes. Variáveis: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`. |
 | `app` | Build: `.` (Dockerfile) | `PROFILE_APP` (padrão: `desativado`) | `80:80` | nenhum | Aplicação Spring Boot compilada. Depende de `db`. Recebe variáveis: `DB_*`, `ADMIN_*`, `JOGO_*`. **Problema conhecido:** porta mapeada é 80, mas app escuta em 8080 (não repassado). |
-| `frontend` | Build: `./frontend` | `PROFILE_FRONTEND` (padrão: `local`) | `5173:5173` | `./frontend:/app`, `frontend-node-modules:/app/node_modules` | Dev server Vite/Vue. Recebe `VITE_*` e `BACKEND_URL`. Hot reload habilitado. |
-| `frontend-build` | Build: `./frontend` | `build` (profile especial) | nenhuma | `./frontend:/app`, `/app/node_modules` (anônimo) | Container auxiliar para `npm run build` (build de produção). Usado por `scripts/build_front.py`. |
+| `frontend` | Build: `./frontend/${FRONT_APP:-seguro/patrimonio}` | `PROFILE_FRONTEND` (padrão: `local`) | `5173:5173` | `./frontend/${FRONT_APP}:/app`, `frontend-node-modules:/app/node_modules` | Dev server Vite/Vue de um app. `FRONT_APP` seleciona qual app (ex.: `seguro/patrimonio`). Recebe `VITE_*`, `BACKEND_URL` e `JOGO_*`. Hot reload habilitado. Volume `frontend-node-modules` é compartilhado entre apps; ao trocar de app pode ser preciso `make down_v`. |
+| `frontend-build` | Build: `./frontend/${FRONT_APP:-seguro/patrimonio}` | `build` (profile especial) | nenhuma | `./frontend/${FRONT_APP}:/app`, `/app/node_modules` (anônimo) | Container auxiliar para `npm run build` (build de produção). Recebe `FRONT_APP_NOME` para o vite. Usado por `scripts/build_front.py` uma vez por app. |
 
 ## Volumes
 
 | Volume | Tipo | Conteúdo | Ciclo de vida |
 |---|---|---|---|
 | `db-data` | Nomeado | Dados do PostgreSQL (`/var/lib/postgresql/data`) | Persiste entre restarts; removível com `make down_v` ou `docker volume rm`. |
-| `frontend-node-modules` | Nomeado | Dependências Node.js instaladas em `/app/node_modules` | Persiste entre restarts; pode ser removido se defasado (`docker volume rm login_base_frontend-node-modules`). |
-| `./frontend:/app` (bind) | Bind mount | Código-fonte do frontend | Mapeado ao diretório do host. Permite edição em tempo real. |
+| `frontend-node-modules` | Nomeado | Dependências Node.js instaladas em `/app/node_modules` | Persiste entre restarts; compartilhado entre todos os apps (pode ser removido se defasado: `docker volume rm login_base_frontend-node-modules`). **Atenção:** ao trocar de `FRONT_APP`, pode ser preciso `make down_v` para sincronizar. |
+| `./frontend/${FRONT_APP}:/app` (bind) | Bind mount | Código-fonte do app selecionado | Mapeado ao diretório do host. Permite edição em tempo real. |
 | `/app/node_modules` (anônimo em `frontend-build`) | Anônimo | Dependências temporárias durante o build | Descartado após o build. |
 
 ## Diagrama de arquitetura
@@ -43,7 +43,7 @@ flowchart LR
     Host -->|"http://localhost/\nhttp://localhost:80"| AppContainer["App Container\n(Spring 8080)"]
     Host -->|"psql\nPort 5432"| DB["PostgreSQL\n(db-data volume)"]
     
-    FrontendDev -->|"Proxy:\n/api, /login,\n/logout, /css"| AppContainer
+    FrontendDev -->|"Proxy:\n/api, /login,\n/logout, /css,\n/patrimonio"| AppContainer
     FrontendDev -->|"VITE_BACKEND_URL\nVITE_PRIMEUI_LICENSE\nVITE_USE_POLLING"| FrontendConfig["Environment"]
     
     AppContainer -->|"JDBC\nPort 5432"| DB
@@ -118,6 +118,12 @@ VITE_PRIMEUI_LICENSE=            # Vazio = aviso de licença no console
 VITE_USE_POLLING=true            # Habilita polling para WSL/DrvFs
 BACKEND_URL=http://host.docker.internal  # URL do backend (problema: lê VITE_BACKEND_URL)
 JOGO_VELOCIDADE=1                # Passado mas sem uso (a confirmar)
+```
+
+### `frontend-build` (Vite/Vue, build)
+
+```
+FRONT_APP_NOME=<nome>            # Nome do app (vite.config.ts usa para base: /<nome>/)
 ```
 
 ## Veja também
