@@ -29,7 +29,7 @@ describe('PainelMarcacao', () => {
       if (url === '/api/jogo/construcoes/7/marcacoes') return marcadas
       if (url === '/api/jogo/regioes/3')
         return {
-          regiao: { id: 3, indice: 3, tipo: 'COLETA', possuida: true },
+          regiao: { id: 3, indice: 3, tipo: 'MONTANHA', possuida: true },
           ladrilhos: [
             { x: 2, y: 0, jazida: 'ROCHA', construcao: null },
             { x: 3, y: 0, jazida: 'ROCHA', construcao: null },

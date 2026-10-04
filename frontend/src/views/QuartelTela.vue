@@ -128,6 +128,7 @@ async function confirmarDesfazer() {
 <style scoped>
 .cabecalho { list-style: none; padding: 0; display: flex; gap: 1.5rem; flex-wrap: wrap; }
 .acoes, .confirmacao { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; align-items: center; }
-.erro { color: var(--p-red-500, #dc2626); }
+.erro { color: var(--vl-error); }
 .dica { font-size: 0.9em; opacity: 0.8; }
+h2, h3 { font-family: var(--vl-font-display); }
 </style>

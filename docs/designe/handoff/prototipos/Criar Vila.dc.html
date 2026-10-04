@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:oklch(0.16 0.01 60);color:oklch(0.94 0.01 80);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:oklch(0.80 0.13 75)}a:hover{color:oklch(0.88 0.11 80)}
+button{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:14px 28px;border-bottom:1px solid oklch(0.28 0.012 60);background:oklch(0.19 0.012 60)">
+    <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em">Vilarejo</div>
+      <nav style="display:flex;gap:4px;flex-wrap:wrap">
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.94 0.01 80);background:oklch(0.25 0.012 60)">Mapa</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Estoque</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Famílias</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Mercado</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Inventário</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Batalhas</a>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:8px;padding:6px 14px;border-radius:999px;background:oklch(0.24 0.012 60)">
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Turno</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500">0</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;padding:6px 14px;border-radius:999px;background:oklch(0.24 0.012 60)">
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Próximo turno</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500;color:oklch(0.80 0.13 75)">{{ clock }}</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1180px;margin:0 auto;padding:36px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.80 0.13 75)">Início de jogo</div>
+      <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(32px,4.5vw,48px);letter-spacing:-0.02em;line-height:1.05">Criar minha vila</h1>
+      <p style="margin:0;font-size:16px;color:oklch(0.76 0.015 70);max-width:560px;text-wrap:pretty">Escolha 3 regiões vizinhas — ao menos 1 Urbana — para fundar sua vila. Os bônus das regiões escolhidas definem o ponto de partida da vila.</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+      <section style="flex:1 1 560px;min-width:0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:12px;color:oklch(0.72 0.015 70)">
+          <sc-for list="{{ legend }}" as="l" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:{{ l.c }}"></span>{{ l.n }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:10px;border-radius:16px;background:oklch(0.19 0.012 60);border:1px solid oklch(0.26 0.012 60)">
+          <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="16">
+            <button onClick="{{ t.onClick }}" onMouseEnter="{{ t.onEnter }}" style="position:relative;text-align:left;display:flex;flex-direction:column;gap:10px;padding:12px;min-height:150px;border-radius:12px;border:{{ t.border }};background:{{ t.bg }};opacity:{{ t.opacity }};cursor:{{ t.cursor }};transition:transform .15s, background .15s, border-color .15s, opacity .15s;box-sizing:border-box" style-hover="transform:translateY(-2px)">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:oklch(0.72 0.015 70)">{{ t.num }}</span>
+                <span style="font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;padding:3px 7px;border-radius:6px;color:oklch(0.18 0.01 60);background:{{ t.typeColor }}">{{ t.typeName }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:auto">
+                <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr) 22px;gap:6px;align-items:center;font-size:12px">
+                    <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+                      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:oklch(0.86 0.01 80)">{{ r.n }}</span>
+                      <span style="height:3px;border-radius:2px;background:oklch(0.30 0.012 60);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ r.pct }};background:{{ r.c }}"></span></span>
+                    </div>
+                    <span style="font-family:'IBM Plex Mono',monospace;text-align:right;color:oklch(0.80 0.01 80)">{{ r.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ t.selected }}" hint-placeholder-val="{{ false }}">
+                <span style="position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;background:oklch(0.80 0.13 75);color:oklch(0.18 0.01 60);box-shadow:0 0 0 3px oklch(0.19 0.012 60)">{{ t.order }}</span>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:oklch(0.68 0.015 70);text-align:center">{{ hint }}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px">
+          <button onClick="{{ reroll }}" style="display:flex;align-items:center;gap:8px;height:42px;padding:0 20px;border-radius:999px;border:1px solid oklch(0.36 0.012 60);background:oklch(0.22 0.012 60);font-size:14px;font-weight:500;cursor:pointer;transition:border-color .15s, background .15s" style-hover="border-color:oklch(0.80 0.13 75);background:oklch(0.25 0.012 60)"><span style="font-size:16px;color:oklch(0.80 0.13 75)">↻</span>Gerar novo mapa</button>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.60 0.015 70)">{{ roundLabel }}</span>
+        </div>
+      </section>
+
+      <aside style="flex:1 1 320px;max-width:400px;min-width:0;display:flex;flex-direction:column;gap:16px;position:sticky;top:20px">
+        <div style="padding:20px;border-radius:16px;background:oklch(0.20 0.012 60);border:1px solid oklch(0.27 0.012 60);display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700">Sua seleção</h2>
+            <button onClick="{{ clear }}" style="border:none;background:none;font-size:13px;color:oklch(0.72 0.015 70);cursor:pointer;padding:4px 6px" style-hover="color:oklch(0.94 0.01 80)">Limpar</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
+              <div style="height:64px;border-radius:10px;border:{{ s.border }};background:{{ s.bg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500">{{ s.label }}</span>
+                <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:{{ s.subColor }}">{{ s.sub }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ rules }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:{{ r.color }}">
+                <span style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:{{ r.dotBg }};color:oklch(0.18 0.01 60)">{{ r.icon }}</span>
+                <span style="flex:1">{{ r.label }}</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:oklch(0.68 0.015 70)">{{ r.detail }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="height:1px;background:oklch(0.28 0.012 60)"></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Bônus de região</span>
+              <span style="font-size:12px;color:oklch(0.62 0.015 70)">soma das regiões</span>
+            </div>
+            <sc-for list="{{ totals }}" as="r" hint-placeholder-count="13">
+              <div style="display:grid;grid-template-columns:120px minmax(0,1fr) 32px;gap:10px;align-items:center;font-size:13px;color:{{ r.color }}">
+                <span>{{ r.n }}</span>
+                <span style="height:6px;border-radius:3px;background:oklch(0.27 0.012 60);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ r.pct }};background:{{ r.c }};transition:width .25s"></span></span>
+                <span style="font-family:'IBM Plex Mono',monospace;text-align:right">{{ r.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ create }}" style="height:48px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:{{ ctaCursor }};background:{{ ctaBg }};color:{{ ctaColor }};transition:background .2s">{{ ctaLabel }}</button>
+        </div>
+        <div style="padding:16px 20px;border-radius:16px;border:1px dashed oklch(0.30 0.012 60);display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Em foco</span>
+            <span style="font-size:13px">{{ focusTitle }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 16px">
+            <sc-for list="{{ focusRows }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;justify-content:space-between;font-size:13px;color:{{ r.color }}"><span>{{ r.n }}</span><span style="font-family:'IBM Plex Mono',monospace">{{ r.v }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+<sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:14px 20px;border-radius:12px;background:oklch(0.80 0.13 75);color:oklch(0.18 0.01 60);font-weight:600;font-size:14px;box-shadow:0 10px 30px oklch(0 0 0 / 0.4)">Vila fundada nas regiões {{ doneText }}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;lockAdjacency&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const RES=[
+ {k:'floresta',n:'Floresta',c:'oklch(0.72 0.13 145)'},
+ {k:'barreiro',n:'Barreiro',c:'oklch(0.68 0.11 45)'},
+ {k:'plantacoes',n:'Plantações',c:'oklch(0.80 0.13 120)'},
+ {k:'criacoes',n:'Criações',c:'oklch(0.76 0.09 70)'},
+ {k:'rocha',n:'Rocha',c:'oklch(0.74 0.02 250)'},
+ {k:'ferro',n:'Ferro',c:'oklch(0.66 0.07 230)'},
+ {k:'carvao',n:'Carvão',c:'oklch(0.60 0.01 260)'},
+ {k:'salinas',n:'Salinas',c:'oklch(0.86 0.04 210)'},
+ {k:'enxofre',n:'Enxofre',c:'oklch(0.86 0.14 100)'},
+ {k:'militar',n:'Militar',c:'oklch(0.66 0.13 20)'},
+ {k:'industria',n:'Indústria',c:'oklch(0.72 0.11 50)'},
+ {k:'comercio',n:'Comércio',c:'oklch(0.80 0.13 75)'},
+ {k:'desenv',n:'Desenvolvimento',c:'oklch(0.76 0.11 290)'}];
+const TYPES={
+ floresta:{n:'Floresta',c:'oklch(0.72 0.13 145)',b:['floresta','barreiro','plantacoes']},
+ planicie:{n:'Planície',c:'oklch(0.80 0.13 120)',b:['plantacoes','criacoes','floresta']},
+ urbana:{n:'Urbana',c:'oklch(0.80 0.13 75)',b:['industria','comercio','desenv']},
+ litoral:{n:'Litoral',c:'oklch(0.80 0.08 215)',b:['salinas','enxofre','militar']},
+ montanha:{n:'Montanha',c:'oklch(0.74 0.02 250)',b:['rocha','ferro','carvao']}};
+const KEYS=Object.keys(TYPES);
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const TIERS=[[35,50],[16,34],[5,15]];
+const gen=()=>{let counts;
+ do{counts=KEYS.map(()=>rnd(2,4))}while(counts.reduce((a,b)=>a+b,0)!==16||counts.filter(c=>c===4).length>2);
+ const layout=shuffle(KEYS.flatMap((k,i)=>Array(counts[i]).fill(k)));
+ return layout.map((t,i)=>{const res={};shuffle(TYPES[t].b.slice()).forEach((k,j)=>{res[k]=rnd(...TIERS[j])});return{id:i,type:t,res}})};
+const adj=(a,b)=>Math.abs(Math.floor(a/4)-Math.floor(b/4))+Math.abs(a%4-b%4)===1;
+const connected=s=>{if(!s.length)return false;const seen=new Set([s[0]]),q=[s[0]];while(q.length){const c=q.pop();s.forEach(o=>{if(!seen.has(o)&&adj(c,o)){seen.add(o);q.push(o)}})}return seen.size===s.length};
+const AC='oklch(0.80 0.13 75)';
+const pad=n=>String(n).padStart(2,'0');
+class Component extends DCLogic{
+ state={sel:[],hover:null,secs:299,done:false,regions:gen(),round:1};
+ componentDidMount(){this.t=setInterval(()=>this.setState(s=>({secs:s.secs>0?s.secs-1:299})),1000)}
+ componentWillUnmount(){clearInterval(this.t)}
+ canPick(id){const{sel}=this.state;if(sel.length>=3)return false;if(!sel.length||this.props.lockAdjacency===false)return true;return sel.some(s=>adj(s,id))}
+ toggle(id){const{sel}=this.state;if(sel.includes(id))this.setState({sel:sel.filter(x=>x!==id),done:false});else if(this.canPick(id))this.setState({sel:[...sel,id],done:false})}
+ renderVals(){
+  const{sel,hover,secs,done,regions:REGIONS,round}=this.state;
+  const rowsOf=r=>RES.filter(x=>r.res[x.k]).map(x=>({n:x.n,c:x.c,v:r.res[x.k],pct:(r.res[x.k]/50*100)+'%'})).sort((a,b)=>b.v-a.v);
+  const tiles=REGIONS.map(r=>{const selected=sel.includes(r.id),pick=!selected&&this.canPick(r.id),T=TYPES[r.type];
+   return{num:pad(r.id+1),typeName:T.n,typeColor:T.c,rows:rowsOf(r),selected,order:sel.indexOf(r.id)+1,
+    border:selected?'2px solid '+AC:'1px solid oklch(0.30 0.012 60)',
+    bg:selected?'oklch(0.80 0.13 75 / 0.12)':'oklch(0.22 0.012 60)',
+    opacity:selected||pick?1:0.4,cursor:selected||pick?'pointer':'not-allowed',
+    onClick:()=>this.toggle(r.id),onEnter:()=>this.setState({hover:r.id})}});
+  const n=sel.length,conn=connected(sel),urb=sel.some(i=>REGIONS[i].type==='urbana'),valid=n===3&&conn&&urb;
+  const rule=(ok,label,d)=>({label,detail:d,icon:ok?'✓':'',dotBg:ok?AC:'oklch(0.32 0.012 60)',color:ok?'oklch(0.94 0.01 80)':'oklch(0.70 0.015 70)'});
+  const totals=RES.map(x=>{const v=sel.reduce((a,i)=>a+(REGIONS[i].res[x.k]||0),0);return{n:x.n,c:x.c,v,pct:Math.min(100,v/150*100)+'%',color:v?'oklch(0.88 0.01 80)':'oklch(0.55 0.012 70)'}});
+  const slots=[0,1,2].map(i=>{const id=sel[i];if(id==null)return{label:'—',sub:'Vazio',border:'1px dashed oklch(0.32 0.012 60)',bg:'transparent',subColor:'oklch(0.60 0.015 70)'};const T=TYPES[REGIONS[id].type];return{label:pad(id+1),sub:T.n,border:'1px solid '+AC,bg:'oklch(0.80 0.13 75 / 0.10)',subColor:T.c}});
+  const fid=hover??sel[n-1];const f=fid!=null?REGIONS[fid]:null;
+  const hint=n===0?'Clique em uma região para começar.':n<3?'Regiões destacadas são vizinhas da sua seleção.':valid?'Tudo certo — crie sua vila.':!urb?'Inclua ao menos uma região Urbana.':'As regiões precisam ser vizinhas.';
+  return{tiles,slots,totals,hint,
+   clock:pad(Math.floor(secs/60))+':'+pad(secs%60),
+   legend:Object.values(TYPES).map(t=>({n:t.n,c:t.c})),
+   rules:[rule(n===3,'3 regiões',n+'/3'),rule(n>0&&conn,'Vizinhas entre si',''),rule(urb,'Ao menos 1 Urbana','')],
+   focusTitle:f?'Região '+pad(f.id+1)+' · '+TYPES[f.type].n:'Passe o mouse numa região',
+   focusRows:f?rowsOf(f).map(r=>({n:r.n,v:r.v,color:'oklch(0.88 0.01 80)'})):[{n:'—',v:'',color:'oklch(0.55 0.012 70)'}],
+   ctaLabel:valid?'Criar vila':'Selecione 3 regiões válidas',
+   ctaBg:valid?AC:'oklch(0.27 0.012 60)',ctaColor:valid?'oklch(0.18 0.01 60)':'oklch(0.62 0.015 70)',ctaCursor:valid?'pointer':'not-allowed',
+   create:()=>{if(!valid)return;this.setState({done:true});setTimeout(()=>{window.location.href='Distribuir%20Populacao.dc.html'},900)},
+   clear:()=>this.setState({sel:[],done:false}),
+   reroll:()=>this.setState(s=>({regions:gen(),sel:[],hover:null,done:false,round:s.round+1})),
+   roundLabel:'Mapa nº '+round,
+   done,doneText:sel.map(i=>i+1).join(', ')};
+ }
+}
+</script>
+</body>
+</html>

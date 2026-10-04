@@ -28,7 +28,13 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
 import com.example.loginbase.jogo.turno.EtapaTurno;
@@ -47,6 +53,8 @@ class TreinamentoQuartelIntegrationTest {
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired TropaRepository tropaRepository;
 	@Autowired EventoTurnoRepository eventoRepository;
+	@Autowired RegiaoRepository regiaoRepository;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired EtapaQuartel etapa;
 	@Autowired List<EtapaTurno> etapas;
 
@@ -117,6 +125,19 @@ class TreinamentoQuartelIntegrationTest {
 	private long eventosTreino(int turno) {
 		return eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(vila.getId(), turno).stream()
 				.filter(e -> e.getTipo() == TipoEventoTurno.TREINO_PE_GUERREIRO).count();
+	}
+
+	@Test
+	void militar20DaSessentaCentesimosPorMembro() {
+		novaVila();
+		Regiao r = new Regiao(vila.getId(), 7);
+		r.setTipo(TipoRegiao.LITORAL);
+		r.setPossuida(true);
+		r = regiaoRepository.saveAndFlush(r);
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.MILITAR, 2, 20));
+		Cidadao a = membro(tropa(quartel(NivelConstrucao.N1, EstadoConstrucao.ATIVA, 1), EstadoTropa.AQUARTELADA), 1, "0");
+		etapa.executar(vila, 1);
+		assertThat(xp(a)).isEqualByComparingTo("0.60");
 	}
 
 	@Test

@@ -114,7 +114,8 @@ async function enviar(tipo: 'caracteristicas' | 'profissoes', pontos: Record<str
 <style scoped>
 .painel { padding: 1rem; }
 .dados { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.5rem 1rem; margin: 0 0 1rem; }
-.dados dt { font-size: 0.8rem; opacity: 0.7; }
-.dados dd { margin: 0; }
-.erro { color: var(--p-red-500, #c00); }
+.painel h1 { font-family: var(--vl-font-display); color: var(--vl-text); }
+.dados dt { font-size: 0.8rem; color: var(--vl-text-3); }
+.dados dd { margin: 0; color: var(--vl-text); font-family: var(--vl-font-mono); }
+.erro { color: var(--vl-error); }
 </style>

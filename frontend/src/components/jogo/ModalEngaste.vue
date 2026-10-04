@@ -67,6 +67,6 @@ function confirmar() {
 
 <style scoped>
 .acoes { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.falta { color: var(--p-red-500, #dc2626); }
+.falta { color: var(--vl-error); }
 label { display: flex; flex-direction: column; gap: 0.25rem; max-width: 24rem; }
 </style>

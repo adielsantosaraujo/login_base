@@ -23,9 +23,12 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 
@@ -39,6 +42,7 @@ class MapaControladorIntegrationTest {
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired com.example.loginbase.jogo.masmorra.MasmorraRepository masmorraRepository;
 
 	private Usuario novoUsuario() {
@@ -59,13 +63,20 @@ class MapaControladorIntegrationTest {
 			}
 			else if (i == 7) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.COLETA);
+				r.setTipo(TipoRegiao.MONTANHA);
 			}
 			else if (i == 10) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.RURAL);
+				r.setTipo(TipoRegiao.FLORESTA);
 			}
-			regiaoRepository.save(r);
+			// região 1 (não possuída): tipo e bônus também são exibidos
+			if (i == 1) {
+				r.setTipo(TipoRegiao.LITORAL);
+			}
+			r = regiaoRepository.save(r);
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.SALINAS, 1, 40));
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.ENXOFRE, 2, 20));
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.MILITAR, 3, 10));
 		}
 		regiaoRepository.flush();
 		return vila;
@@ -112,9 +123,18 @@ class MapaControladorIntegrationTest {
 				.andExpect(jsonPath("$.regioes[?(@.possuida == true)]", hasSize(3)))
 				.andExpect(jsonPath("$.regioes[5].indice").value(6))
 				.andExpect(jsonPath("$.regioes[5].tipo").value("URBANA"))
-				.andExpect(jsonPath("$.regioes[6].tipo").value("COLETA"))
-				.andExpect(jsonPath("$.regioes[9].tipo").value("RURAL"))
-				.andExpect(jsonPath("$.regioes[0].tipo").value(nullValue()))
+				.andExpect(jsonPath("$.regioes[6].tipo").value("MONTANHA"))
+				.andExpect(jsonPath("$.regioes[9].tipo").value("FLORESTA"))
+				.andExpect(jsonPath("$.regioes[0].tipo").value("LITORAL"))
+				.andExpect(jsonPath("$.regioes[0].possuida").value(false))
+				.andExpect(jsonPath("$.regioes[0].bonus", hasSize(3)))
+				.andExpect(jsonPath("$.regioes[0].bonus[0].bonus").value("SALINAS"))
+				.andExpect(jsonPath("$.regioes[0].bonus[0].valor").value(40))
+				.andExpect(jsonPath("$.regioes[1].tipo").value(nullValue()))
+				.andExpect(jsonPath("$.regioes[1].bonus", hasSize(3)))
+				.andExpect(jsonPath("$.vila.bonusRegiao.length()").value(13))
+				.andExpect(jsonPath("$.vila.bonusRegiao.SALINAS").value(120))
+				.andExpect(jsonPath("$.vila.bonusRegiao.FERRO").value(0))
 				.andExpect(jsonPath("$.regioes[5].masmorraAtiva").value(false));
 	}
 
@@ -159,7 +179,17 @@ class MapaControladorIntegrationTest {
 		mvc.perform(get("/api/jogo/regioes/7").with(user(u.getEmail()).roles("USER")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.ladrilhos", hasSize(100)))
+				.andExpect(jsonPath("$.regiao.tipo").value("MONTANHA"))
+				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
 				.andExpect(jsonPath("$.ladrilhos[?(@.jazida != null)]", hasSize(100)));
+	}
+
+	@Test
+	void regiaoUrbanaNaoGeraJazidas() throws Exception {
+		Usuario u = novoUsuario();
+		vilaCom(u);
+		mvc.perform(get("/api/jogo/regioes/6").with(user(u.getEmail()).roles("USER")))
+				.andExpect(jsonPath("$.ladrilhos[?(@.jazida != null)]", hasSize(0)));
 	}
 
 	@Test
@@ -169,6 +199,8 @@ class MapaControladorIntegrationTest {
 		mvc.perform(get("/api/jogo/regioes/1").with(user(u.getEmail()).roles("USER")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.regiao.possuida").value(false))
+				.andExpect(jsonPath("$.regiao.tipo").value("LITORAL"))
+				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
 				.andExpect(jsonPath("$.ladrilhos", hasSize(0)));
 	}
 

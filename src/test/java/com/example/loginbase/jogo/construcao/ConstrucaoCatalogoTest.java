@@ -8,7 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Jazida;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.recurso.Recurso;
@@ -99,10 +103,43 @@ class ConstrucaoCatalogoTest {
 
 	@Test
 	void regioes() {
-		assertEquals(TipoRegiao.URBANA, ConstrucaoCatalogo.regiaoPermitida(TipoConstrucao.QUARTEL));
-		assertFalse(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.QUARTEL, TipoRegiao.RURAL));
-		assertTrue(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.FAZENDA_PLANTIO, TipoRegiao.RURAL));
-		assertTrue(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.PEDREIRA, TipoRegiao.COLETA));
+		assertEquals(java.util.List.of(TipoRegiao.URBANA), ConstrucaoCatalogo.regioesPermitidas(TipoConstrucao.QUARTEL));
+		assertFalse(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.QUARTEL, TipoRegiao.PLANICIE));
+		assertTrue(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.FAZENDA_PLANTIO, TipoRegiao.PLANICIE));
+		assertTrue(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.PEDREIRA, TipoRegiao.MONTANHA));
+		assertFalse(ConstrucaoCatalogo.permiteRegiao(TipoConstrucao.MINA_FERRO, TipoRegiao.FLORESTA));
+	}
+
+	@ParameterizedTest
+	@MethodSource("tabelaD9")
+	void tabelaD9(TipoConstrucao tipo, BonusRegiao bonus, java.util.List<TipoRegiao> regioes) {
+		assertEquals(java.util.Optional.ofNullable(bonus), ConstrucaoCatalogo.bonusRegiao(tipo), tipo.name());
+		assertEquals(regioes, ConstrucaoCatalogo.regioesPermitidas(tipo), tipo.name());
+	}
+
+	static java.util.stream.Stream<Arguments> tabelaD9() {
+		java.util.List<TipoRegiao> urb = java.util.List.of(TipoRegiao.URBANA);
+		java.util.List<Arguments> l = new java.util.ArrayList<>();
+		for (TipoConstrucao t : new TipoConstrucao[] {TipoConstrucao.CASA, TipoConstrucao.ARMAZEM, TipoConstrucao.FERRARIA,
+				TipoConstrucao.ALFAIATARIA, TipoConstrucao.CARPINTARIA, TipoConstrucao.MERCADO, TipoConstrucao.ESTALAGEM,
+				TipoConstrucao.QUARTEL}) {
+			l.add(Arguments.of(t, null, urb));
+		}
+		for (TipoConstrucao t : new TipoConstrucao[] {TipoConstrucao.SERRARIA, TipoConstrucao.OLARIA, TipoConstrucao.FUNDICAO,
+				TipoConstrucao.TECELAGEM, TipoConstrucao.CURTUME, TipoConstrucao.COZINHA}) {
+			l.add(Arguments.of(t, BonusRegiao.INDUSTRIA, urb));
+		}
+		l.add(Arguments.of(TipoConstrucao.FAZENDA_PLANTIO, BonusRegiao.PLANTACOES, java.util.List.of(TipoRegiao.FLORESTA, TipoRegiao.PLANICIE)));
+		l.add(Arguments.of(TipoConstrucao.FAZENDA_CRIACAO, BonusRegiao.CRIACOES, java.util.List.of(TipoRegiao.PLANICIE)));
+		l.add(Arguments.of(TipoConstrucao.ACAMPAMENTO_LENHADORES, BonusRegiao.FLORESTA, java.util.List.of(TipoRegiao.FLORESTA, TipoRegiao.PLANICIE)));
+		l.add(Arguments.of(TipoConstrucao.CABANA_CACA, BonusRegiao.FLORESTA, java.util.List.of(TipoRegiao.FLORESTA, TipoRegiao.PLANICIE)));
+		l.add(Arguments.of(TipoConstrucao.BARREIRO, BonusRegiao.BARREIRO, java.util.List.of(TipoRegiao.FLORESTA)));
+		l.add(Arguments.of(TipoConstrucao.PEDREIRA, BonusRegiao.ROCHA, java.util.List.of(TipoRegiao.MONTANHA)));
+		l.add(Arguments.of(TipoConstrucao.MINA_FERRO, BonusRegiao.FERRO, java.util.List.of(TipoRegiao.MONTANHA)));
+		l.add(Arguments.of(TipoConstrucao.MINA_CARVAO, BonusRegiao.CARVAO, java.util.List.of(TipoRegiao.MONTANHA)));
+		l.add(Arguments.of(TipoConstrucao.SALINA, BonusRegiao.SALINAS, java.util.List.of(TipoRegiao.LITORAL)));
+		l.add(Arguments.of(TipoConstrucao.MINA_ENXOFRE, BonusRegiao.ENXOFRE, java.util.List.of(TipoRegiao.LITORAL)));
+		return l.stream();
 	}
 
 	@Test

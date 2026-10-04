@@ -11,7 +11,7 @@ Existem duas tipos de Fazenda: **Fazenda de plantio** (Agricultor) e **Fazenda d
 - **R1**: Fazenda de plantio requer profissão Agricultor; Fazenda de criação requer profissão Fazendeiro (seção 4.5).
 - **R2**: Fazenda de plantio produz 6 Grãos **ou** 4 Fibra por trabalhador/turno (eficiência 1,0, N1); cultura escolhida pelo jogador; troca leva 1 turno sem produção (seção 4.5) [proposta].
 - **R3**: Fazenda de criação produz (Gado) 3 Carne + 1 Couro **ou** (Ovelhas) 2 Lã + 1 Carne; rebanho escolhido (seção 4.5) [proposta].
-- **R4**: Ambas ocupam 1x1 (N1), 2x2 (N2), 3x3 (N3) ladrilhos em Região Rural (seção 1.4) [req].
+- **R4**: Fazenda de plantio ocupa 1x1 (N1), 2x2 (N2), 3x3 (N3) ladrilhos em região Floresta ou Planície; Fazenda de criação ocupa os mesmos tamanhos apenas em região Planície (seção 1.4) [req].
 - **R5**: Produção = `Σ (eficiência do trabalhador) × base × multiplicador do nível` (seção 4.3) [proposta].
 
 ## Números e tabelas

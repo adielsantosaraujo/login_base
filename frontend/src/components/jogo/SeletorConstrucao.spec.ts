@@ -5,8 +5,8 @@ import SeletorConstrucao from './SeletorConstrucao.vue'
 import type { CatalogoConstrucao } from '../../composables/useConstrucoes'
 
 const catalogo: CatalogoConstrucao[] = [
-  { tipo: 'CASA', nome: 'Casa', regiao: 'URBANA', custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
-  { tipo: 'PEDREIRA', nome: 'Pedreira', regiao: 'COLETA', custoN1: { MADEIRA: 5 }, tamanho: 2, poN1: 5, profissoes: ['PEDREIRO'] },
+  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA', 'PLANICIE'], bonusRegiao: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
+  { tipo: 'PEDREIRA', nome: 'Pedreira', regioes: ['MONTANHA'], bonusRegiao: 'ROCHA', custoN1: { MADEIRA: 5 }, tamanho: 2, poN1: 5, profissoes: ['PEDREIRO'] },
 ]
 
 function montar(props: Record<string, unknown> = {}) {
@@ -23,9 +23,16 @@ describe('SeletorConstrucao', () => {
     expect(w.get('[data-testid="item-CASA"]').attributes('disabled')).toBeUndefined()
   })
 
+  it('mostra Todos + 5 abas na ordem do enum', () => {
+    const w = montar()
+    expect(w.findAll('[role="tab"]').map((a) => a.text())).toEqual(['Todos', 'Floresta', 'Planície', 'Urbana', 'Litoral', 'Montanha'])
+    expect(w.find('[data-testid="item-CASA"]').exists()).toBe(true)
+    expect(w.find('[data-testid="item-PEDREIRA"]').exists()).toBe(true)
+  })
+
   it('filtra por aba', async () => {
     const w = montar()
-    await w.get('[data-testid="aba-coleta"]').trigger('click')
+    await w.get('[data-testid="aba-montanha"]').trigger('click')
     expect(w.find('[data-testid="item-CASA"]').exists()).toBe(false)
     expect(w.find('[data-testid="item-PEDREIRA"]').exists()).toBe(true)
   })

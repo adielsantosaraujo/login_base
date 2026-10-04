@@ -22,11 +22,14 @@ import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
 import com.example.loginbase.jogo.excecao.VilaNaoEncontradaException;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Jazida;
 import com.example.loginbase.jogo.modelo.LadrilhoJazida;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.modelo.VilaPrevia;
 import com.example.loginbase.jogo.servico.VilaAtual;
 
 import jakarta.persistence.EntityManager;
@@ -41,6 +44,8 @@ class ModeloJogoBaseIntegrationTest {
 	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired JogoTurnoRepository jogoTurnoRepository;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired VilaPreviaRepository vilaPreviaRepository;
 	@Autowired VilaAtual vilaAtual;
 	@Autowired EntityManager em;
 
@@ -100,7 +105,7 @@ class ModeloJogoBaseIntegrationTest {
 	void ladrilhoJazidaChaveCompostaEPersistencia() {
 		Vila vila = novaVila();
 		Regiao r = new Regiao(vila.getId(), 1);
-		r.setTipo(TipoRegiao.COLETA);
+		r.setTipo(TipoRegiao.FLORESTA);
 		r.setPossuida(true);
 		r = regiaoRepository.saveAndFlush(r);
 
@@ -124,6 +129,50 @@ class ModeloJogoBaseIntegrationTest {
 		Regiao r = regiaoRepository.saveAndFlush(new Regiao(vila.getId(), 1));
 		assertThatThrownBy(() -> ladrilhoJazidaRepository.saveAndFlush(new LadrilhoJazida(r.getId(), 10, 0, Jazida.CAMPO)))
 				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void persisteELeBonusDeRegiaoEConstraints() {
+		Vila vila = novaVila();
+		Regiao r = new Regiao(vila.getId(), 1);
+		r.setTipo(TipoRegiao.MONTANHA);
+		r.setPossuida(true);
+		r = regiaoRepository.saveAndFlush(r);
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.ROCHA, 1, 44));
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.FERRO, 2, 20));
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.CARVAO, 3, 9));
+		em.clear();
+
+		var lidos = regiaoBonusRepository.findByRegiaoIdOrderByPosicao(r.getId());
+		assertThat(lidos).extracting(RegiaoBonus::getBonus)
+				.containsExactly(BonusRegiao.ROCHA, BonusRegiao.FERRO, BonusRegiao.CARVAO);
+		assertThat(regiaoBonusRepository.findByRegiaoIdIn(java.util.List.of(r.getId()))).hasSize(3);
+		var somas = regiaoBonusRepository.somarBonusPossuidos(vila.getId());
+		assertThat(somas).hasSize(3);
+		assertThat(somas).filteredOn(t -> t.getBonus() == BonusRegiao.ROCHA).first()
+				.extracting(t -> t.getTotal()).isEqualTo(44L);
+
+		Long regiaoId = r.getId();
+		assertThatThrownBy(() -> regiaoBonusRepository.saveAndFlush(new RegiaoBonus(regiaoId, BonusRegiao.ENXOFRE, 1, 20)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void persisteELeVilaPrevia() {
+		Usuario u = novoUsuario();
+		UUID previaId = UUID.randomUUID();
+		vilaPreviaRepository.saveAndFlush(new VilaPrevia(u.getId(), previaId, 99L, 1));
+		em.clear();
+
+		VilaPrevia lida = vilaPreviaRepository.findById(u.getId()).orElseThrow();
+		assertThat(lida.getPreviaId()).isEqualTo(previaId);
+		assertThat(lida.getSemente()).isEqualTo(99L);
+		assertThat(lida.getRodada()).isEqualTo(1);
+		assertThat(lida.getCriadoEm()).isNotNull();
+		assertThat(vilaPreviaRepository.existsById(u.getId())).isTrue();
+		vilaPreviaRepository.deleteById(u.getId());
+		vilaPreviaRepository.flush();
+		assertThat(vilaPreviaRepository.existsById(u.getId())).isFalse();
 	}
 
 	@Test

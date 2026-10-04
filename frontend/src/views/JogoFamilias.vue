@@ -52,3 +52,7 @@ async function confirmar(req: CasamentoRequest) {
     />
   </section>
 </template>
+
+<style scoped>
+h1 { font-family: var(--vl-font-display); color: var(--vl-text); }
+</style>

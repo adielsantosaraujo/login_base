@@ -31,6 +31,8 @@ Implementar etapa do turno que processa imigração pela Estalagem. Adultos alea
       - Adicionar à lista de imigrantes.
   - Retorna lista de imigrantes para relatório.
 
+Os máximos 10/5 valem só para o sorteio do imigrante; a distribuição manual de pontos pendentes não tem máximo por atributo (ver [cidadao.md](../cidadao.md)).
+
 **Método auxiliar**:
 - `criarImigrante(): Cidadao`
   - Idade: random(216, 360) meses.
@@ -52,8 +54,8 @@ Não se aplica (backend apenas; relatório no painel de turno).
 
 ## Arquivos prováveis
 
-- [/src/main/java/com/example/loginbase/jogo/cidadao/ImigrancaoService.java](/src/main/java/com/example/loginbase/jogo/cidadao/ImigrancaoService.java) (novo)
-- [/src/main/java/com/example/loginbase/jogo/turno/EtapaImigracao.java](/src/main/java/com/example/loginbase/jogo/turno/EtapaImigracao.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/cidadao/ImigracaoService.java](/src/main/java/com/example/loginbase/jogo/cidadao/ImigracaoService.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/turno/etapas/EtapaReproducao.java](/src/main/java/com/example/loginbase/jogo/turno/etapas/EtapaReproducao.java) (atualizado; chama `ImigracaoService`)
 
 ## Testes
 

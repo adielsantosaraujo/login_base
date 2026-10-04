@@ -11,7 +11,9 @@ import com.example.loginbase.jogo.cidadao.Cidadao;
 import com.example.loginbase.jogo.cidadao.CidadaoRepository;
 import com.example.loginbase.jogo.cidadao.Profissao;
 import com.example.loginbase.jogo.construcao.ConsultaTrabalhadores.Trabalhador;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.servico.BonusRegiaoService;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -33,14 +35,17 @@ public class ObraService {
 	private final CidadaoRepository cidadaoRepository;
 	private final ConsultaTrabalhadores consultaTrabalhadores;
 	private final RegistroEventoTurnoService registro;
+	private final BonusRegiaoService bonusRegiaoService;
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	public ObraService(ConstrucaoRepository construcaoRepository, CidadaoRepository cidadaoRepository,
-			ConsultaTrabalhadores consultaTrabalhadores, RegistroEventoTurnoService registro) {
+			ConsultaTrabalhadores consultaTrabalhadores, RegistroEventoTurnoService registro,
+			BonusRegiaoService bonusRegiaoService) {
 		this.construcaoRepository = construcaoRepository;
 		this.cidadaoRepository = cidadaoRepository;
 		this.consultaTrabalhadores = consultaTrabalhadores;
 		this.registro = registro;
+		this.bonusRegiaoService = bonusRegiaoService;
 	}
 
 	@Transactional
@@ -62,6 +67,7 @@ public class ObraService {
 		for (Trabalhador t : trabalhadores) {
 			ganho += t.eficiencia() * (t.profissao() == Profissao.CONSTRUTOR ? 1.0 : 0.5);
 		}
+		ganho *= 1 + bonusRegiaoService.bonus(vila.getId(), BonusRegiao.DESENVOLVIMENTO) / 100.0;
 		double acumulado = lerFracao(obra) + ganho;
 		int inteiro = (int) Math.floor(acumulado + 1e-9);
 		double fracao = Math.max(0, acumulado - inteiro);

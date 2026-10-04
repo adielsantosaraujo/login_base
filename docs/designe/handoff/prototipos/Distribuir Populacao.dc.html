@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:oklch(0.16 0.01 60);color:oklch(0.94 0.01 80);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:oklch(0.80 0.13 75)}a:hover{color:oklch(0.88 0.11 80)}
+button{font:inherit;color:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column">
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;padding:14px 28px;border-bottom:1px solid oklch(0.28 0.012 60);background:oklch(0.19 0.012 60)">
+    <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.01em">Vilarejo</div>
+      <nav style="display:flex;gap:4px;flex-wrap:wrap">
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Mapa</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Estoque</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.94 0.01 80);background:oklch(0.25 0.012 60)">Famílias</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Mercado</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Inventário</a>
+        <a href="#" style="padding:7px 12px;border-radius:8px;text-decoration:none;font-size:14px;color:oklch(0.72 0.015 70)">Batalhas</a>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:8px;padding:6px 14px;border-radius:999px;background:oklch(0.24 0.012 60)">
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Turno</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500">1</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;padding:6px 14px;border-radius:999px;background:oklch(0.24 0.012 60)">
+        <span style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Próximo turno</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:500;color:oklch(0.80 0.13 75)">{{ clock }}</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;width:100%;max-width:1320px;margin:0 auto;padding:36px 28px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase">
+          <a href="Criar Vila.dc.html" style="color:oklch(0.62 0.015 70);text-decoration:none">01 Regiões ✓</a>
+          <span style="color:oklch(0.45 0.012 60)">—</span>
+          <span style="color:oklch(0.80 0.13 75)">02 População</span>
+        </div>
+        <h1 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:clamp(32px,4.5vw,48px);letter-spacing:-0.02em;line-height:1.05">Distribuir a população</h1>
+        <p style="margin:0;font-size:16px;color:oklch(0.76 0.015 70);max-width:640px;text-wrap:pretty">Os 16 cidadãos já vêm distribuídos segundo o plano inicial. Ajuste o que quiser: cada pessoa tem até 20 pontos de característica e 10 de profissão. Pontos não usados ficam pendentes.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onClick="{{ applyPlan }}" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;border:1px solid oklch(0.36 0.012 60);background:oklch(0.22 0.012 60);font-size:14px;font-weight:500;cursor:pointer" style-hover="border-color:oklch(0.80 0.13 75)"><span style="color:oklch(0.80 0.13 75)">↻</span>Redistribuir pelo plano</button>
+        <button onClick="{{ zeroAll }}" style="height:40px;padding:0 16px;border-radius:999px;border:1px solid oklch(0.30 0.012 60);background:transparent;font-size:14px;color:oklch(0.72 0.015 70);cursor:pointer" style-hover="color:oklch(0.94 0.01 80)">Zerar tudo</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start">
+      <section style="flex:1 1 640px;min-width:0;display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <button onClick="{{ t.onClick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:12px;text-align:left;cursor:pointer;border:{{ t.border }};background:{{ t.bg }}">
+              <div style="display:flex;align-items:center;gap:8px;width:100%">
+                <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:17px">{{ t.n }}</span>
+                <sc-if value="{{ t.leader }}" hint-placeholder-val="{{ false }}">
+                  <span style="margin-left:auto;font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:oklch(0.80 0.13 75);color:oklch(0.18 0.01 60)">Líder</span>
+                </sc-if>
+              </div>
+              <span style="font-size:12px;color:{{ t.statusColor }}">{{ t.status }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+          <sc-for list="{{ members }}" as="m" hint-placeholder-count="4">
+            <div style="display:flex;flex-direction:column;gap:14px;padding:16px;border-radius:14px;background:oklch(0.20 0.012 60);border:1px solid oklch(0.27 0.012 60)">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:18px">{{ m.nome }}</span>
+                  <span style="font-size:12px;color:oklch(0.68 0.015 70)">{{ m.sub }}</span>
+                </div>
+                <label style="position:relative;display:flex;align-items:center;flex-shrink:0" title="Trocar profissão principal">
+                  <select value="{{ m.mainKey }}" onChange="{{ m.onRole }}" style="appearance:none;-webkit-appearance:none;font:inherit;font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;padding:5px 24px 5px 9px;border-radius:6px;border:1px solid oklch(0.80 0.13 75 / 0.35);background:oklch(0.80 0.13 75 / 0.14);color:oklch(0.84 0.12 78);cursor:pointer;outline:none">
+                    <option value="" disabled="disabled">Sem profissão</option>
+                    <sc-for list="{{ m.opts }}" as="o" hint-placeholder-count="12">
+                      <option value="{{ o.k }}" style="background:oklch(0.22 0.012 60);color:oklch(0.94 0.01 80);text-transform:none">{{ o.n }}</option>
+                    </sc-for>
+                  </select>
+                  <span style="position:absolute;right:8px;pointer-events:none;font-size:9px;color:oklch(0.84 0.12 78)">▼</span>
+                </label>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Características</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ m.chColor }}">{{ m.chUsed }}</span>
+                </div>
+                <sc-for list="{{ m.chars }}" as="c" hint-placeholder-count="5">
+                  <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 84px;gap:10px;align-items:center">
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:oklch(0.80 0.01 80)" title="{{ c.n }}">{{ c.s }}</span>
+                    <span style="height:6px;border-radius:3px;background:oklch(0.27 0.012 60);overflow:hidden;display:block"><span style="display:block;height:100%;width:{{ c.pct }};background:oklch(0.80 0.13 75);transition:width .15s"></span></span>
+                    <div style="display:grid;grid-template-columns:24px 1fr 24px;align-items:center;gap:2px">
+                      <button onClick="{{ c.dec }}" style="width:24px;height:24px;border-radius:6px;border:none;background:oklch(0.27 0.012 60);cursor:pointer;opacity:{{ c.decOp }};font-size:14px;line-height:1">−</button>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:center">{{ c.v }}</span>
+                      <button onClick="{{ c.inc }}" style="width:24px;height:24px;border-radius:6px;border:none;background:oklch(0.27 0.012 60);cursor:pointer;opacity:{{ c.incOp }};font-size:14px;line-height:1">+</button>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="height:1px;background:oklch(0.27 0.012 60)"></div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.72 0.015 70)">Profissões</span>
+                  <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:{{ m.prColor }}">{{ m.prUsed }}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px">
+                  <sc-for list="{{ m.profs }}" as="p" hint-placeholder-count="12">
+                    <div style="display:grid;grid-template-columns:minmax(0,1fr) 20px 16px 20px;align-items:center;gap:2px;padding:2px 0">
+                      <span style="display:flex;align-items:baseline;gap:5px;min-width:0;font-size:12px;color:{{ p.color }}"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.n }}</span><span title="{{ p.bonusTip }}" style="flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:11px;color:{{ p.bonusColor }}">{{ p.bonus }}</span></span>
+                      <button onClick="{{ p.dec }}" style="width:20px;height:20px;border-radius:5px;border:none;background:oklch(0.26 0.012 60);cursor:pointer;opacity:{{ p.decOp }};font-size:12px;line-height:1;padding:0">−</button>
+                      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:center;color:{{ p.color }}">{{ p.v }}</span>
+                      <button onClick="{{ p.inc }}" style="width:20px;height:20px;border-radius:5px;border:none;background:oklch(0.26 0.012 60);cursor:pointer;opacity:{{ p.incOp }};font-size:12px;line-height:1;padding:0">+</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <aside style="flex:1 1 320px;max-width:380px;min-width:0;display:flex;flex-direction:column;gap:16px;position:sticky;top:20px">
+        <div style="padding:20px;border-radius:16px;background:oklch(0.20 0.012 60);border:1px solid oklch(0.27 0.012 60);display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700">Plano inicial</h2>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ planColor }}">{{ planTotal }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 76px 44px;gap:6px 10px;align-items:center;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:oklch(0.62 0.015 70)">
+            <span>Profissão</span><span style="text-align:center">Plano</span><span style="text-align:right">Atual</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <sc-for list="{{ planRows }}" as="r" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) 76px 44px;gap:10px;align-items:center;font-size:13px">
+                <span style="display:flex;align-items:center;gap:6px;color:oklch(0.86 0.01 80)">{{ r.n }}<sc-if value="{{ r.hasMin }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:1px 5px;border-radius:4px;background:oklch(0.27 0.012 60);color:oklch(0.72 0.015 70)">mín {{ r.min }}</span></sc-if></span>
+                <div style="display:grid;grid-template-columns:22px 1fr 22px;align-items:center;gap:2px">
+                  <button onClick="{{ r.dec }}" style="width:22px;height:22px;border-radius:6px;border:none;background:oklch(0.27 0.012 60);cursor:pointer;opacity:{{ r.decOp }};line-height:1;padding:0">−</button>
+                  <span style="font-family:'IBM Plex Mono',monospace;text-align:center">{{ r.v }}</span>
+                  <button onClick="{{ r.inc }}" style="width:22px;height:22px;border-radius:6px;border:none;background:oklch(0.27 0.012 60);cursor:pointer;opacity:{{ r.incOp }};line-height:1;padding:0">+</button>
+                </div>
+                <span style="font-family:'IBM Plex Mono',monospace;text-align:right;color:{{ r.curColor }}">{{ r.cur }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:12px;color:oklch(0.62 0.015 70);text-wrap:pretty">“Atual” conta quem tem a profissão como principal (maior PE). Ajuste o plano e clique em Redistribuir.</p>
+        </div>
+
+        <div style="padding:20px;border-radius:16px;background:oklch(0.20 0.012 60);border:1px solid oklch(0.27 0.012 60);display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <h2 style="margin:0;font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700">Família líder</h2>
+            <span style="font-size:12px;color:oklch(0.62 0.015 70)">+1% a cada 2 CAR</span>
+          </div>
+          <sc-for list="{{ leaders }}" as="l" hint-placeholder-count="4">
+            <button onClick="{{ l.onClick }}" style="display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;text-align:left;cursor:pointer;border:{{ l.border }};background:{{ l.bg }}">
+              <span style="width:16px;height:16px;border-radius:50%;box-sizing:border-box;border:{{ l.dot }}"></span>
+              <span style="display:flex;flex-direction:column;gap:1px;min-width:0"><span style="font-size:14px;font-weight:500">{{ l.n }}</span><span style="font-size:12px;color:oklch(0.68 0.015 70)">{{ l.sub }}</span></span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:oklch(0.80 0.13 75)">{{ l.bonus }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="padding:20px;border-radius:16px;background:oklch(0.20 0.012 60);border:1px solid oklch(0.27 0.012 60);display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ checks }}" as="r" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:{{ r.color }}">
+              <span style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:{{ r.dotBg }};color:oklch(0.18 0.01 60)">{{ r.icon }}</span>
+              <span style="flex:1">{{ r.label }}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:oklch(0.68 0.015 70)">{{ r.detail }}</span>
+            </div>
+          </sc-for>
+          <button onClick="{{ confirm }}" style="height:48px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:{{ ctaCursor }};background:{{ ctaBg }};color:{{ ctaColor }}">{{ ctaLabel }}</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+<sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:14px 20px;border-radius:12px;background:oklch(0.80 0.13 75);color:oklch(0.18 0.01 60);font-weight:600;font-size:14px;box-shadow:0 10px 30px oklch(0 0 0 / 0.4)">População confirmada — indo para o mapa</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CH=[{k:'vit',s:'VIT',n:'Vitalidade'},{k:'for',s:'FOR',n:'Força'},{k:'vel',s:'VEL',n:'Velocidade'},{k:'int',s:'INT',n:'Inteligência'},{k:'car',s:'CAR',n:'Carisma'}];
+const PROF=[
+ {k:'construtor',n:'Construtor',l:['int']},{k:'carregador',n:'Carregador',l:['for','vel']},
+ {k:'agricultor',n:'Agricultor',l:['int']},{k:'fazendeiro',n:'Fazendeiro',l:['int']},
+ {k:'mineiro',n:'Mineiro',l:['for']},{k:'madeireiro',n:'Madeireiro',l:['for','vit']},
+ {k:'ferreiro',n:'Ferreiro',l:['int']},{k:'cozinheiro',n:'Cozinheiro',l:['vel','car']},
+ {k:'costureiro',n:'Costureiro',l:['vel','car']},{k:'cacador',n:'Caçador',l:['vit','vel','car']},
+ {k:'guerreiro',n:'Guerreiro',l:['for','vit','vel']},{k:'comerciante',n:'Comerciante',l:['car']}];
+const P=Object.fromEntries(PROF.map(p=>[p.k,p]));
+const SEC={construtor:'carregador',carregador:'construtor',agricultor:'fazendeiro',fazendeiro:'agricultor',mineiro:'madeireiro',madeireiro:'mineiro',ferreiro:'mineiro',cozinheiro:'comerciante',costureiro:'cozinheiro',cacador:'guerreiro',guerreiro:'cacador',comerciante:'cozinheiro'};
+const MIN={construtor:2,carregador:2};
+const ORDER=['comerciante','construtor','carregador','madeireiro','mineiro','agricultor','fazendeiro','cozinheiro','guerreiro','ferreiro','costureiro','cacador'];
+const DEFAULT_PLAN={comerciante:1,construtor:2,carregador:2,madeireiro:2,mineiro:2,agricultor:2,fazendeiro:1,cozinheiro:1,guerreiro:2,ferreiro:1,costureiro:0,cacador:0};
+const MAX_CH=20,MAX_CH_EACH=20,MAX_PR=10,MAX_PR_EACH=10,POP=16;
+const FAMS=[
+ {n:'Oliveira',m:[['Marcos','M',40],['Fernanda','F',40],['André','M',18],['Renata','F',18]]},
+ {n:'Lima',m:[['Felipe','M',40],['Juliana','F',40],['Bruno','M',18],['Camila','F',18]]},
+ {n:'Almeida',m:[['Vitor','M',40],['Patrícia','F',40],['Diego','M',18],['Larissa','F',18]]},
+ {n:'Pereira',m:[['Rafael','M',40],['Sandra','F',40],['Lucas','M',18],['Beatriz','F',18]]}];
+const ROLE=['Pai','Mãe','Filho','Filha'];
+const zero=list=>Object.fromEntries(list.map(x=>[x.k,0]));
+const basePeople=()=>FAMS.flatMap((f,fi)=>f.m.map(([nome,sexo,idade],mi)=>({id:fi*4+mi,fam:fi,mi,nome,sexo,idade,ch:zero(CH),pr:zero(PROF)})));
+// Distribuição automática: 1 profissão principal por pessoa conforme o plano (round-robin entre famílias),
+// PE 5 principal / 3 secundária / 2 apoio; características proporcionais às ligadas (máx. 10 cada, 20 total).
+function gerar(plan){
+ const people=basePeople();
+ const roles=ORDER.flatMap(k=>Array(plan[k]||0).fill(k));
+ const seq=[];for(let mi=0;mi<4;mi++)for(let fi=0;fi<4;fi++)seq.push(fi*4+mi);
+ seq.forEach((pid,j)=>distribuir(people[pid],roles[j]||'carregador'));
+ return people;
+}
+function distribuir(p,role){
+ p.ch=zero(CH);p.pr=zero(PROF);
+ const sec=SEC[role];const ter=['carregador','construtor','madeireiro'].find(k=>k!==role&&k!==sec);
+ p.pr[role]=5;p.pr[sec]=3;p.pr[ter]=2;
+ const w={vit:0.5,for:0,vel:0,int:0,car:0};
+ P[role].l.forEach(c=>w[c]+=3);P[sec].l.forEach(c=>w[c]+=1.5);P[ter].l.forEach(c=>w[c]+=0.5);
+ for(let i=0;i<MAX_CH;i++){let best=null,bs=-1;CH.forEach(({k})=>{if(p.ch[k]>=MAX_CH_EACH)return;const s=w[k]/(p.ch[k]+1);if(s>bs){bs=s;best=k}});if(best)p.ch[best]++}
+ return p;
+}
+const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
+const mainOf=p=>{let b=null,bv=0;PROF.forEach(x=>{if(p.pr[x.k]>bv){bv=p.pr[x.k];b=x.k}});return b};
+const leaderOf=(people,fi)=>people.filter(p=>p.fam===fi&&p.idade>=18).sort((a,b)=>b.idade-a.idade||a.mi-b.mi)[0];
+const bonusOf=p=>Math.min(10,Math.floor(p.ch.car/2));
+const AC='oklch(0.80 0.13 75)';
+const pad=n=>String(n).padStart(2,'0');
+class Component extends DCLogic{
+ constructor(p){super(p);const people=gerar(DEFAULT_PLAN);let lead=0;[0,1,2,3].forEach(fi=>{if(leaderOf(people,fi).ch.car>leaderOf(people,lead).ch.car)lead=fi});
+  this.state={people,plan:{...DEFAULT_PLAN},fam:0,leader:lead,secs:2719,done:false}}
+ componentDidMount(){this.t=setInterval(()=>this.setState(s=>({secs:s.secs>0?s.secs-1:2719})),1000)}
+ componentWillUnmount(){clearInterval(this.t);clearTimeout(this.nav)}
+ edit(pid,group,k,d){this.setState(s=>{const people=s.people.map(p=>{if(p.id!==pid)return p;const g={...p[group]};const v=g[k]+d,each=group==='ch'?MAX_CH_EACH:MAX_PR_EACH,tot=group==='ch'?MAX_CH:MAX_PR;if(v<0||v>each||(d>0&&sum(g)>=tot))return p;g[k]=v;return{...p,[group]:g}});return{people,done:false}})}
+ setRole(pid,role){this.setState(s=>{const old=mainOf(s.people[pid]);const plan={...s.plan};if(old&&plan[old]>0)plan[old]--;plan[role]=(plan[role]||0)+1;
+  const people=s.people.map(p=>p.id===pid?distribuir({...p},role):p);return{people,plan,done:false}})}
+ renderVals(){
+  const{people,plan,fam,leader,secs,done}=this.state;
+  const members=people.filter(p=>p.fam===fam).map(p=>{const cu=sum(p.ch),pu=sum(p.pr),m=mainOf(p);
+   return{nome:p.nome,sub:p.idade+' anos · '+ROLE[p.mi],main:m?P[m].n:'Sem profissão',mainKey:m||'',opts:PROF.map(x=>({k:x.k,n:x.n})),onRole:e=>e.target.value&&this.setRole(p.id,e.target.value),
+    chUsed:cu+' / '+MAX_CH,chColor:cu===MAX_CH?AC:'oklch(0.72 0.015 70)',
+    prUsed:pu+' / '+MAX_PR,prColor:pu===MAX_PR?AC:'oklch(0.72 0.015 70)',
+    chars:CH.map(c=>({s:c.s,n:c.n,v:p.ch[c.k],pct:p.ch[c.k]/MAX_CH_EACH*100+'%',decOp:p.ch[c.k]>0?1:0.3,incOp:p.ch[c.k]<MAX_CH_EACH&&cu<MAX_CH?1:0.3,dec:()=>this.edit(p.id,'ch',c.k,-1),inc:()=>this.edit(p.id,'ch',c.k,1)})),
+    profs:PROF.map(x=>{const v=p.pr[x.k];const b=x.l.reduce((a,c)=>a+Math.floor(p.ch[c]/5),0);return{n:x.n,v,bonus:'+'+b,bonusColor:b?'oklch(0.80 0.13 75)':'oklch(0.50 0.012 70)',bonusTip:'Bônus R3: '+x.l.map(c=>c.toUpperCase()+' '+p.ch[c]+'÷5').join(' + '),color:v?'oklch(0.92 0.01 80)':'oklch(0.58 0.012 70)',decOp:v>0?1:0.25,incOp:v<MAX_PR_EACH&&pu<MAX_PR?1:0.25,dec:()=>this.edit(p.id,'pr',x.k,-1),inc:()=>this.edit(p.id,'pr',x.k,1)}})}});
+  const tabs=FAMS.map((f,fi)=>{const ms=people.filter(p=>p.fam===fi);const pend=ms.reduce((a,p)=>a+(MAX_CH-sum(p.ch))+(MAX_PR-sum(p.pr)),0);const on=fi===fam;
+   return{n:f.n,leader:fi===leader,status:pend?pend+' pontos pendentes':'Todos os pontos usados',statusColor:pend?'oklch(0.78 0.10 60)':'oklch(0.68 0.015 70)',
+    border:on?'2px solid '+AC:'1px solid oklch(0.30 0.012 60)',bg:on?'oklch(0.80 0.13 75 / 0.10)':'oklch(0.20 0.012 60)',onClick:()=>this.setState({fam:fi})}});
+  const counts={};people.forEach(p=>{const m=mainOf(p);if(m)counts[m]=(counts[m]||0)+1});
+  const planTotal=sum(plan);
+  const planRows=ORDER.map(k=>{const v=plan[k],min=MIN[k]||0,cur=counts[k]||0;
+   return{n:P[k].n,v,min,hasMin:!!MIN[k],cur,curColor:cur<min?'oklch(0.72 0.15 30)':cur===v?'oklch(0.86 0.01 80)':'oklch(0.78 0.10 60)',
+    decOp:v>min?1:0.3,incOp:planTotal<POP?1:0.3,
+    dec:()=>v>min&&this.setState(s=>({plan:{...s.plan,[k]:v-1}})),
+    inc:()=>planTotal<POP&&this.setState(s=>({plan:{...s.plan,[k]:v+1}}))}});
+  const leaders=FAMS.map((f,fi)=>{const l=leaderOf(people,fi),on=fi===leader;
+   return{n:'Família '+f.n,sub:'Líder '+l.nome+' · CAR '+l.ch.car,bonus:'+'+bonusOf(l)+'%',
+    border:on?'1px solid '+AC:'1px solid oklch(0.28 0.012 60)',bg:on?'oklch(0.80 0.13 75 / 0.10)':'transparent',
+    dot:on?'5px solid '+AC:'2px solid oklch(0.45 0.012 60)',onClick:()=>this.setState({leader:fi})}});
+  const pend=people.reduce((a,p)=>a+(MAX_CH-sum(p.ch))+(MAX_PR-sum(p.pr)),0);
+  const okC=(counts.construtor||0)>=2,okK=(counts.carregador||0)>=2,valid=okC&&okK&&leader!=null;
+  const chk=(ok,label,d,warn)=>({label,detail:d,icon:ok?'✓':warn?'!':'',dotBg:ok?AC:warn?'oklch(0.78 0.10 60)':'oklch(0.32 0.012 60)',color:ok||warn?'oklch(0.94 0.01 80)':'oklch(0.70 0.015 70)'});
+  return{tabs,members,planRows,leaders,done,
+   clock:pad(Math.floor(secs/60))+':'+pad(secs%60),
+   planTotal:planTotal+' / '+POP,planColor:planTotal===POP?AC:'oklch(0.78 0.10 60)',
+   checks:[chk(okC,'Construtores principais',(counts.construtor||0)+' / 2'),chk(okK,'Carregadores principais',(counts.carregador||0)+' / 2'),pend?chk(false,'Pontos pendentes',String(pend),true):chk(true,'Todos os pontos usados','')],
+   ctaLabel:valid?'Confirmar população':'Ajuste os mínimos',ctaBg:valid?AC:'oklch(0.27 0.012 60)',ctaColor:valid?'oklch(0.18 0.01 60)':'oklch(0.62 0.015 70)',ctaCursor:valid?'pointer':'not-allowed',
+   confirm:()=>{if(valid)this.setState({done:true})},
+   applyPlan:()=>{if(planTotal!==POP)return;this.setState({people:gerar(this.state.plan),done:false})},
+   zeroAll:()=>this.setState({people:basePeople(),done:false})};
+ }
+}
+</script>
+</body>
+</html>

@@ -153,7 +153,7 @@ async function aprimorar(req: { oficinaId: number; artesaoId: number }) {
             <tr v-for="i in inv.itens.value" :key="i.id" :data-testid="`item-${i.id}`">
               <td>{{ i.nome }}</td>
               <td>{{ rotuloCategoria(i.categoria) }}</td>
-              <td>L{{ i.nivel }}</td>
+              <td class="num">L{{ i.nivel }}</td>
               <td><span :style="{ color: corQualidade(i.qualidade), fontWeight: 600 }">{{ rotuloQualidade(i.qualidade) }}</span></td>
               <td>
                 {{ resumoBonus(i) }}
@@ -186,7 +186,7 @@ async function aprimorar(req: { oficinaId: number; artesaoId: number }) {
               <tr v-for="p in pedras" :key="p.id" :data-testid="`pedra-${p.id}`">
                 <td><span :style="{ color: corQualidade(p.qualidade), fontWeight: 600 }">{{ rotuloQualidade(p.qualidade) }}</span></td>
                 <td>{{ resumoPedra(p) }}</td>
-                <td>{{ p.custoEngaste }} Ouro</td>
+                <td class="num">{{ p.custoEngaste }} Ouro</td>
                 <td class="acoes">
                   <Button label="Engastar" size="small" :data-testid="`engastar-${p.id}`" @click="abrirEngaste(p)" />
                 </td>
@@ -210,9 +210,12 @@ async function aprimorar(req: { oficinaId: number; artesaoId: number }) {
 
 <style scoped>
 .filtro { display: flex; flex-direction: column; gap: 0.25rem; max-width: 14rem; margin: 0.5rem 0; }
+h1, h2, h3, h4 { font-family: var(--vl-font-display); color: var(--vl-text); }
+.num { font-family: var(--vl-font-mono); }
 .tabela { width: 100%; border-collapse: collapse; }
+.tabela th { color: var(--vl-text-2); border-bottom: 1px solid var(--vl-border); }
 .tabela th, .tabela td { text-align: left; padding: 0.35rem 0.5rem; }
 .acoes { display: flex; gap: 0.5rem; }
-.erro { color: var(--p-red-500, #dc2626); }
+.erro { color: var(--vl-error); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>

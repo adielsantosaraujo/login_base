@@ -29,7 +29,7 @@ Cada cidadão é uma pessoa na vila, com idade, características e profissões. 
 
 **R8 — Teste de morte anual** (seção 5.5): a partir de 50 anos, chance = `max(0; 1% × (idade − 49) − 0,2% × VIT)`. Aos 90 anos morre com certeza.
 
-**R9 — Família líder [proposta]** (seção 5.6): o adulto mais velho da família líder é o líder da vila. Bônus: +1% de eficiência em toda a vila a cada 2 pontos de CAR do líder, máx. +10%.
+**R9 — Família líder [req]** (seção 5.6): o adulto mais velho da família líder é o líder da vila. Em caso de empate de idade, vale a ordem pai → mãe → filho → filha. Bônus: +1% de eficiência em toda a vila a cada 2 pontos de CAR do líder, máx. +10%.
 
 **R10 — Sucessão [proposta]** (seção 5.6): morto o líder, assume o adulto mais velho da família líder (cônjuges inclusive); se não houver adulto, o jogador escolhe nova família líder.
 
@@ -41,31 +41,43 @@ Cada cidadão é uma pessoa na vila, com idade, características e profissões. 
 
 ## Números e tabelas
 
-### População inicial [req + proposta] (seção 5.4)
+### População inicial [req] (seção 5.4)
 
 | Aspecto | Valor |
 |---|---|
-| Estrutura | 4 famílias × 4 membros |
+| Estrutura | 4 famílias × 4 membros (PAI, MAE, FILHO, FILHA) |
 | Idades | Pai e mãe com 40 anos; filho e filha com 18 anos |
-| Pontos distribuídos por pessoa | 20 de característica, 10 de profissão |
-| Limites na criação | Máx. 10 por característica; máx. 5 por profissão; base 0 em tudo |
+| Pontos iniciais por pessoa | 20 de característica, 10 de profissão |
+| Distribuição inicial | Automática a partir de um plano (quantos por profissão principal) |
+| Limites totais por pessoa | Máx. 20 de característica; máx. 10 de profissão (sem limite por atributo) |
+| Mínimos obrigatórios | 2 Construtores e 2 Carregadores com profissão principal |
+| Plano padrão | Comerciante 1, Construtor 2, Carregador 2, Madeireiro 2, Mineiro 2, Agricultor 2, Fazendeiro 1, Cozinheiro 1, Guerreiro 2, Ferreiro 1, Costureiro 0, Caçador 0 (soma 16) |
 
-### Tabela profissão × características (seção 5.2)
+### Profissão principal [proposta]
 
-| Profissão | Características ligadas | Onde trabalha |
-|---|---|---|
-| Construtor | INT | Obras; Olaria |
-| Carregador | FOR, VEL | Armazém; apoio a obras |
-| Agricultor | INT | Fazenda de plantio |
-| Fazendeiro | INT | Fazenda de criação |
-| Mineiro | FOR | Pedreira, Barreiro, Minas, Salina |
-| Madeireiro | FOR, VIT [proposta] | Acampamento de lenhadores, Serraria, Carpintaria |
-| Ferreiro | INT | Fundição, Ferraria |
-| Cozinheiro | VEL, CAR | Cozinha, Estalagem |
-| Costureiro | VEL, CAR | Tecelagem, Curtume, Alfaiataria |
-| Caçador | VIT, VEL, CAR | Cabana de caça |
-| Guerreiro | FOR, VIT, VEL | Quartel (instrutor), tropas |
-| Comerciante | CAR | Mercado, Estalagem |
+A **profissão principal** de um cidadão é determinada automaticamente como aquela com maior número de pontos (PE). Em caso de empate, usa-se a ordem da tabela abaixo. A profissão principal afeta:
+- Alocação em prédios (sugerido, não obrigatório);
+- Ganho de experiência (+1 PE a cada 24 turnos trabalhando);
+- Cálculo do bônus R3 (características ligadas).
+
+### Tabela profissão × características e secundária
+
+| Profissão | Características ligadas | Profissão secundária | Onde trabalha |
+|---|---|---|---|
+| Construtor | INT | Carregador | Obras; Olaria |
+| Carregador | FOR, VEL | Construtor | Armazém; apoio a obras |
+| Agricultor | INT | Fazendeiro | Fazenda de plantio |
+| Fazendeiro | INT | Agricultor | Fazenda de criação |
+| Mineiro | FOR | Madeireiro | Pedreira, Barreiro, Minas, Salina |
+| Madeireiro | FOR, VIT | Mineiro | Acampamento de lenhadores, Serraria, Carpintaria |
+| Ferreiro | INT | Mineiro | Fundição, Ferraria |
+| Cozinheiro | VEL, CAR | Comerciante | Cozinha, Estalagem |
+| Costureiro | VEL, CAR | Cozinheiro | Tecelagem, Curtume, Alfaiataria |
+| Caçador | VIT, VEL, CAR | Guerreiro | Cabana de caça |
+| Guerreiro | FOR, VIT, VEL | Caçador | Quartel (instrutor), tropas |
+| Comerciante | CAR | Cozinheiro | Mercado, Estalagem |
+
+**Ordem para desempate de profissão principal (quando há empate em PE):** Comerciante, Construtor, Carregador, Madeireiro, Mineiro, Agricultor, Fazendeiro, Cozinheiro, Guerreiro, Ferreiro, Costureiro, Caçador.
 
 ### Exemplos numéricos
 

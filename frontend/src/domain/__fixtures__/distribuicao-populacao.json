@@ -1,0 +1,1637 @@
+{
+  "geradoDe": "docs/designe/handoff/referencia/distribuicao-populacao.js",
+  "pessoas": {
+    "CONSTRUTOR": {
+      "caracteristicas": {
+        "VIT": 3,
+        "FOR": 5,
+        "VEL": 4,
+        "INT": 8,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 5,
+        "CARREGADOR": 3,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 2,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "CARREGADOR": {
+      "caracteristicas": {
+        "VIT": 2,
+        "FOR": 8,
+        "VEL": 7,
+        "INT": 3,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 3,
+        "CARREGADOR": 5,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 2,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "AGRICULTOR": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 1,
+        "VEL": 1,
+        "INT": 17,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 5,
+        "FAZENDEIRO": 3,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "FAZENDEIRO": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 1,
+        "VEL": 1,
+        "INT": 17,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 3,
+        "FAZENDEIRO": 5,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "MINEIRO": {
+      "caracteristicas": {
+        "VIT": 5,
+        "FOR": 14,
+        "VEL": 1,
+        "INT": 0,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 5,
+        "MADEIREIRO": 3,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "MADEIREIRO": {
+      "caracteristicas": {
+        "VIT": 8,
+        "FOR": 11,
+        "VEL": 1,
+        "INT": 0,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 3,
+        "MADEIREIRO": 5,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "FERREIRO": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 7,
+        "VEL": 1,
+        "INT": 11,
+        "CAR": 0
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 3,
+        "MADEIREIRO": 0,
+        "FERREIRO": 5,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "COZINHEIRO": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 1,
+        "VEL": 8,
+        "INT": 0,
+        "CAR": 10
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 5,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 3
+      }
+    },
+    "COSTUREIRO": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 1,
+        "VEL": 10,
+        "INT": 0,
+        "CAR": 8
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 3,
+        "COSTUREIRO": 5,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 0
+      }
+    },
+    "CACADOR": {
+      "caracteristicas": {
+        "VIT": 7,
+        "FOR": 2,
+        "VEL": 7,
+        "INT": 0,
+        "CAR": 4
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 5,
+        "GUERREIRO": 3,
+        "COMERCIANTE": 0
+      }
+    },
+    "GUERREIRO": {
+      "caracteristicas": {
+        "VIT": 7,
+        "FOR": 4,
+        "VEL": 7,
+        "INT": 0,
+        "CAR": 2
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 0,
+        "COSTUREIRO": 0,
+        "CACADOR": 3,
+        "GUERREIRO": 5,
+        "COMERCIANTE": 0
+      }
+    },
+    "COMERCIANTE": {
+      "caracteristicas": {
+        "VIT": 1,
+        "FOR": 1,
+        "VEL": 5,
+        "INT": 0,
+        "CAR": 13
+      },
+      "profissoes": {
+        "CONSTRUTOR": 0,
+        "CARREGADOR": 2,
+        "AGRICULTOR": 0,
+        "FAZENDEIRO": 0,
+        "MINEIRO": 0,
+        "MADEIREIRO": 0,
+        "FERREIRO": 0,
+        "COZINHEIRO": 3,
+        "COSTUREIRO": 0,
+        "CACADOR": 0,
+        "GUERREIRO": 0,
+        "COMERCIANTE": 5
+      }
+    }
+  },
+  "familias": [
+    {
+      "sobrenome": "Oliveira",
+      "cidadaos": [
+        {
+          "nome": "Marcos",
+          "sexo": "M",
+          "idadeAnos": 40,
+          "papel": "PAI"
+        },
+        {
+          "nome": "Fernanda",
+          "sexo": "F",
+          "idadeAnos": 40,
+          "papel": "MAE"
+        },
+        {
+          "nome": "André",
+          "sexo": "M",
+          "idadeAnos": 18,
+          "papel": "FILHO"
+        },
+        {
+          "nome": "Renata",
+          "sexo": "F",
+          "idadeAnos": 18,
+          "papel": "FILHA"
+        }
+      ]
+    },
+    {
+      "sobrenome": "Lima",
+      "cidadaos": [
+        {
+          "nome": "Felipe",
+          "sexo": "M",
+          "idadeAnos": 40,
+          "papel": "PAI"
+        },
+        {
+          "nome": "Juliana",
+          "sexo": "F",
+          "idadeAnos": 40,
+          "papel": "MAE"
+        },
+        {
+          "nome": "Bruno",
+          "sexo": "M",
+          "idadeAnos": 18,
+          "papel": "FILHO"
+        },
+        {
+          "nome": "Camila",
+          "sexo": "F",
+          "idadeAnos": 18,
+          "papel": "FILHA"
+        }
+      ]
+    },
+    {
+      "sobrenome": "Almeida",
+      "cidadaos": [
+        {
+          "nome": "Vitor",
+          "sexo": "M",
+          "idadeAnos": 40,
+          "papel": "PAI"
+        },
+        {
+          "nome": "Patrícia",
+          "sexo": "F",
+          "idadeAnos": 40,
+          "papel": "MAE"
+        },
+        {
+          "nome": "Diego",
+          "sexo": "M",
+          "idadeAnos": 18,
+          "papel": "FILHO"
+        },
+        {
+          "nome": "Larissa",
+          "sexo": "F",
+          "idadeAnos": 18,
+          "papel": "FILHA"
+        }
+      ]
+    },
+    {
+      "sobrenome": "Pereira",
+      "cidadaos": [
+        {
+          "nome": "Rafael",
+          "sexo": "M",
+          "idadeAnos": 40,
+          "papel": "PAI"
+        },
+        {
+          "nome": "Sandra",
+          "sexo": "F",
+          "idadeAnos": 40,
+          "papel": "MAE"
+        },
+        {
+          "nome": "Lucas",
+          "sexo": "M",
+          "idadeAnos": 18,
+          "papel": "FILHO"
+        },
+        {
+          "nome": "Beatriz",
+          "sexo": "F",
+          "idadeAnos": 18,
+          "papel": "FILHA"
+        }
+      ]
+    }
+  ],
+  "casos": [
+    {
+      "nome": "plano-padrao",
+      "plano": {
+        "COMERCIANTE": 1,
+        "CONSTRUTOR": 2,
+        "CARREGADOR": 2,
+        "MADEIREIRO": 2,
+        "MINEIRO": 2,
+        "AGRICULTOR": 2,
+        "FAZENDEIRO": 1,
+        "COZINHEIRO": 1,
+        "GUERREIRO": 2,
+        "FERREIRO": 1,
+        "COSTUREIRO": 0,
+        "CACADOR": 0
+      },
+      "resultado": [
+        [
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 5,
+              "INT": 0,
+              "CAR": 13
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 3,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 5
+            },
+            "principal": "COMERCIANTE"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 5,
+              "FOR": 14,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 5,
+              "MADEIREIRO": 3,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MINEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 8,
+              "INT": 0,
+              "CAR": 10
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 5,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 3
+            },
+            "principal": "COZINHEIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 8,
+              "FOR": 11,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 5,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MADEIREIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 5,
+              "FAZENDEIRO": 3,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "AGRICULTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 7,
+              "FOR": 4,
+              "VEL": 7,
+              "INT": 0,
+              "CAR": 2
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 3,
+              "GUERREIRO": 5,
+              "COMERCIANTE": 0
+            },
+            "principal": "GUERREIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 8,
+              "FOR": 11,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 5,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MADEIREIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 5,
+              "FAZENDEIRO": 3,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "AGRICULTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 7,
+              "FOR": 4,
+              "VEL": 7,
+              "INT": 0,
+              "CAR": 2
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 3,
+              "GUERREIRO": 5,
+              "COMERCIANTE": 0
+            },
+            "principal": "GUERREIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 5,
+              "FOR": 14,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 5,
+              "MADEIREIRO": 3,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MINEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 3,
+              "FAZENDEIRO": 5,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "FAZENDEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 7,
+              "VEL": 1,
+              "INT": 11,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 0,
+              "FERREIRO": 5,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "FERREIRO"
+          }
+        ]
+      ],
+      "familiaLiderSugerida": 0
+    },
+    {
+      "nome": "plano-cacador-costureiro",
+      "plano": {
+        "COMERCIANTE": 1,
+        "CONSTRUTOR": 2,
+        "CARREGADOR": 2,
+        "MADEIREIRO": 2,
+        "MINEIRO": 2,
+        "AGRICULTOR": 2,
+        "FAZENDEIRO": 1,
+        "COZINHEIRO": 1,
+        "GUERREIRO": 1,
+        "FERREIRO": 0,
+        "COSTUREIRO": 1,
+        "CACADOR": 1
+      },
+      "resultado": [
+        [
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 5,
+              "INT": 0,
+              "CAR": 13
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 3,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 5
+            },
+            "principal": "COMERCIANTE"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 5,
+              "FOR": 14,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 5,
+              "MADEIREIRO": 3,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MINEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 8,
+              "INT": 0,
+              "CAR": 10
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 5,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 3
+            },
+            "principal": "COZINHEIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 8,
+              "FOR": 11,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 5,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MADEIREIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 5,
+              "FAZENDEIRO": 3,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "AGRICULTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 7,
+              "FOR": 4,
+              "VEL": 7,
+              "INT": 0,
+              "CAR": 2
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 3,
+              "GUERREIRO": 5,
+              "COMERCIANTE": 0
+            },
+            "principal": "GUERREIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 8,
+              "FOR": 11,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 5,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MADEIREIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 5,
+              "FAZENDEIRO": 3,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "AGRICULTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 10,
+              "INT": 0,
+              "CAR": 8
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 3,
+              "COSTUREIRO": 5,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "COSTUREIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 5,
+              "FOR": 14,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 5,
+              "MADEIREIRO": 3,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MINEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 3,
+              "FAZENDEIRO": 5,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "FAZENDEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 7,
+              "FOR": 2,
+              "VEL": 7,
+              "INT": 0,
+              "CAR": 4
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 5,
+              "GUERREIRO": 3,
+              "COMERCIANTE": 0
+            },
+            "principal": "CACADOR"
+          }
+        ]
+      ],
+      "familiaLiderSugerida": 0
+    },
+    {
+      "nome": "plano-construtores-carregadores",
+      "plano": {
+        "COMERCIANTE": 1,
+        "CONSTRUTOR": 4,
+        "CARREGADOR": 4,
+        "MADEIREIRO": 1,
+        "MINEIRO": 1,
+        "AGRICULTOR": 1,
+        "FAZENDEIRO": 1,
+        "COZINHEIRO": 1,
+        "GUERREIRO": 1,
+        "FERREIRO": 1,
+        "COSTUREIRO": 0,
+        "CACADOR": 0
+      },
+      "resultado": [
+        [
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 5,
+              "INT": 0,
+              "CAR": 13
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 3,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 5
+            },
+            "principal": "COMERCIANTE"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 3,
+              "FAZENDEIRO": 5,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "FAZENDEIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 8,
+              "FOR": 11,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 5,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MADEIREIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 8,
+              "INT": 0,
+              "CAR": 10
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 5,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 3
+            },
+            "principal": "COZINHEIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 5,
+              "FOR": 14,
+              "VEL": 1,
+              "INT": 0,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 5,
+              "MADEIREIRO": 3,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "MINEIRO"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 7,
+              "FOR": 4,
+              "VEL": 7,
+              "INT": 0,
+              "CAR": 2
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 3,
+              "GUERREIRO": 5,
+              "COMERCIANTE": 0
+            },
+            "principal": "GUERREIRO"
+          }
+        ],
+        [
+          {
+            "caracteristicas": {
+              "VIT": 3,
+              "FOR": 5,
+              "VEL": 4,
+              "INT": 8,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 5,
+              "CARREGADOR": 3,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CONSTRUTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 2,
+              "FOR": 8,
+              "VEL": 7,
+              "INT": 3,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 3,
+              "CARREGADOR": 5,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 0,
+              "MADEIREIRO": 2,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "CARREGADOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 1,
+              "VEL": 1,
+              "INT": 17,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 5,
+              "FAZENDEIRO": 3,
+              "MINEIRO": 0,
+              "MADEIREIRO": 0,
+              "FERREIRO": 0,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "AGRICULTOR"
+          },
+          {
+            "caracteristicas": {
+              "VIT": 1,
+              "FOR": 7,
+              "VEL": 1,
+              "INT": 11,
+              "CAR": 0
+            },
+            "profissoes": {
+              "CONSTRUTOR": 0,
+              "CARREGADOR": 2,
+              "AGRICULTOR": 0,
+              "FAZENDEIRO": 0,
+              "MINEIRO": 3,
+              "MADEIREIRO": 0,
+              "FERREIRO": 5,
+              "COZINHEIRO": 0,
+              "COSTUREIRO": 0,
+              "CACADOR": 0,
+              "GUERREIRO": 0,
+              "COMERCIANTE": 0
+            },
+            "principal": "FERREIRO"
+          }
+        ]
+      ],
+      "familiaLiderSugerida": 0
+    }
+  ]
+}

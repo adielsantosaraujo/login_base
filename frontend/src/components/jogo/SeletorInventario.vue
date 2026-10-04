@@ -40,8 +40,9 @@ onMounted(() => carregarInventario(categoriaDoSlot(props.slot)))
 </template>
 
 <style scoped>
-.seletor { border: 1px solid var(--p-surface-300, #ccc); padding: 0.75rem; margin-top: 1rem; }
+.seletor { border: 1px solid var(--vl-border); background: var(--vl-surface-2); border-radius: var(--vl-radius-card); padding: 0.75rem; margin-top: 1rem; }
 ul { list-style: none; padding: 0; margin: 0 0 0.5rem; }
 li { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
-.erro { color: var(--p-red-500, #c00); }
+.erro { color: var(--vl-error); }
+h3 { font-family: var(--vl-font-display); color: var(--vl-text); }
 </style>

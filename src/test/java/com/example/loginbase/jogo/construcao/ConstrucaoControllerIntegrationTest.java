@@ -51,9 +51,9 @@ class ConstrucaoControllerIntegrationTest {
 		Vila vila = vilaRepository.saveAndFlush(new Vila(u.getId(), "Vila", 42L, 1));
 		for (int i = 1; i <= 16; i++) {
 			Regiao r = new Regiao(vila.getId(), i);
-			if (i == 1) {
+			if (i <= 3) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.URBANA);
+				r.setTipo(i == 1 ? TipoRegiao.URBANA : i == 2 ? TipoRegiao.FLORESTA : TipoRegiao.MONTANHA);
 			}
 			regiaoRepository.save(r);
 		}
@@ -108,6 +108,14 @@ class ConstrucaoControllerIntegrationTest {
 	}
 
 	@Test
+	void minaDeFerroSoEmMontanha() throws Exception {
+		Usuario u = usuarioComVila("100");
+		criar(u, "MINA_FERRO", 3, 0, 0).andExpect(status().isCreated());
+		criar(u, "MINA_FERRO", 2, 0, 0).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.erro").value(org.hamcrest.Matchers.containsString("Montanha")));
+	}
+
+	@Test
 	void recursosInsuficientesDevolve409() throws Exception {
 		Usuario u = usuarioComVila("5");
 		criar(u, "CASA", 1, 0, 0).andExpect(status().isConflict());
@@ -119,7 +127,12 @@ class ConstrucaoControllerIntegrationTest {
 		mvc.perform(get("/api/jogo/construcoes/catalogo").with(user(u.getEmail()).roles("USER")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(TipoConstrucao.values().length)))
-				.andExpect(jsonPath("$[?(@.tipo=='CASA')].custoN1.MADEIRA").value(20));
+				.andExpect(jsonPath("$[?(@.tipo=='CASA')].custoN1.MADEIRA").value(20))
+				.andExpect(jsonPath("$[?(@.tipo=='CASA')].regioes[*]").value(org.hamcrest.Matchers.contains("URBANA")))
+				.andExpect(jsonPath("$[?(@.tipo=='CASA')].bonusRegiao").value(org.hamcrest.Matchers.contains((Object) null)))
+				.andExpect(jsonPath("$[?(@.tipo=='FAZENDA_PLANTIO')].regioes[*]")
+						.value(org.hamcrest.Matchers.contains("FLORESTA", "PLANICIE")))
+				.andExpect(jsonPath("$[?(@.tipo=='FAZENDA_PLANTIO')].bonusRegiao").value(org.hamcrest.Matchers.contains("PLANTACOES")));
 	}
 
 }

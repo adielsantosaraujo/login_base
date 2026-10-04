@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
 import Drawer from 'primevue/drawer'
-import BarraTurno from '../components/jogo/BarraTurno.vue'
+import CabecalhoJogo from '../components/vilarejo/CabecalhoJogo.vue'
 import RelatorioTurno from '../components/jogo/RelatorioTurno.vue'
 import { useTurno } from '../composables/useTurno'
 
+const route = useRoute()
 const t = useTurno()
 const relatorioAberto = ref(false)
+
+const abaAtiva = computed(() => (route.meta.abaAtiva as string | undefined) ?? '')
+const abasInativas = computed(() => !!route.meta.etapaInicial)
+const mostrarRelatorio = computed(() => !route.meta.etapaInicial)
 
 onMounted(() => t.iniciar())
 
@@ -19,14 +24,15 @@ function abrirRelatorio() {
 
 <template>
   <div class="jogo">
-    <div class="jogo-topo">
-      <BarraTurno
-        :numero="t.turno.value?.numero ?? 0"
-        :segundos-restantes="t.segundosRestantes.value"
-        :erro="t.erro.value"
-        @relatorio="abrirRelatorio"
-      />
-    </div>
+    <CabecalhoJogo
+      :aba-ativa="abaAtiva"
+      :abas-inativas="abasInativas"
+      :turno="t.turno.value?.numero ?? 0"
+      :segundos-restantes="t.segundosRestantes.value"
+      :mostrar-relatorio="mostrarRelatorio"
+      @relatorio="abrirRelatorio"
+    />
+    <p v-if="t.erro.value" class="jogo-erro" role="alert">{{ t.erro.value }}</p>
     <Drawer v-model:visible="relatorioAberto" position="right" header="Relatório do turno" class="jogo-relatorio">
       <RelatorioTurno
         :turno="t.turnoExibido.value"
@@ -36,23 +42,22 @@ function abrirRelatorio() {
         @anteriores="t.carregarTurnoAnterior()"
       />
     </Drawer>
-    <nav class="jogo-menu">
-      <RouterLink to="/jogo/mapa">Mapa</RouterLink>
-      <RouterLink to="/jogo/estoque">Estoque</RouterLink>
-      <RouterLink to="/jogo/familias">Famílias</RouterLink>
-      <RouterLink to="/jogo/mercado">Mercado</RouterLink>
-      <RouterLink to="/jogo/inventario">Inventário</RouterLink>
-      <RouterLink to="/jogo/batalhas">Batalhas</RouterLink>
-    </nav>
     <RouterView />
   </div>
 </template>
 
 <style scoped>
-.jogo-menu {
-  display: flex;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
+.jogo {
+  min-height: 100vh;
+  background: var(--vl-bg);
+  color: var(--vl-text);
+  font-family: var(--vl-font-sans);
+}
+.jogo-erro {
+  margin: 0;
+  padding: 8px 24px;
+  color: var(--vl-error);
+  font-size: 13px;
 }
 </style>
 <style>

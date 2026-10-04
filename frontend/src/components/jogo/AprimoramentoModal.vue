@@ -118,9 +118,11 @@ function aprimorar() {
 </template>
 
 <style scoped>
+h3, h4 { font-family: var(--vl-font-display); color: var(--vl-text); }
+li { font-family: var(--vl-font-mono); }
 .campos { display: flex; gap: 1rem; flex-wrap: wrap; }
 .campos label { display: flex; flex-direction: column; gap: 0.25rem; }
 .acoes { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
-.falta, .erro { color: var(--p-red-500, #dc2626); }
-.dica { font-size: 0.9em; opacity: 0.8; }
+.falta, .erro { color: var(--vl-error); }
+.dica { font-size: 0.9em; color: var(--vl-text-2); }
 </style>

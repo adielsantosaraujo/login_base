@@ -17,7 +17,9 @@ import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.servico.BonusRegiaoService;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -39,15 +41,17 @@ public class OuroService {
 	private final ConsultaTrabalhadores consultaTrabalhadores;
 	private final EstoqueService estoqueService;
 	private final RegistroEventoTurnoService registro;
+	private final BonusRegiaoService bonusRegiaoService;
 
 	public OuroService(CidadaoRepository cidadaoRepository, ConstrucaoRepository construcaoRepository,
 			ConsultaTrabalhadores consultaTrabalhadores, EstoqueService estoqueService,
-			RegistroEventoTurnoService registro) {
+			RegistroEventoTurnoService registro, BonusRegiaoService bonusRegiaoService) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.construcaoRepository = construcaoRepository;
 		this.consultaTrabalhadores = consultaTrabalhadores;
 		this.estoqueService = estoqueService;
 		this.registro = registro;
+		this.bonusRegiaoService = bonusRegiaoService;
 	}
 
 	@Transactional
@@ -59,19 +63,26 @@ public class OuroService {
 	private void cobrarImposto(Vila vila, int turno) {
 		long adultos = cidadaoRepository.findByVilaIdAndVivoTrue(vila.getId()).stream()
 				.filter(c -> c.getIdadeAnos() >= IDADE_IMPOSTO_ANOS).count();
-		BigDecimal ouro = IMPOSTO_POR_ADULTO.multiply(BigDecimal.valueOf(adultos));
+		int bonus = bonusRegiaoService.bonus(vila.getId(), BonusRegiao.COMERCIO);
+		BigDecimal ouro = IMPOSTO_POR_ADULTO.multiply(BigDecimal.valueOf(adultos))
+				.multiply(bonusRegiaoService.fator(vila.getId(), BonusRegiao.COMERCIO)).setScale(2, RoundingMode.HALF_UP);
 		if (ouro.signum() > 0) {
 			estoqueService.creditar(vila, Recurso.OURO, ouro);
 		}
 		Map<String, Object> dados = new LinkedHashMap<>();
 		dados.put("adultos", adultos);
 		dados.put("ouro", ouro);
+		if (bonus > 0) {
+			dados.put("bonusRegiao", bonus);
+		}
 		registro.registrar(vila, turno, TipoEventoTurno.IMPOSTO_COBRADO,
 				"Imposto: " + ouro.setScale(2, RoundingMode.HALF_UP).toPlainString() + " Ouro de " + adultos
 						+ " adulto(s).", dados);
 	}
 
 	private void receitaEstalagens(Vila vila, int turno) {
+		int bonus = bonusRegiaoService.bonus(vila.getId(), BonusRegiao.COMERCIO);
+		BigDecimal fator = bonusRegiaoService.fator(vila.getId(), BonusRegiao.COMERCIO);
 		List<Construcao> estalagens = construcaoRepository.findByVilaIdAndEstado(vila.getId(), EstadoConstrucao.ATIVA)
 				.stream().filter(c -> c.getTipo() == TipoConstrucao.ESTALAGEM)
 				.sorted(java.util.Comparator.comparing(Construcao::getId)).toList();
@@ -87,7 +98,8 @@ public class OuroService {
 					.setScale(6, RoundingMode.HALF_UP).setScale(0, RoundingMode.FLOOR).longValueExact();
 			BigDecimal emEstoque = estoqueService.quantidade(vila, Recurso.REFEICAO).setScale(0, RoundingMode.FLOOR);
 			long servidas = Math.min(capacidade, emEstoque.longValueExact());
-			BigDecimal ouro = OURO_POR_REFEICAO.multiply(BigDecimal.valueOf(servidas));
+			BigDecimal ouro = OURO_POR_REFEICAO.multiply(BigDecimal.valueOf(servidas)).multiply(fator)
+					.setScale(2, RoundingMode.HALF_UP);
 			if (servidas > 0) {
 				estoqueService.debitar(vila, Map.of(Recurso.REFEICAO, BigDecimal.valueOf(servidas)));
 				estoqueService.creditar(vila, Recurso.OURO, ouro);
@@ -97,6 +109,9 @@ public class OuroService {
 			dados.put("capacidade", capacidade);
 			dados.put("refeicoesServidas", servidas);
 			dados.put("ouro", ouro);
+			if (bonus > 0) {
+				dados.put("bonusRegiao", bonus);
+			}
 			registro.registrar(vila, turno, TipoEventoTurno.ESTALAGEM_RECEITA,
 					"Estalagem serviu " + servidas + " refeição(ões) e gerou "
 							+ ouro.setScale(2, RoundingMode.HALF_UP).toPlainString() + " Ouro.", dados);

@@ -29,7 +29,9 @@ import com.example.loginbase.jogo.modelo.Jazida;
 import com.example.loginbase.jogo.modelo.LadrilhoJazida;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
+import com.example.loginbase.jogo.servico.BonusRegiaoService;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -61,11 +63,13 @@ public class ProducaoService {
 	private final RegistroEventoTurnoService registro;
 	private final RegiaoRepository regiaoRepository;
 	private final LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	private final BonusRegiaoService bonusRegiaoService;
 
 	public ProducaoService(ConstrucaoRepository construcaoRepository,
 			ConstrucaoMarcacaoRepository marcacaoRepository, ConsultaTrabalhadores consultaTrabalhadores,
 			EstoqueService estoqueService, RegistroEventoTurnoService registro,
-			RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository) {
+			RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository,
+			BonusRegiaoService bonusRegiaoService) {
 		this.construcaoRepository = construcaoRepository;
 		this.marcacaoRepository = marcacaoRepository;
 		this.consultaTrabalhadores = consultaTrabalhadores;
@@ -73,6 +77,7 @@ public class ProducaoService {
 		this.registro = registro;
 		this.regiaoRepository = regiaoRepository;
 		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
+		this.bonusRegiaoService = bonusRegiaoService;
 	}
 
 	@Transactional
@@ -86,7 +91,11 @@ public class ProducaoService {
 		List<Construcao> predios = construcaoRepository.findByVilaIdAndEstado(vila.getId(), EstadoConstrucao.ATIVA)
 				.stream().filter(c -> CatalogoPrediosProducao.produz(c.getTipo()))
 				.sorted(Comparator.comparing(Construcao::getId)).toList();
+		Map<BonusRegiao, Integer> bonusVila = predios.isEmpty() ? Map.of()
+				: bonusRegiaoService.bonusDaVila(vila.getId());
 		for (Construcao c : predios) {
+			int bonus = bonusDoPredio(bonusVila, c);
+			BigDecimal fator = fator(bonus);
 			boolean coleta = CatalogoPrediosProducao.ehColeta(c.getTipo());
 			List<Trabalhador> trabalhadores = consultaTrabalhadores.trabalhadores(c, vila);
 			List<Trabalhador> produtivos = coleta
@@ -99,13 +108,13 @@ public class ProducaoService {
 			Map<Recurso, BigDecimal> produzido = new LinkedHashMap<>();
 			for (Saida s : CatalogoPrediosProducao.saidas(c.getTipo(), c.getConfiguracao())) {
 				BigDecimal q = BigDecimal.valueOf(somaEficiencia).multiply(BigDecimal.valueOf(s.base()))
-						.setScale(2, RoundingMode.HALF_UP);
+						.multiply(fator).setScale(2, RoundingMode.HALF_UP);
 				if (q.signum() > 0) {
 					produzido.merge(s.recurso(), q, BigDecimal::add);
 				}
 			}
 			registrarProducao(vila, turno, c, coleta ? CATEGORIA_COLETA : CATEGORIA_RURAL, produtivos.size(),
-					produzido);
+					produzido, bonus > 0 ? Map.of("bonusRegiao", bonus) : Map.of());
 		}
 	}
 
@@ -121,7 +130,11 @@ public class ProducaoService {
 				.sorted(Comparator.<Construcao>comparingInt(c -> CatalogoFabricas.ORDEM.indexOf(c.getTipo()))
 						.thenComparing(Construcao::getId))
 				.toList();
+		Map<BonusRegiao, Integer> bonusVila = fabricas.isEmpty() ? Map.of()
+				: bonusRegiaoService.bonusDaVila(vila.getId());
 		for (Construcao c : fabricas) {
+			int bonus = bonusDoPredio(bonusVila, c);
+			BigDecimal fator = fator(bonus);
 			List<Trabalhador> trabalhadores = consultaTrabalhadores.trabalhadores(c, vila);
 			double somaEficiencia = trabalhadores.stream().mapToDouble(Trabalhador::eficiencia).sum();
 			if (somaEficiencia <= 0) {
@@ -132,8 +145,8 @@ public class ProducaoService {
 			BigDecimal totalCiclos = BigDecimal.ZERO;
 			BigDecimal restante = null;
 			for (Receita rc : CatalogoFabricas.receitas(c.getTipo(), c.getNivel(), c.getConfiguracao())) {
-				BigDecimal disponivel = BigDecimal.valueOf(somaEficiencia * rc.ciclosBase()).setScale(2,
-						RoundingMode.HALF_UP);
+				BigDecimal disponivel = BigDecimal.valueOf(somaEficiencia * rc.ciclosBase()).multiply(fator)
+						.setScale(2, RoundingMode.HALF_UP);
 				if (restante == null) {
 					restante = disponivel;
 				} else {
@@ -164,16 +177,28 @@ public class ProducaoService {
 				continue;
 			}
 			registrarProducao(vila, turno, c, CATEGORIA_FABRICA, trabalhadores.size(), produzido, consumido,
-					totalCiclos);
+					totalCiclos, bonus);
 		}
 	}
 
 	private void registrarProducao(Vila vila, int turno, Construcao c, String categoria, int produtivos,
-			Map<Recurso, BigDecimal> produzido, Map<Recurso, BigDecimal> consumido, BigDecimal ciclos) {
-		registrarProducao(vila, turno, c, categoria, produtivos, produzido, Map.of("consumido",
-				consumido.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().name(),
-						e -> e.getValue().toPlainString(), (a, b) -> a, LinkedHashMap::new)),
-				"ciclos", ciclos.toPlainString()));
+			Map<Recurso, BigDecimal> produzido, Map<Recurso, BigDecimal> consumido, BigDecimal ciclos, int bonus) {
+		Map<String, Object> extras = new LinkedHashMap<>();
+		extras.put("consumido", consumido.entrySet().stream().collect(Collectors.toMap(e -> e.getKey().name(),
+				e -> e.getValue().toPlainString(), (a, b) -> a, LinkedHashMap::new)));
+		extras.put("ciclos", ciclos.toPlainString());
+		if (bonus > 0) {
+			extras.put("bonusRegiao", bonus);
+		}
+		registrarProducao(vila, turno, c, categoria, produtivos, produzido, extras);
+	}
+
+	private static int bonusDoPredio(Map<BonusRegiao, Integer> bonusVila, Construcao c) {
+		return ConstrucaoCatalogo.bonusRegiao(c.getTipo()).map(b -> bonusVila.getOrDefault(b, 0)).orElse(0);
+	}
+
+	private static BigDecimal fator(int bonus) {
+		return BigDecimal.ONE.add(BigDecimal.valueOf(bonus).movePointLeft(2));
 	}
 
 	/** Credita o produzido ao estoque e registra o evento PRODUCAO do prédio (se houver produção). */

@@ -168,7 +168,8 @@ function porcentagem(c: Construcao): string {
 .conteudo { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; margin-top: 1rem; }
 .lateral { flex: 1; min-width: 280px; }
 .botoes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
-.erro { color: #b91c1c; }
-.sucesso { color: #15803d; }
+.erro { color: var(--vl-error); }
+.sucesso { color: var(--vl-tipo-floresta); }
+h1, h2 { font-family: var(--vl-font-display); }
 .lista-predios { padding-left: 1.2rem; }
 </style>

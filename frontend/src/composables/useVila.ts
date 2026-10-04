@@ -1,115 +1,120 @@
 import { computed, ref } from 'vue'
-import { get, post } from '../api/http'
-import { marcarVilaCriada } from '../router/guardaVila'
-import type { TipoRegiao } from './useMapa'
-
-export interface RegiaoPrevia {
-  indice: number
-  jazidas: Record<string, number>
-}
-
-export interface PreviaVila {
-  semente: number
-  regioes: RegiaoPrevia[]
-}
-
-export const LARGURA_GRADE = 4
-export const MAX_REGIOES = 3
-
-/** Duas regiões são adjacentes na grade 4x4 se diferem em 1 linha ou 1 coluna (sem diagonal). */
-export function adjacentes(a: number, b: number): boolean {
-  const la = Math.floor((a - 1) / LARGURA_GRADE)
-  const ca = (a - 1) % LARGURA_GRADE
-  const lb = Math.floor((b - 1) / LARGURA_GRADE)
-  const cb = (b - 1) % LARGURA_GRADE
-  return Math.abs(la - lb) + Math.abs(ca - cb) === 1
-}
+import { useRouter } from 'vue-router'
+import { ApiError, get, post } from '../api/http'
+import { marcarVilaCriada, resetarGuardaVila } from '../router/guardaVila'
+import * as regioes from '../domain/regioes'
+import type { PreviaMapa } from '../domain/regioes'
 
 export function useCriacaoVila() {
-  const previa = ref<PreviaVila | null>(null)
-  const selecao = ref<number[]>([])
-  const tipos = ref<Record<number, TipoRegiao>>({})
-  const carregando = ref(false)
+  const router = useRouter()
+
+  const previa = ref<PreviaMapa | null>(null)
+  const selecionadas = ref<number[]>([])
+  const hover = ref<number | null>(null)
+  const gerando = ref(false)
   const enviando = ref(false)
   const erro = ref<string | null>(null)
-  const avisoSelecao = ref<string | null>(null)
 
-  const completo = computed(
-    () =>
-      selecao.value.length === MAX_REGIOES &&
-      selecao.value.every((i) => !!tipos.value[i]) &&
-      selecao.value.some((i) => tipos.value[i] === 'URBANA'),
+  const listaRegioes = () => previa.value?.regioes ?? []
+
+  const conectado = computed(() => regioes.conectado(selecionadas.value))
+  const totaisBonus = computed(() => regioes.totaisBonus(selecionadas.value, listaRegioes()))
+  const dicaSelecao = computed(() => regioes.dicaSelecao(selecionadas.value, listaRegioes()))
+  const valida = computed(() => regioes.selecaoValida(selecionadas.value, listaRegioes()))
+  /** Região em foco: hover ou, na ausência, a última selecionada. */
+  const emFoco = computed<number | null>(
+    () => hover.value ?? selecionadas.value[selecionadas.value.length - 1] ?? null,
   )
 
-  async function carregarPrevia(semente?: number) {
-    carregando.value = true
+  function podeSelecionar(indice: number): boolean {
+    return regioes.podeSelecionar(selecionadas.value, indice)
+  }
+
+  function mensagem(e: unknown, padrao: string): string {
+    return e instanceof Error ? e.message : padrao
+  }
+
+  async function carregarPrevia() {
+    gerando.value = true
     erro.value = null
     try {
-      const url = semente === undefined ? '/api/jogo/vila/preview' : `/api/jogo/vila/preview?semente=${semente}`
-      previa.value = await get<PreviaVila>(url)
+      try {
+        previa.value = await get<PreviaMapa>('/api/jogo/vila/previa')
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 404) {
+          previa.value = await post<PreviaMapa>('/api/jogo/vila/previa')
+        } else {
+          throw e
+        }
+      }
     } catch (e) {
-      erro.value = e instanceof Error ? e.message : 'Erro ao carregar a prévia'
+      erro.value = mensagem(e, 'Erro ao carregar a prévia')
     } finally {
-      carregando.value = false
+      gerando.value = false
     }
   }
 
-  function permitida(indice: number): boolean {
-    const atual = selecao.value
-    if (atual.includes(indice) || atual.length === 0) return true
-    if (atual.length >= MAX_REGIOES) return false
-    return atual.some((i) => adjacentes(i, indice))
-  }
-
-  /** Alterna a seleção; recusa (com aviso) regiões não adjacentes ou além do limite. */
   function alternar(indice: number) {
-    avisoSelecao.value = null
-    const atual = selecao.value
-    if (atual.includes(indice)) {
-      selecao.value = atual.filter((i) => i !== indice)
-      const { [indice]: _removido, ...resto } = tipos.value
-      tipos.value = resto
-      return
+    if (selecionadas.value.includes(indice)) {
+      selecionadas.value = selecionadas.value.filter((i) => i !== indice)
+    } else if (podeSelecionar(indice)) {
+      selecionadas.value = [...selecionadas.value, indice]
     }
-    if (atual.length >= MAX_REGIOES) {
-      avisoSelecao.value = 'Você já escolheu 3 regiões. Desmarque uma para trocar.'
-      return
-    }
-    if (!permitida(indice)) {
-      avisoSelecao.value = `A região ${indice} não é adjacente às regiões já escolhidas.`
-      return
-    }
-    selecao.value = [...atual, indice]
-    tipos.value = { ...tipos.value, [indice]: 'RURAL' }
   }
 
-  function definirTipo(indice: number, tipo: TipoRegiao) {
-    tipos.value = { ...tipos.value, [indice]: tipo }
+  async function gerar() {
+    gerando.value = true
+    erro.value = null
+    try {
+      previa.value = await post<PreviaMapa>('/api/jogo/vila/previa')
+      selecionadas.value = []
+      hover.value = null
+    } catch (e) {
+      erro.value = mensagem(e, 'Erro ao gerar novo mapa')
+    } finally {
+      gerando.value = false
+    }
   }
 
   async function criar(): Promise<boolean> {
-    if (!completo.value) return false
+    if (!previa.value || enviando.value) return false
     enviando.value = true
     erro.value = null
     try {
-      const corpo: { regioesEscolhidas: number[]; tipos: Record<string, TipoRegiao>; semente?: number } = {
-        regioesEscolhidas: [...selecao.value],
-        tipos: Object.fromEntries(selecao.value.map((i) => [String(i), tipos.value[i]])),
-      }
-      if (previa.value) corpo.semente = previa.value.semente
-      await post('/api/jogo/vila', corpo)
+      await post('/api/jogo/vila', { previaId: previa.value.previaId, indices: [...selecionadas.value] })
       marcarVilaCriada()
+      await router.push('/jogo/distribuir-populacao')
       return true
     } catch (e) {
-      erro.value = e instanceof Error ? e.message : 'Erro ao criar a vila'
+      if (e instanceof ApiError && e.codigo === 'VILA_JA_EXISTE') {
+        resetarGuardaVila()
+        await router.push('/jogo/mapa')
+      } else if (e instanceof ApiError && e.codigo === 'PREVIA_EXPIRADA') {
+        const aviso = e.message
+        selecionadas.value = []
+        hover.value = null
+        await carregarPrevia()
+        erro.value = aviso
+      } else {
+        erro.value = mensagem(e, 'Erro ao criar a vila')
+      }
       return false
     } finally {
       enviando.value = false
     }
   }
 
+  function setHover(indice: number) {
+    hover.value = indice
+  }
+
+  function limparHover() {
+    hover.value = null
+  }
+
   return {
-    previa, selecao, tipos, carregando, enviando, erro, avisoSelecao, completo,
-    carregarPrevia, alternar, definirTipo, permitida, criar,
+    previa, selecionadas, hover, gerando, enviando, erro,
+    conectado, totaisBonus, dicaSelecao, valida, emFoco,
+    podeSelecionar, carregarPrevia, alternar, gerar, criar, setHover, limparHover,
   }
 }

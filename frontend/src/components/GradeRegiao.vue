@@ -96,19 +96,20 @@ function simbolo(l: Ladrilho | null): string {
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--p-surface-100, #f1f5f9);
-  border: 1px solid var(--p-surface-200, #e2e8f0);
-  color: #fff;
+  font-family: var(--vl-font-mono);
+  background: var(--vl-surface-2);
+  border: 1px solid var(--vl-border);
+  color: var(--vl-accent-ink);
 }
 .ladrilho.selecionavel { cursor: pointer; }
-.ladrilho.destaque { outline: 3px solid #f59e0b; outline-offset: -3px; }
-.ladrilho-construcao { cursor: pointer; background: #b45309; }
-.ladrilho-jazida-floresta { background: #15803d; }
-.ladrilho-jazida-rocha { background: #64748b; }
-.ladrilho-jazida-barreiro { background: #a16207; }
-.ladrilho-jazida-veio-de-ferro { background: #475569; }
-.ladrilho-jazida-veio-de-carvao { background: #1f2937; }
-.ladrilho-jazida-salina { background: #0891b2; }
-.ladrilho-jazida-enxofre { background: #ca8a04; }
-.ladrilho-jazida-campo { background: #65a30d; }
+.ladrilho.destaque { outline: 3px solid var(--vl-accent); outline-offset: -3px; }
+.ladrilho-construcao { cursor: pointer; background: var(--vl-bonus-industria); }
+.ladrilho-jazida-floresta { background: var(--vl-jazida-floresta); }
+.ladrilho-jazida-rocha { background: var(--vl-jazida-rocha); }
+.ladrilho-jazida-barreiro { background: var(--vl-jazida-barreiro); }
+.ladrilho-jazida-veio-de-ferro { background: var(--vl-jazida-veio-de-ferro); }
+.ladrilho-jazida-veio-de-carvao { background: var(--vl-jazida-veio-de-carvao); }
+.ladrilho-jazida-salina { background: var(--vl-jazida-salina); }
+.ladrilho-jazida-enxofre { background: var(--vl-jazida-enxofre); }
+.ladrilho-jazida-campo { background: var(--vl-jazida-campo); }
 </style>

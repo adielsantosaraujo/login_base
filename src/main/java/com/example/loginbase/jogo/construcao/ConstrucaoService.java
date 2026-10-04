@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.loginbase.jogo.comum.JogoException;
 import com.example.loginbase.jogo.modelo.GradeRegioes;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
@@ -55,7 +56,8 @@ public class ConstrucaoService {
 				.orElseThrow(() -> new JogoException(HttpStatus.BAD_REQUEST, "Região não possuída: " + regiaoIndice));
 		if (!ConstrucaoCatalogo.permiteRegiao(tipo, regiao.getTipo())) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "%s só pode ser construído em região %s"
-					.formatted(ConstrucaoCatalogo.de(tipo).nome(), ConstrucaoCatalogo.regiaoPermitida(tipo)));
+					.formatted(ConstrucaoCatalogo.de(tipo).nome(), ConstrucaoCatalogo.regioesPermitidas(tipo).stream().map(TipoRegiao::getNomeExibicao)
+									.collect(java.util.stream.Collectors.joining(" ou "))));
 		}
 		NivelConstrucao nivel = NivelConstrucao.N1;
 		int tamanho = ConstrucaoCatalogo.tamanho(nivel);
@@ -157,7 +159,8 @@ public class ConstrucaoService {
 		return ConstrucaoCatalogo.todos().stream().map(e -> {
 			Map<String, Integer> custo = new java.util.LinkedHashMap<>();
 			e.custoN1().forEach((r, q) -> custo.put(r.name(), q));
-			return new CatalogoConstrucaoDTO(e.tipo(), e.nome(), e.regiaoPermitida(), custo,
+			return new CatalogoConstrucaoDTO(e.tipo(), e.nome(), ConstrucaoCatalogo.regioesPermitidas(e.tipo()),
+					e.bonusRegiao(), custo,
 					ConstrucaoCatalogo.tamanho(NivelConstrucao.N1), e.poN1(), e.profissoes());
 		}).toList();
 	}

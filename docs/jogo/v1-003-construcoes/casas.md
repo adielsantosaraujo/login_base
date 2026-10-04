@@ -34,7 +34,7 @@ Casas são a habitação da vila, determinando quantos cidadãos podem viver nel
 ## Exemplos
 
 **Exemplo 1: Casas iniciais**
-Vila criada com regiões iniciais: Urbana, Rural, Coleta. As 4 casas N1 são colocadas na Urbana nos ladrilhos (0,0), (2,0), (4,0), (6,0), totalizando 4 núcleos e 16 vagas para os 16 cidadãos iniciais (4 famílias × 4 membros).
+Vila criada com 3 regiões: uma Urbana, uma de outro tipo, uma terceira. As 4 casas N1 são colocadas na primeira região Urbana escolhida nos ladrilhos (0,0), (2,0), (4,0), (6,0), totalizando 4 núcleos e 16 vagas para os 16 cidadãos iniciais (4 famílias × 4 membros).
 
 **Exemplo 2: Expansão de casa**
 Jogador escolhe expandir Casa N1 para N2 no ladrilho (0,0), marcando área 2x2 com (0,0), (1,0), (0,1), (1,1) livres. Custo: 50 Madeira, 25 Pedra, 25 Argila. Com 2 Construtores de eficiência 1,0: 10 PO / 2 PO/turno = 5 turnos.

@@ -4,61 +4,81 @@
 
 ## História
 
-Como novo jogador, quero escolher 3 regiões iniciais e seus tipos para começar meu jogo.
+Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) e escolher 3 regiões vizinhas entre si para fundar minha vila.
 
 ## Contexto
 
 - Cada usuário autenticado tem exatamente 1 vila.
-- Na criação, o jogador escolhe 3 regiões (índices 1-16 da grade 4×4).
-- A 1ª região pode ser qualquer uma; a 2ª e 3ª devem ser adjacentes (ortogonalmente) a uma região já escolhida.
-- Ao menos 1 das 3 deve ser **Urbana**.
-- Cada região recebe um tipo (Rural, Urbana ou Coleta) que é definitivo na v1.
-- A vila é criada com uma semente aleatória que determina as jazidas de todos os ladrilhos.
-- A vila recebe 4 casas N1 iniciais na 1ª região Urbana escolhida.
+- O servidor mantém uma **prévia persistida** por usuário (tabela `vila_previa`) com semente e rodada; `POST /previa` gera ou renova; `GET /previa` devolve vigente; "Gerar novo mapa" é ilimitado.
+- Na criação, o jogador escolhe 3 regiões (índices 1-16 da grade 4×4) que formam um **conjunto conexo** (ortogonalmente vizinhas entre si).
+- Os 5 tipos e 3 bônus de cada região são gerados deterministicamente da semente; o jogador vê a prévia antes de escolher.
+- Ao menos 1 das 3 regiões escolhidas deve ser **Urbana**.
+- A vila é criada com a semente da prévia; gravas-se as 16 regiões com tipo e bônus, e marca-se as 3 como possuídas.
+- **Bônus da vila** = soma dos bônus das 3 regiões possuídas.
+- A vila recebe 4 casas N1 iniciais na **1ª região Urbana** (na ordem de seleção).
 - A vila recebe recursos iniciais: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200.
+- Erros: `VILA_JA_EXISTE` (409), `PREVIA_EXPIRADA` (409), `SELECAO_INVALIDA` (400), `REGIAO_NAO_ADJACENTE` (400), `SEM_REGIAO_URBANA` (400).
 
 ## Critérios de aceite
 
-### CA1 — Escolha de 3 regiões adjacentes é aceita
+### CA1 — Prévia do mapa é gerada e exibida
 
 - **Dado** um novo usuário autenticado sem vila
-- **Quando** o usuário submete a escolha: região 6 (Urbana), região 7 (Urbana), região 3 (Rural)
-- **Então** a vila é criada com essas 3 regiões; região 7 é adjacente a 6 (✓); região 3 é adjacente a 7 (✓); pelo menos 1 é Urbana (✓)
+- **Quando** o usuário acessa a tela de criação, ou clica "Gerar novo mapa"
+- **Então** `POST /previa` (ou `GET /previa`) retorna os 5 tipos e 3 bônus de cada uma das 16 regiões, com `rodada` e `previaId`
 
-### CA2 — Terceira região não adjacente é rejeitada
+### CA2 — Escolha de 3 regiões conexas é aceita
 
-- **Dado** um novo usuário com a tela de criação mostrando regiões 6 e 7 (ambas Urbanas) selecionadas
-- **Quando** o usuário tenta selecionar região 1 (Rural) como 3ª
-- **Então** a seleção é rejeitada (região 1 não é adjacente a 6 nem a 7); mensagem de erro: "Região deve ser adjacente a uma já selecionada"
+- **Dado** o servidor com a prévia vigente (região 6 Urbana, 7 Litoral, 10 Planície, vizinhas entre si)
+- **Quando** o usuário submete a escolha: região 6, região 7, região 10
+- **Então** `POST /api/jogo/vila` com `{ "previaId": "...", "indices": [6, 7, 10] }` retorna `201 { "vilaId": 42, "proximaEtapa": "DISTRIBUIR_POPULACAO" }`; região 7 é vizinha a 6, região 10 é vizinha a 6 e 7 (✓ conexo); ≥1 Urbana (✓)
 
-### CA3 — Escolha sem região Urbana é rejeitada
+### CA3 — Seleção não conexa é rejeitada
 
-- **Dado** um novo usuário tentando escolher regiões 5 (Rural), 6 (Rural), 9 (Coleta)
+- **Dado** o usuário tentando escolher região 6, região 7, região 1
 - **Quando** o usuário submete a escolha
-- **Então** a vila não é criada; mensagem de erro: "Ao menos uma região deve ser Urbana"
+- **Então** `POST /api/jogo/vila` retorna `400 REGIAO_NAO_ADJACENTE` "As regiões escolhidas precisam ser vizinhas entre si"; 1 não é vizinha de 6 nem 7 (grafo desconectado)
 
-### CA4 — Usuário com vila não cria outra
+### CA4 — Escolha sem região Urbana é rejeitada
 
-- **Dado** um usuário autenticado que já tem uma vila criada (id = 123)
-- **Quando** o usuário tenta acessar novamente a tela de criação de vila
-- **Então** a tela redireciona para o mapa da sua vila existente
+- **Dado** o usuário tentando escolher regiões 2 (Planície), 3 (Litoral), 11 (Floresta)
+- **Quando** o usuário submete a escolha
+- **Então** `POST /api/jogo/vila` retorna `400 SEM_REGIAO_URBANA` "Ao menos uma região deve ser Urbana"
 
-### CA5 — Recursos iniciais e casas iniciais são criados
+### CA5 — Usuário com vila não cria outra
 
-- **Dado** a vila foi criada com região 6 (Urbana), região 7 (Rural), região 2 (Coleta)
-- **Quando** o sistema processa a criação
-- **Então** o estoque da vila contém: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200; e 4 casas N1 existem na região 6, nos ladrilhos (0,0), (2,0), (4,0), (6,0)
+- **Dado** um usuário autenticado que já tem uma vila criada
+- **Quando** o usuário tenta enviar `POST /api/jogo/vila`
+- **Então** o servidor retorna `409 VILA_JA_EXISTE` "Usuário já possui uma vila"; ou o frontend redireciona para `/jogo/mapa` (guarda de rota)
 
-### CA6 — Prévia das jazidas antes de escolher
+### CA6 — Recursos iniciais e casas iniciais são criados
 
-- **Dado** um novo usuário na tela de criação de vila
-- **Quando** o usuário vê a grade 4×4 com cores/ícones indicando jazidas
-- **Então** as jazidas visíveis refletem a semente temporária (mesma para toda a exibição) e correspondem à geração determinística
+- **Dado** a vila foi criada com regiões 6 (Urbana), 7 (Litoral), 10 (Planície)
+- **Quando** a criação completa
+- **Então** o estoque contém: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200; 4 casas N1 em (0,0), (2,0), (4,0), (6,0) **da região 6** (1ª Urbana na ordem [6, 7, 10]); 16 cidadãos pendentes 20/10; prévia apagada
+
+### CA7 — Gerar novo mapa incrementa rodada
+
+- **Dado** a prévia com `rodada` = 1
+- **Quando** o usuário clica "Gerar novo mapa" (chama `POST /previa`)
+- **Então** a nova prévia retorna `rodada` = 2; `previaId` novo; `semente` nova; "Gerar novo mapa" sem limite ou custo
+
+### CA8 — Prévia expirada força recarregamento
+
+- **Dado** a prévia com `previaId` = "uuid-1" e o servidor apaga a linha (ou usuário aguarda >30 min)
+- **Quando** o usuário tenta enviar `POST /api/jogo/vila` com `previaId` = "uuid-1"
+- **Então** retorna `409 PREVIA_EXPIRADA` "O mapa mudou. Escolha as regiões novamente"; frontend recarrega a prévia (`GET /previa`)
+
+### CA9 — Bônus da vila = soma das 3 regiões selecionadas
+
+- **Dado** região 6 com bônus {INDÚSTRIA 42, COMÉRCIO 28, DESENVOLVIMENTO 15}, região 7 com {SALINAS 38, ENXOFRE 22, MILITAR 18}, região 10 com {PLANTAÇÕES 45, CRIAÇÕES 26, FLORESTA 12}
+- **Quando** a vila é criada com essas 3
+- **Então** a vila grava 16 regiões com tipo e bônus; bônus da vila = {INDÚSTRIA 42, COMÉRCIO 28, DESENVOLVIMENTO 15, SALINAS 38, ENXOFRE 22, MILITAR 18, PLANTAÇÕES 45, CRIAÇÕES 26, FLORESTA 12}; soma total 246 (verificável em `GET /api/jogo/vila`)
 
 ## Tarefas
 
 - [h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md](h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md)
-- [h-001-tarefa-002-geracao-de-jazidas-por-semente.md](h-001-tarefa-002-geracao-de-jazidas-por-semente.md)
+- [h-001-tarefa-002-geracao-do-mapa-por-semente.md](h-001-tarefa-002-geracao-do-mapa-por-semente.md)
 - [h-001-tarefa-003-api-de-criacao-da-vila.md](h-001-tarefa-003-api-de-criacao-da-vila.md)
 - [h-001-tarefa-004-tela-de-criacao-da-vila.md](h-001-tarefa-004-tela-de-criacao-da-vila.md)
 

@@ -65,12 +65,14 @@ const emit = defineEmits<{
 
 <style scoped>
 .tropas { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
-.tropa { border: 1px solid var(--p-content-border-color, #ccc); border-radius: 6px; padding: 0.75rem; }
+.tropa { border: 1px solid var(--vl-border); border-radius: var(--vl-radius-chip); padding: 0.75rem; }
 .estado { font-size: 0.8em; font-weight: normal; margin-left: 0.5rem; opacity: 0.8; }
 .membros { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
 .membros th, .membros td { text-align: left; padding: 0.3rem 0.6rem; }
-.ferido { background: var(--p-red-50, #fef2f2); }
-.badge-ferido { color: var(--p-red-600, #dc2626); }
+.ferido { background: var(--vl-accent-bg); }
+.badge-ferido { color: var(--vl-error); }
 .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.tropa h3, .tropa h4 { font-family: var(--vl-font-display); }
+.membros td, .estado { font-family: var(--vl-font-mono); }
 </style>

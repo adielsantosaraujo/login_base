@@ -17,9 +17,9 @@ O Mercado permite compra e venda de recursos com um mercador NPC. A Estalagem ge
 
 ### Estalagem [proposta — seção 4.10 da bíblia]
 - R6: Vagas: Cozinheiros ou Comerciantes (2/5/10).
-- R7: Serve Refeições a viajantes: por turno consome até `5 × Σ eficiência × mult. nível` Refeições e gera **4 Ouro por Refeição** servida.
+- R7: Serve Refeições a viajantes: por turno consome até `5 × Σ eficiência × mult. nível` Refeições e gera **4 Ouro por Refeição** servida, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + bônus ÷ 100), arredondado em 2 casas decimais.
 - R8: Imigração: a cada turno, chance de `2% × nível` (N1 2%, N2 4%, N3 6%) de chegar um viajante adulto (18–30 anos, 20 pontos de característica e 10 de profissão distribuídos aleatoriamente), se existir núcleo livre em alguma casa; ele vira um núcleo próprio (solteiro).
-- R9: Arredondamento da Estalagem: a capacidade de Refeições por turno é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas e cada uma gera 4 Ouro. Ex.: capacidade 14,4 → 14 Refeições servidas → 56 Ouro.
+- R9: Arredondamento da Estalagem: a capacidade de Refeições por turno é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas. Ex.: capacidade 14,4 → 14 Refeições servidas; com bônus Comércio 47, cada Refeição gera 4 × 1,47 = 5,88 Ouro → 14 × 5,88 = 82,32 Ouro.
 
 ## Números e tabelas
 
@@ -88,6 +88,13 @@ Imigrante: adulto (18–30 anos), 20 pontos de característica + 10 de profissã
 - Efetivamente servidas: floor(14,4) = 14 Refeições (R9)
 - Ouro gerado: 14 × 4 = **56 Ouro**
 - Chance de imigração: 4% (imigrante se houver núcleo livre)
+
+**Exemplo 4: Estalagem com bônus Comércio**
+- Mesma Estalagem N2 com 14 Refeições servidas
+- Vila tem Comércio 47 → fator = 1 + 47 ÷ 100 = 1,47
+- Ouro por Refeição: 4 × 1,47 = 5,88 Ouro
+- Ouro total no turno: 14 × 5,88 = **82,32 Ouro**
+- Comparação: sem bônus = 56 Ouro
 
 ## Interações com outros domínios
 

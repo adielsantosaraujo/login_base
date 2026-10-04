@@ -16,6 +16,7 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.masmorra.Masmorra;
 import com.example.loginbase.jogo.masmorra.MasmorraRepository;
 import com.example.loginbase.jogo.dto.LadrilhoDTO;
+import com.example.loginbase.jogo.dto.RegiaoBonusDTO;
 import com.example.loginbase.jogo.dto.LadrilhoDTO.ConstrucaoLadrilhoDTO;
 import com.example.loginbase.jogo.dto.MapaDTO;
 import com.example.loginbase.jogo.dto.MapaDTO.VilaResumoDTO;
@@ -42,18 +43,21 @@ public class MapaService {
 	private final LadrilhoJazidaRepository ladrilhoJazidaRepository;
 	private final ConstrucaoRepository construcaoRepository;
 	private final GeradorJazidaService geradorJazida;
+	private final BonusRegiaoService bonusRegiaoService;
 	private final ConsultaMasmorras consultaMasmorras;
 	private final MasmorraRepository masmorraRepository;
 
 	public MapaService(RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository,
 			ConstrucaoRepository construcaoRepository, GeradorJazidaService geradorJazida,
-			ConsultaMasmorras consultaMasmorras, MasmorraRepository masmorraRepository) {
+			ConsultaMasmorras consultaMasmorras, MasmorraRepository masmorraRepository,
+			BonusRegiaoService bonusRegiaoService) {
 		this.regiaoRepository = regiaoRepository;
 		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
 		this.construcaoRepository = construcaoRepository;
 		this.geradorJazida = geradorJazida;
 		this.consultaMasmorras = consultaMasmorras;
 		this.masmorraRepository = masmorraRepository;
+		this.bonusRegiaoService = bonusRegiaoService;
 	}
 
 	public MapaDTO obterMapaVila(Vila vila) {
@@ -63,16 +67,19 @@ public class MapaService {
 		for (Masmorra m : masmorraRepository.findByVilaIdAndAtivaTrueOrderByIdAsc(vila.getId())) {
 			masmorraIds.put(m.getRegiaoIndice(), m.getId());
 		}
+		Map<Long, List<RegiaoBonusDTO>> bonusPorRegiao = bonusRegiaoService
+				.bonusDasRegioes(porIndice.values().stream().map(Regiao::getId).toList());
 		List<RegiaoResumoDTO> regioes = new ArrayList<>(GradeRegioes.TOTAL);
 		for (int i = 1; i <= GradeRegioes.TOTAL; i++) {
 			Regiao r = porIndice.get(i);
 			boolean possuida = r != null && r.isPossuida();
-			TipoRegiao tipo = possuida ? r.getTipo() : null;
+			TipoRegiao tipo = r != null ? r.getTipo() : null;
+			List<RegiaoBonusDTO> bonus = r != null ? bonusPorRegiao.getOrDefault(r.getId(), List.of()) : List.of();
 			Optional<Integer> nivel = !possuida ? consultaMasmorras.nivelMasmorraAtiva(vila, i) : Optional.empty();
 			regioes.add(new RegiaoResumoDTO(i, tipo, possuida, nivel.isPresent(), nivel.orElse(null),
-					nivel.isPresent() ? masmorraIds.get(i) : null));
+					nivel.isPresent() ? masmorraIds.get(i) : null, bonus));
 		}
-		return new MapaDTO(new VilaResumoDTO(vila.getId(), vila.getNome()), regioes);
+		return new MapaDTO(new VilaResumoDTO(vila.getId(), vila.getNome(), bonusRegiaoService.bonusDaVila(vila.getId())), regioes);
 	}
 
 	/** Região não possuída devolve {@code possuida=false} e lista de ladrilhos vazia. */
@@ -83,7 +90,10 @@ public class MapaService {
 		Optional<Regiao> encontrada = regiaoRepository.findByVilaIdAndIndice(vila.getId(), indice);
 		if (encontrada.isEmpty() || !encontrada.get().isPossuida()) {
 			Long id = encontrada.map(Regiao::getId).orElse(null);
-			return new RegiaoDetalheDTO(new RegiaoDTO(id, indice, null, false), List.of());
+			TipoRegiao tipoNaoPossuida = encontrada.map(Regiao::getTipo).orElse(null);
+			List<RegiaoBonusDTO> bonusNaoPossuida = id == null ? List.of()
+					: bonusRegiaoService.bonusDasRegioes(List.of(id)).getOrDefault(id, List.of());
+			return new RegiaoDetalheDTO(new RegiaoDTO(id, indice, tipoNaoPossuida, false, bonusNaoPossuida), List.of());
 		}
 		Regiao regiao = encontrada.get();
 
@@ -92,7 +102,7 @@ public class MapaService {
 		if (!persistidos.isEmpty()) {
 			persistidos.forEach(l -> jazidas.put(GeradorJazidaService.chave(l.getX(), l.getY()), l.getJazida()));
 		}
-		else if (regiao.getTipo() == TipoRegiao.COLETA) {
+		else if (regiao.getTipo() != null && regiao.getTipo() != TipoRegiao.URBANA) {
 			geradorJazida.gerarLadrilhos(vila.getSemente(), indice, regiao.getId())
 					.forEach(l -> jazidas.put(GeradorJazidaService.chave(l.getX(), l.getY()), l.getJazida()));
 		}
@@ -117,7 +127,9 @@ public class MapaService {
 				ladrilhos.add(new LadrilhoDTO(x, y, jazidas.get(k), construcoes.get(k)));
 			}
 		}
-		return new RegiaoDetalheDTO(new RegiaoDTO(regiao.getId(), indice, regiao.getTipo(), true), ladrilhos);
+		return new RegiaoDetalheDTO(new RegiaoDTO(regiao.getId(), indice, regiao.getTipo(), true,
+				bonusRegiaoService.bonusDasRegioes(List.of(regiao.getId())).getOrDefault(regiao.getId(), List.of())),
+				ladrilhos);
 	}
 
 }

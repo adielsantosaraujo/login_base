@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,8 +29,9 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.servico.GeradorMapaService;
+import com.example.loginbase.jogo.servico.MapaTestes;
 import com.example.loginbase.jogo.servico.VilaService;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
@@ -60,14 +60,18 @@ class CasamentoIntegrationTest {
 	@BeforeEach
 	void preparar() {
 		usuario = novoUsuario();
-		vila = vilaService.criarVila(usuario.getId(), List.of(1, 2, 3),
-				Map.of(1, TipoRegiao.URBANA, 2, TipoRegiao.RURAL, 3, TipoRegiao.RURAL), 7L);
+		vila = criarVilaDe(usuario, 7L);
 		List<Familia> familias = familiaRepository.findByVilaId(vila.getId()).stream()
 				.sorted((a, b) -> a.getId().compareTo(b.getId())).toList();
 		filhoA = filho(familias.get(0), Sexo.M);
 		filhaA = filho(familias.get(0), Sexo.F);
 		filhaB = filho(familias.get(1), Sexo.F);
 		casaLivre = casa(NivelConstrucao.N1, EstadoConstrucao.ATIVA, 8);
+	}
+
+	private Vila criarVilaDe(Usuario u, long semente) {
+		List<Integer> indices = MapaTestes.selecioneValidas(new GeradorMapaService().gerar(semente), true);
+		return vilaService.criarVilaComSemente(u.getId(), semente, indices);
 	}
 
 	private Usuario novoUsuario() {
@@ -190,8 +194,7 @@ class CasamentoIntegrationTest {
 	@Test
 	void cidadaoOuCasaDeOutraVilaDevolve403() throws Exception {
 		Usuario outro = novoUsuario();
-		Vila vilaOutro = vilaService.criarVila(outro.getId(), List.of(1, 2, 3),
-				Map.of(1, TipoRegiao.URBANA, 2, TipoRegiao.RURAL, 3, TipoRegiao.RURAL), 9L);
+		Vila vilaOutro = criarVilaDe(outro, 9L);
 		Familia fo = familiaRepository.findByVilaId(vilaOutro.getId()).get(0);
 		Cidadao estranho = filho(fo, Sexo.F);
 		casar(usuario, filhoA.getId(), estranho.getId(), casaLivre.getId(), sobrenome(filhoA))

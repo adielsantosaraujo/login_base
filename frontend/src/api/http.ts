@@ -3,6 +3,18 @@ function lerCookie(nome: string): string | null {
   return par ? decodeURIComponent(par.substring(nome.length + 1)) : null
 }
 
+export class ApiError extends Error {
+  status: number
+  codigo?: string
+
+  constructor(status: number, mensagem: string, codigo?: string) {
+    super(mensagem)
+    this.name = 'ApiError'
+    this.status = status
+    this.codigo = codigo
+  }
+}
+
 async function requisitar<T>(metodo: string, url: string, corpo?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (corpo !== undefined) headers['Content-Type'] = 'application/json'
@@ -34,8 +46,9 @@ async function requisitar<T>(metodo: string, url: string, corpo?: unknown): Prom
   }
 
   if (!resposta.ok) {
-    const mensagem = (dados as { erro?: string } | null)?.erro
-    throw new Error(mensagem ?? `Erro ${resposta.status}`)
+    const corpoErro = dados as { erro?: string; mensagem?: string; codigo?: string } | null
+    const mensagem = corpoErro?.erro ?? corpoErro?.mensagem ?? `Erro ${resposta.status}`
+    throw new ApiError(resposta.status, mensagem, corpoErro?.codigo)
   }
   return dados as T
 }

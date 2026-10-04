@@ -8,3 +8,7 @@ import MercadoPanel from '../components/jogo/MercadoPanel.vue'
     <MercadoPanel />
   </section>
 </template>
+
+<style scoped>
+h1 { font-family: var(--vl-font-display); color: var(--vl-text); }
+</style>

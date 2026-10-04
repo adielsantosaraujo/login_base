@@ -79,10 +79,11 @@ async function tirar(slot: string) {
 
 <style scoped>
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 0.75rem; }
-.slot { border: 1px solid var(--p-surface-300, #ccc); padding: 0.5rem; }
+.slot { border: 1px solid var(--vl-border); border-radius: var(--vl-radius-slot); background: var(--vl-surface-2); color: var(--vl-text); padding: 0.5rem; }
 .slot h4, .slot p { margin: 0 0 0.25rem; }
+.slot h4 { font-family: var(--vl-font-display); }
 .bonus { margin: 0 0 0.25rem; padding-left: 1rem; font-size: 0.85rem; }
-.vazio { opacity: 0.6; }
+.vazio { color: var(--vl-text-3); }
 .acoes { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.erro { color: var(--p-red-500, #c00); }
+.erro { color: var(--vl-error); }
 </style>

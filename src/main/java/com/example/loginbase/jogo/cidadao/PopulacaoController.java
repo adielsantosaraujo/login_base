@@ -22,7 +22,7 @@ public class PopulacaoController {
 	}
 
 	@PostMapping
-	public PopulacaoDTO confirmar(@RequestBody DistribuirPopulacaoRequest req) {
+	public ConfirmacaoPopulacaoDTO confirmar(@RequestBody DistribuirPopulacaoRequest req) {
 		return service.confirmar(req);
 	}
 

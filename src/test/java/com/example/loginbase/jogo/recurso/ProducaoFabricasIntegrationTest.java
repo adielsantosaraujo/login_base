@@ -31,10 +31,13 @@ import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
 import com.example.loginbase.jogo.modelo.Jazida;
 import com.example.loginbase.jogo.modelo.LadrilhoJazida;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurno;
@@ -57,6 +60,7 @@ class ProducaoFabricasIntegrationTest {
 	@Autowired ConstrucaoMarcacaoRepository marcacaoRepository;
 	@Autowired EstoqueService estoqueService;
 	@Autowired ProducaoService servico;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired EtapaProducao etapa;
 	@Autowired EventoTurnoRepository eventoRepository;
 
@@ -76,7 +80,7 @@ class ProducaoFabricasIntegrationTest {
 			Regiao r = new Regiao(vila.getId(), i);
 			if (i == 1) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.COLETA);
+				r.setTipo(TipoRegiao.FLORESTA);
 			}
 			r = regiaoRepository.save(r);
 			if (i == 1) {
@@ -128,6 +132,17 @@ class ProducaoFabricasIntegrationTest {
 	private List<EventoTurno> eventos() {
 		return eventoRepository.findAll().stream()
 				.filter(e -> e.getVilaId().equals(vila.getId()) && e.getTipo() == TipoEventoTurno.PRODUCAO).toList();
+	}
+
+	@Test
+	void serrariaComBonusIndustria() {
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(regiao.getId(), BonusRegiao.INDUSTRIA, 2, 30));
+		Construcao c = predio(TipoConstrucao.SERRARIA, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
+		trabalhador(c, Profissao.MADEIREIRO);
+		estoque(Recurso.MADEIRA, "10");
+		servico.processarProducaoFabricas(vila, 1);
+		assertThat(qtd(Recurso.TABUA)).isEqualByComparingTo("3.9");
+		assertThat(eventos().get(0).getDados()).containsEntry("bonusRegiao", 30);
 	}
 
 	@Test

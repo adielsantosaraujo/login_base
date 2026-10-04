@@ -73,11 +73,11 @@ export function useAnexacao() {
     }
   }
 
-  async function anexarRegiao(indice: number, tipo: TipoRegiao): Promise<ResultadoAnexacao | null> {
+  async function anexarRegiao(indice: number): Promise<ResultadoAnexacao | null> {
     enviando.value = true
     erro.value = null
     try {
-      return await post<ResultadoAnexacao>(`/api/jogo/regioes/${indice}/anexar`, { tipo })
+      return await post<ResultadoAnexacao>(`/api/jogo/regioes/${indice}/anexar`)
     } catch (ex) {
       erro.value = ex instanceof Error ? ex.message : 'Erro ao anexar a região'
       return null

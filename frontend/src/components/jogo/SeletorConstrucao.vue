@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import { permitidoNaRegiao, type CatalogoConstrucao } from '../../composables/useConstrucoes'
-import { ROTULOS_TIPO, rotulo } from '../../composables/useMapa'
+import { ROTULO_TIPO, TIPOS, type TipoRegiao } from '../../domain/regioes'
 
 const props = defineProps<{
   catalogo: CatalogoConstrucao[]
@@ -18,12 +18,12 @@ const emit = defineEmits<{
   (e: 'cancelar'): void
 }>()
 
-const ABAS = ['TODOS', 'URBANA', 'RURAL', 'COLETA'] as const
-const aba = ref<(typeof ABAS)[number]>('TODOS')
+const ABAS: Array<'TODOS' | TipoRegiao> = ['TODOS', ...TIPOS]
+const aba = ref<'TODOS' | TipoRegiao>('TODOS')
 const escolhido = ref<string | null>(null)
 
 const lista = computed(() =>
-  props.catalogo.filter((c) => aba.value === 'TODOS' || c.regiao === aba.value),
+  props.catalogo.filter((c) => aba.value === 'TODOS' || permitidoNaRegiao(c, aba.value)),
 )
 
 const item = computed(() => props.catalogo.find((c) => c.tipo === escolhido.value) ?? null)
@@ -62,7 +62,7 @@ function custo(c: CatalogoConstrucao): string {
         :data-testid="`aba-${a.toLowerCase()}`"
         @click="aba = a"
       >
-        {{ a === 'TODOS' ? 'Todos' : rotulo(ROTULOS_TIPO, a) }}
+        {{ a === 'TODOS' ? 'Todos' : ROTULO_TIPO[a] }}
       </button>
     </div>
 
@@ -79,7 +79,7 @@ function custo(c: CatalogoConstrucao): string {
         >
           <strong>{{ c.nome }}</strong>
           <span v-if="!permitidoNaRegiao(c, tipoRegiao)" aria-hidden="true"> ✕</span>
-          <small>{{ rotulo(ROTULOS_TIPO, c.regiao) }} · {{ c.tamanho }}x{{ c.tamanho }} · PO {{ c.poN1 }}</small>
+          <small>{{ c.regioes.map((t) => ROTULO_TIPO[t]).join(', ') }} · {{ c.tamanho }}x{{ c.tamanho }} · PO {{ c.poN1 }}</small>
           <small>Custo: {{ custo(c) }}</small>
           <small v-if="c.profissoes?.length">Profissões: {{ c.profissoes?.join(', ') }}</small>
         </button>
@@ -108,12 +108,12 @@ function custo(c: CatalogoConstrucao): string {
 
 <style scoped>
 .abas { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
-.abas button { padding: 0.25rem 0.6rem; border: 1px solid #cbd5e1; background: transparent; cursor: pointer; border-radius: 4px; color: inherit; }
-.abas button.ativa { background: #2563eb; color: #fff; }
+.abas button { padding: 0.25rem 0.6rem; border: 1px solid var(--vl-border); background: transparent; cursor: pointer; border-radius: 4px; color: inherit; }
+.abas button.ativa { background: var(--vl-accent); color: var(--vl-accent-ink); }
 .itens { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; max-height: 320px; overflow: auto; }
-.item { width: 100%; text-align: left; display: flex; flex-direction: column; padding: 0.4rem 0.6rem; border: 1px solid #cbd5e1; border-radius: 4px; background: transparent; cursor: pointer; color: inherit; }
-.item.escolhido { border-color: #2563eb; border-width: 2px; }
+.item { width: 100%; text-align: left; display: flex; flex-direction: column; padding: 0.4rem 0.6rem; border: 1px solid var(--vl-border); border-radius: 4px; background: transparent; cursor: pointer; color: inherit; }
+.item.escolhido { border-color: var(--vl-accent); border-width: 2px; }
 .item:disabled { opacity: 0.5; cursor: not-allowed; }
 .acoes { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; }
-.erro { color: #b91c1c; }
+.erro { color: var(--vl-error); }
 </style>

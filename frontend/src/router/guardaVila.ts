@@ -20,14 +20,19 @@ export function resetarGuardaVila() {
   estado = 'desconhecido'
 }
 
-async function carregarEstado(): Promise<Estado> {
+async function carregarEstado(): Promise<Estado | 'desconhecido'> {
   if (estado === 'pendente' || estado === 'pronta') return estado
   try {
     const vila = await get<{ populacaoConfirmada?: boolean }>('/api/jogo/vila')
     estado = vila.populacaoConfirmada === false ? 'pendente' : 'pronta'
-  } catch {
-    // 404 (sem vila) ou falha: tratado como sem vila
-    estado = 'sem-vila'
+  } catch (e) {
+    if ((e as { status?: number }).status === 404) {
+      estado = 'sem-vila'
+    } else {
+      // rede/5xx: não fica em cache; deixa navegar e reconsulta na próxima navegação
+      estado = 'desconhecido'
+      return 'desconhecido'
+    }
   }
   return estado
 }
@@ -35,10 +40,11 @@ async function carregarEstado(): Promise<Estado> {
 export const guardaVila: NavigationGuard = async (to) => {
   if (!to.path.startsWith('/jogo')) return true
   const criar = to.path === '/jogo/criar-vila'
-  const populacao = to.path === '/jogo/populacao'
+  const populacao = to.path === '/jogo/distribuir-populacao'
   const e = await carregarEstado()
+  if (e === 'desconhecido') return true
   if (e === 'sem-vila') return criar ? true : '/jogo/criar-vila'
-  if (e === 'pendente') return populacao ? true : '/jogo/populacao'
+  if (e === 'pendente') return populacao ? true : '/jogo/distribuir-populacao'
   if (criar) return '/jogo/mapa'
   return true
 }

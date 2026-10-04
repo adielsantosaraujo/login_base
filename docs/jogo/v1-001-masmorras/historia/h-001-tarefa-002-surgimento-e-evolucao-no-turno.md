@@ -13,7 +13,7 @@ Implementar surgimento e evolução de masmorras como etapa 12 do pipeline de tu
   > 1% chance por região elegível; máx. 3 ativas; carência 6 turnos pós-limpeza; +1 nível a cada 18 turnos.
 
 - [../../../v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md](../../v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md) — estrutura vila e regiões.
-  > Vila tem 16 regiões (indice 1–16); região tem tipo (RURAL/URBANA/COLETA), possuida (bool), limpa_ate_turno (int).
+  > Vila tem 16 regiões (indice 1–16); região tem tipo (FLORESTA/PLANICIE/URBANA/LITORAL/MONTANHA), possuida (bool), limpa_ate_turno (int).
 
 ## Backend
 

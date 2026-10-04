@@ -64,12 +64,18 @@ class TurnoProcessorPorVilaIntegrationTest {
 	}
 
 	private Vila novaVila() {
+		return novaVila(true);
+	}
+
+	private Vila novaVila(boolean confirmada) {
 		Usuario u = new Usuario();
 		u.setNome("Jogador");
 		u.setEmail(UUID.randomUUID() + "@teste.com");
 		u.setSenha("x");
 		u = usuarioRepository.saveAndFlush(u);
 		Vila v = vilaRepository.saveAndFlush(new Vila(u.getId(), "Vila", 1L, 1));
+		v.setPopulacaoConfirmada(confirmada);
+		v = vilaRepository.saveAndFlush(v);
 		criadas.add(v);
 		return v;
 	}
@@ -102,6 +108,20 @@ class TurnoProcessorPorVilaIntegrationTest {
 		assertThat(vilaRepository.findById(ruim.getId()).orElseThrow().getTurnoProcessado()).isNull();
 		assertThat(vilaRepository.findById(boa.getId()).orElseThrow().getTurnoProcessado()).isEqualTo(TURNO + 1);
 		assertThat(eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(boa.getId(), TURNO + 1))
+				.filteredOn(e -> e.getDados() != null && e.getDados().containsKey("k")).hasSize(1);
+	}
+
+	@Test
+	void vilaComPopulacaoPendenteNaoRecebeEventosNemMudancasEnquantoConfirmadaEProcessada() {
+		Vila pendente = novaVila(false);
+		Vila confirmada = novaVila(true);
+
+		processor.processarTurno(TURNO + 2);
+
+		assertThat(eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(pendente.getId(), TURNO + 2)).isEmpty();
+		assertThat(vilaRepository.findById(pendente.getId()).orElseThrow().getTurnoProcessado()).isNull();
+		assertThat(vilaRepository.findById(confirmada.getId()).orElseThrow().getTurnoProcessado()).isEqualTo(TURNO + 2);
+		assertThat(eventoRepository.findByVilaIdAndTurnoOrderByIdAsc(confirmada.getId(), TURNO + 2))
 				.filteredOn(e -> e.getDados() != null && e.getDados().containsKey("k")).hasSize(1);
 	}
 

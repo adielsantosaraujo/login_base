@@ -25,6 +25,7 @@ defineProps<{ rodadas: RodadaDTO[] }>()
 <style scoped>
 .rodada ul { list-style: none; padding: 0; margin: 0 0 1rem; }
 .acao { padding: 0.15rem 0; overflow-wrap: anywhere; }
-.critico, .abatido { color: var(--p-red-500, #dc2626); }
+.critico, .abatido { color: var(--vl-error); }
 .pv { opacity: 0.8; }
+.pv { font-family: var(--vl-font-mono); }
 </style>

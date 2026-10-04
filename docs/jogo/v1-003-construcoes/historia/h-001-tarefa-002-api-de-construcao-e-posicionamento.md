@@ -80,7 +80,7 @@ Não se aplica (frontend em tarefa h-001-tarefa-004).
 ## Testes
 
 - `testCriarCasaN1_Sucesso` → 20 Mad/10 Ped/10 Arg debitados, Construcao criada com EM_OBRA.
-- `testCriarQuartelEmCampoRural_Erro` → rejeitado.
+- `testCriarQuartelEmRegiaoFloresta_Erro` → rejeitado.
 - `testCriarEmLadrilhoOcupado_Erro` → rejeitado.
 - `testCriarSemRecursosInsuficientes_Erro` → rejeitado.
 - `testCriarEmRegiaoNaoPossuida_Erro` → rejeitado.

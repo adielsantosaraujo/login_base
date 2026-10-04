@@ -17,7 +17,7 @@ _Vila, mapa, ciclo de turnos, estoque e mercado._
 
 - [x] **[v1-008 · H-001 — Criar vila escolhendo regiões iniciais](v1-008-vila-e-mapa/historia/h-001-criar-vila-escolhendo-regioes-iniciais.md)**
   - [x] [B] [Tarefa 001 — Modelo de dados da vila e regiões](v1-008-vila-e-mapa/historia/h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md)
-  - [x] [B] [Tarefa 002 — Geração de jazidas por semente](v1-008-vila-e-mapa/historia/h-001-tarefa-002-geracao-de-jazidas-por-semente.md)
+  - [x] [B] [Tarefa 002 — Geração do mapa por semente](v1-008-vila-e-mapa/historia/h-001-tarefa-002-geracao-do-mapa-por-semente.md)
   - [x] [B] [Tarefa 003 — API de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-003-api-de-criacao-da-vila.md)
   - [x] [F] [Tarefa 004 — Tela de criação da vila](v1-008-vila-e-mapa/historia/h-001-tarefa-004-tela-de-criacao-da-vila.md)
 

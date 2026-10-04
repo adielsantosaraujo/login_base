@@ -6,6 +6,7 @@ import { get } from '../api/http'
 import { guardaVila, marcarPopulacaoConfirmada, resetarGuardaVila } from './guardaVila'
 
 const getMock = vi.mocked(get)
+const erro404 = Object.assign(new Error('Vila não encontrada'), { status: 404 })
 
 function ir(path: string) {
   return (guardaVila as unknown as (to: { path: string }) => Promise<unknown>)({ path })
@@ -23,12 +24,12 @@ describe('guardaVila', () => {
   })
 
   it('sem vila redireciona rotas do jogo para criar-vila', async () => {
-    getMock.mockRejectedValue(new Error('Vila não encontrada'))
+    getMock.mockRejectedValue(erro404)
     expect(await ir('/jogo/mapa')).toBe('/jogo/criar-vila')
   })
 
   it('sem vila permite criar-vila', async () => {
-    getMock.mockRejectedValue(new Error('Vila não encontrada'))
+    getMock.mockRejectedValue(erro404)
     expect(await ir('/jogo/criar-vila')).toBe(true)
   })
 
@@ -38,17 +39,27 @@ describe('guardaVila', () => {
     expect(await ir('/jogo/criar-vila')).toBe('/jogo/mapa')
   })
 
-  it('população não confirmada leva qualquer rota do jogo para /jogo/populacao', async () => {
+  it('população não confirmada leva qualquer rota do jogo para /jogo/distribuir-populacao', async () => {
     getMock.mockResolvedValue({ vilaId: 1, populacaoConfirmada: false })
-    expect(await ir('/jogo/mapa')).toBe('/jogo/populacao')
-    expect(await ir('/jogo/criar-vila')).toBe('/jogo/populacao')
-    expect(await ir('/jogo/populacao')).toBe(true)
+    expect(await ir('/jogo/mapa')).toBe('/jogo/distribuir-populacao')
+    expect(await ir('/jogo/criar-vila')).toBe('/jogo/distribuir-populacao')
+    expect(await ir('/jogo/distribuir-populacao')).toBe(true)
   })
 
   it('população confirmada libera o mapa e após confirmar o cache é atualizado', async () => {
     getMock.mockResolvedValue({ vilaId: 1, populacaoConfirmada: false })
-    expect(await ir('/jogo/mapa')).toBe('/jogo/populacao')
+    expect(await ir('/jogo/mapa')).toBe('/jogo/distribuir-populacao')
     marcarPopulacaoConfirmada()
     expect(await ir('/jogo/mapa')).toBe(true)
+  })
+
+  it('erro 500/rede não é tratado como sem vila nem fica em cache', async () => {
+    getMock.mockRejectedValueOnce(Object.assign(new Error('falha'), { status: 500 }))
+    expect(await ir('/jogo/mapa')).toBe(true)
+    getMock.mockRejectedValueOnce(new Error('rede'))
+    expect(await ir('/jogo/mapa')).toBe(true)
+    getMock.mockRejectedValueOnce(erro404)
+    expect(await ir('/jogo/mapa')).toBe('/jogo/criar-vila')
+    expect(getMock).toHaveBeenCalledTimes(3)
   })
 })

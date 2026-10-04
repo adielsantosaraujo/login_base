@@ -47,10 +47,12 @@ public class AnexacaoService {
 	private final EstoqueService estoqueService;
 	private final RegistroEventoTurnoService registroEventoTurno;
 	private final JogoTurnoRepository turnoRepository;
+	private final BonusRegiaoService bonusRegiaoService;
 
 	public AnexacaoService(RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository,
 			GeradorJazidaService geradorJazida, ConsultaMasmorras consultaMasmorras, EstoqueService estoqueService,
-			RegistroEventoTurnoService registroEventoTurno, JogoTurnoRepository turnoRepository) {
+			RegistroEventoTurnoService registroEventoTurno, JogoTurnoRepository turnoRepository,
+			BonusRegiaoService bonusRegiaoService) {
 		this.regiaoRepository = regiaoRepository;
 		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
 		this.geradorJazida = geradorJazida;
@@ -58,6 +60,7 @@ public class AnexacaoService {
 		this.estoqueService = estoqueService;
 		this.registroEventoTurno = registroEventoTurno;
 		this.turnoRepository = turnoRepository;
+		this.bonusRegiaoService = bonusRegiaoService;
 	}
 
 	/** Custo para o k informado (k &lt; 3 é tratado como 3); arredondamento meio para cima. */
@@ -81,16 +84,18 @@ public class AnexacaoService {
 	}
 
 	@Transactional
-	public AnexacaoDTO anexarRegiao(Vila vila, int indiceRegiao, TipoRegiao tipo) {
-		if (tipo == null) {
-			throw new JogoException(HttpStatus.BAD_REQUEST, "Tipo da região é obrigatório");
-		}
+	public AnexacaoDTO anexarRegiao(Vila vila, int indiceRegiao) {
 		if (indiceRegiao < 1 || indiceRegiao > GradeRegioes.TOTAL) {
 			throw new JogoException(HttpStatus.NOT_FOUND, "Região inexistente: " + indiceRegiao);
 		}
 		List<Regiao> regioes = regiaoRepository.findAllByVilaId(vila.getId());
 		if (regioes.stream().anyMatch(r -> r.getIndice() == indiceRegiao && r.isPossuida())) {
 			throw new RegiaoJaPossuidaException("Região já possuída");
+		}
+		TipoRegiao tipo = regioes.stream().filter(r -> r.getIndice() == indiceRegiao).findFirst()
+				.map(Regiao::getTipo).orElse(null);
+		if (tipo == null) {
+			throw new JogoException(HttpStatus.BAD_REQUEST, "Região sem tipo");
 		}
 		if (!adjacenteAPossuida(regioes, indiceRegiao)) {
 			throw new RegiaoNaoAdjacenteException("Região deve ser adjacente a uma já possuída");
@@ -110,10 +115,9 @@ public class AnexacaoService {
 		Regiao regiao = regioes.stream().filter(r -> r.getIndice() == indiceRegiao).findFirst()
 				.orElseGet(() -> new Regiao(vila.getId(), indiceRegiao));
 		regiao.setPossuida(true);
-		regiao.setTipo(tipo);
 		regiao = regiaoRepository.saveAndFlush(regiao);
 
-		if (tipo == TipoRegiao.COLETA && ladrilhoJazidaRepository.findAllByRegiaoId(regiao.getId()).isEmpty()) {
+		if (tipo != TipoRegiao.URBANA && ladrilhoJazidaRepository.findAllByRegiaoId(regiao.getId()).isEmpty()) {
 			ladrilhoJazidaRepository
 					.saveAll(geradorJazida.gerarLadrilhos(vila.getSemente(), indiceRegiao, regiao.getId()));
 		}
@@ -124,7 +128,8 @@ public class AnexacaoService {
 				Map.of("regiao", indiceRegiao, "tipo", tipo.name(), "ouro", custo.ouro(), "madeira", custo.madeira(),
 						"pedra", custo.pedra()));
 
-		return new AnexacaoDTO(new RegiaoAnexadaDTO(indiceRegiao, tipo, true), estoqueService.listar(vila), custo);
+		return new AnexacaoDTO(new RegiaoAnexadaDTO(indiceRegiao, tipo, true,
+				bonusRegiaoService.bonusDasRegioes(List.of(regiao.getId())).getOrDefault(regiao.getId(), List.of())), estoqueService.listar(vila), custo);
 	}
 
 	private int contarPossuidas(Vila vila) {

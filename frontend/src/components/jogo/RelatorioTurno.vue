@@ -88,6 +88,8 @@ function hora(timestamp: string): string {
 }
 .relatorio__titulo {
   margin: 0;
+  font-family: var(--vl-font-display);
+  color: var(--vl-text);
 }
 .relatorio__lista {
   list-style: none;
@@ -102,8 +104,10 @@ function hora(timestamp: string): string {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.5rem;
-  border: 1px solid var(--p-content-border-color, #ddd);
-  border-radius: 6px;
+  background: var(--vl-surface-2);
+  color: var(--vl-text);
+  border: 1px solid var(--vl-border);
+  border-radius: var(--vl-radius-tile);
 }
 .relatorio__texto {
   display: flex;
@@ -116,14 +120,14 @@ function hora(timestamp: string): string {
 }
 .relatorio__hora {
   font-size: 0.8rem;
-  opacity: 0.7;
+  color: var(--vl-text-3);
 }
 .relatorio__vazio,
 .relatorio__erro {
   margin: 1rem 0;
 }
 .relatorio__erro {
-  color: #b91c1c;
+  color: var(--vl-error);
 }
 @media (max-width: 600px) {
   .relatorio__item {

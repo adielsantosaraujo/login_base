@@ -8,29 +8,29 @@ Prédios de coleta extraem recursos naturais de jazidas específicas. Existem 8 
 
 ## Regras
 
-- **R1**: Prédios de coleta só em Região de Coleta (seção 1.4, 4.6) [req].
+- **R1**: Um prédio de coleta só pode ser construído em região possuída cujo tipo tenha o bônus correspondente do prédio (seção 1.4, 4.6) [req].
 - **R2**: Cada prédio coleta apenas sua jazida correspondente (tabela 1.5) (seção 4.6) [req].
 - **R3**: Marcação de ladrilhos obrigatória: mesma região, jazida compatível, sem prédio em cima, cada marcado ligado a no máximo 1 prédio, área conectada ortogonalmente ao prédio (seção 4.6) [proposta].
 - **R4**: Máximo de marcados por nível: N1 = 4, N2 = 10, N3 = 20 (seção 4.6) [proposta].
 - **R5**: Trabalhadores produtivos = `min(alocados, floor(marcados ÷ 2))` (seção 4.6) [proposta].
 - **R6**: Próprio ladrilho do prédio pode ter qualquer jazida (seção 4.6) [proposta].
 - **R7**: Marcar/desmarcar é gratuito e vale a partir do próximo turno (seção 4.6) [proposta].
-- **R8**: Produção = `Σ (eficiência) × base × multiplicador do nível` (seção 4.3, 4.5) [proposta].
+- **R8**: Produção = `Σ (eficiência) × base × multiplicador do nível` (seção 4.3, 4.5) [proposta]. Bônus de região associado ao prédio aumenta produção em +1% por ponto.
 
 ## Números e tabelas
 
 ### Prédios e recursos [proposta]
 
-| Prédio | Região | Jazida | Recurso | Profissão | Produção base/trabalhador/turno (N1) |
-|---|---|---|---|---|---|
-| Acampamento de lenhadores | Coleta | Floresta | Madeira | Madeireiro | 5 Madeira |
-| Pedreira | Coleta | Rocha | Pedra | Mineiro | 4 Pedra |
-| Barreiro | Coleta | Barreiro | Argila | Mineiro | 4 Argila |
-| Mina de ferro | Coleta | Veio de ferro | Minério de ferro | Mineiro | 3 Minério |
-| Mina de carvão | Coleta | Veio de carvão | Carvão | Mineiro | 3 Carvão |
-| Salina | Coleta | Salina | Sal | Mineiro | 3 Sal |
-| Mina de enxofre | Coleta | Enxofre | Enxofre | Mineiro | 2 Enxofre |
-| Cabana de caça | Coleta | Floresta | Carne, Couro | Caçador | 2 Carne + 1 Couro |
+| Prédio | Bônus | Tipo(s) de região | Jazida | Recurso | Profissão | Produção base/trabalhador/turno (N1) |
+|---|---|---|---|---|---|---|
+| Acampamento de lenhadores | Floresta | Floresta, Planície | Floresta | Madeira | Madeireiro | 5 Madeira |
+| Pedreira | Rocha | Montanha | Rocha | Pedra | Mineiro | 4 Pedra |
+| Barreiro | Barreiro | Floresta | Barreiro | Argila | Mineiro | 4 Argila |
+| Mina de ferro | Ferro | Montanha | Veio de ferro | Minério de ferro | Mineiro | 3 Minério |
+| Mina de carvão | Carvão | Montanha | Veio de carvão | Carvão | Mineiro | 3 Carvão |
+| Salina | Salinas | Litoral | Salina | Sal | Mineiro | 3 Sal |
+| Mina de enxofre | Enxofre | Litoral | Enxofre | Enxofre | Mineiro | 2 Enxofre |
+| Cabana de caça | Floresta | Floresta, Planície | Floresta | Carne, Couro | Caçador | 2 Carne + 1 Couro |
 
 ### Custos por nível [proposta]
 
@@ -47,7 +47,7 @@ Prédios de coleta extraem recursos naturais de jazidas específicas. Existem 8 
 
 ### Garantias de distribuição de jazidas [proposta]
 
-Toda Região de Coleta tem pelo menos:
+Toda região tem pelo menos (em Urbana a jazida é ignorada):
 - 10 ladrilhos de Floresta
 - 10 ladrilhos de Rocha
 - 8 ladrilhos de Barreiro
@@ -81,7 +81,7 @@ Toda Região de Coleta tem pelo menos:
 - [recursos.md](../v1-010-recursos-e-producao/recursos.md) — recursos extraídos
 - [cidadao.md](../v1-002-cidadaos/cidadao.md) — profissões Madeireiro, Mineiro, Caçador
 - [construcoes.md](construcoes.md) — custos, PO, marcação
-- [vila.md](../v1-008-vila-e-mapa/vila.md) — regiões de Coleta, jazidas
+- [vila.md](../v1-008-vila-e-mapa/vila.md) — tipos de região, jazidas
 
 ## Modelo de dados
 
@@ -89,6 +89,5 @@ Prédio de coleta é um tipo de `construcao`. Marcação em tabela `construcao_m
 
 ## Questões em aberto
 
-- Prédio de coleta em uma região Urbana ou Rural: proibido ou apenas não faz efeito?
 - Marcar ladrilho com jazida errada: rejeitado ou apenas não contribui?
 - Limite de prédios de coleta por vila: há limite?

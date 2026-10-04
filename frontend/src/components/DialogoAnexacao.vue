@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Select from 'primevue/select'
 import { useAnexacao } from '../composables/useAnexacao'
-import { ROTULOS_TIPO, type TipoRegiao } from '../composables/useMapa'
+import type { RegiaoResumo } from '../composables/useMapa'
+import { COR_BONUS, COR_TIPO, ROTULO_BONUS, ROTULO_TIPO, bonusOrdenados } from '../domain/regioes'
 
-const props = defineProps<{ visivel: boolean; indice: number | null }>()
+const props = defineProps<{ visivel: boolean; indice: number | null; regiao?: RegiaoResumo | null }>()
 const emit = defineEmits<{
   (e: 'update:visivel', v: boolean): void
   (e: 'anexada', indice: number): void
@@ -14,14 +14,10 @@ const emit = defineEmits<{
 
 const { custo, disponivel, suficiente, carregando, enviando, erro, carregar, anexarRegiao } = useAnexacao()
 
-const tipo = ref<TipoRegiao>('RURAL')
-const opcoes = (Object.keys(ROTULOS_TIPO) as TipoRegiao[]).map((v) => ({ valor: v, nome: ROTULOS_TIPO[v] }))
-
 watch(
   () => [props.visivel, props.indice] as const,
   ([v, i]) => {
     if (v && i !== null) {
-      tipo.value = 'RURAL'
       carregar(i)
     }
   },
@@ -34,7 +30,7 @@ function fechar() {
 
 async function confirmar() {
   if (props.indice === null) return
-  const r = await anexarRegiao(props.indice, tipo.value)
+  const r = await anexarRegiao(props.indice)
   if (r) {
     emit('anexada', props.indice)
     fechar()
@@ -52,6 +48,15 @@ async function confirmar() {
   >
     <p v-if="carregando">Carregando...</p>
     <div v-else-if="custo" class="anexacao" data-testid="dialogo-anexacao">
+      <div v-if="regiao && regiao.tipo" class="regiao-info" data-testid="regiao-info">
+        <span class="tipo" data-testid="regiao-tipo" :style="{ color: COR_TIPO[regiao.tipo] }">{{ ROTULO_TIPO[regiao.tipo] }}</span>
+        <ul class="bonus" data-testid="regiao-bonus">
+          <li v-for="b in bonusOrdenados(regiao.bonus)" :key="b.bonus" :data-testid="`bonus-${b.bonus}`">
+            <span class="ponto" :style="{ background: COR_BONUS[b.bonus] }" aria-hidden="true"></span>
+            {{ ROTULO_BONUS[b.bonus] }} +{{ b.valor }}%
+          </li>
+        </ul>
+      </div>
       <p class="adjacente" data-testid="adjacente">Região adjacente a uma região possuída.</p>
       <table class="custos" data-testid="custos">
         <thead>
@@ -70,16 +75,6 @@ async function confirmar() {
         </tbody>
       </table>
       <p v-if="!suficiente" class="erro" data-testid="recursos-insuficientes">Recursos insuficientes</p>
-      <label for="tipo-anexacao">Tipo da região</label>
-      <Select
-        v-model="tipo"
-        input-id="tipo-anexacao"
-        :options="opcoes"
-        option-label="nome"
-        option-value="valor"
-        data-testid="tipo-anexacao"
-        fluid
-      />
     </div>
     <p v-if="erro" role="alert" class="erro" data-testid="erro-anexacao">{{ erro }}</p>
 
@@ -98,9 +93,13 @@ async function confirmar() {
 
 <style scoped>
 .anexacao { display: flex; flex-direction: column; gap: 0.5rem; }
-.adjacente { color: #15803d; margin: 0; }
+.adjacente { color: var(--vl-accent); margin: 0; }
+.regiao-info { display: flex; flex-direction: column; gap: 0.25rem; }
+.tipo { font-weight: 700; }
+.bonus { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+.ponto { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-right: 0.25rem; }
 .custos { width: 100%; border-collapse: collapse; text-align: left; }
 .custos th, .custos td { padding: 0.25rem 0.5rem; }
-.falta { color: #b91c1c; font-weight: 700; }
-.erro { color: #b91c1c; }
+.falta { color: var(--vl-error); font-weight: 700; }
+.erro { color: var(--vl-error); }
 </style>

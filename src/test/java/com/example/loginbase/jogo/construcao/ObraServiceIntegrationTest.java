@@ -18,7 +18,13 @@ import com.example.loginbase.jogo.cidadao.Familia;
 import com.example.loginbase.jogo.cidadao.FamiliaRepository;
 import com.example.loginbase.jogo.cidadao.Profissao;
 import com.example.loginbase.jogo.cidadao.Sexo;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurno;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
@@ -37,6 +43,8 @@ class ObraServiceIntegrationTest {
 	@Autowired ConsultaTrabalhadores consulta;
 	@Autowired EventoTurnoRepository eventoRepository;
 	@Autowired EtapaObras etapa;
+	@Autowired RegiaoRepository regiaoRepository;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 
 	private Vila vila;
 	private Familia familia;
@@ -194,6 +202,43 @@ class ObraServiceIntegrationTest {
 		assertThat(recarrega(armazem).getEstado()).isEqualTo(EstadoConstrucao.ATIVA);
 		assertThat(cidadaoRepository.findById(carregador.getId()).orElseThrow().getConstrucaoId()).isEqualTo(armazem.getId());
 		assertThat(cidadaoRepository.findById(construtor.getId()).orElseThrow().getConstrucaoId()).isNull();
+	}
+
+	private void bonusDesenvolvimento(int valor) {
+		Regiao r = new Regiao(vila.getId(), 6);
+		r.setTipo(TipoRegiao.URBANA);
+		r.setPossuida(true);
+		r = regiaoRepository.saveAndFlush(r);
+		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.DESENVOLVIMENTO, 3, valor));
+	}
+
+	private static final String FRACAO = ObraService.CHAVE_FRACAO;
+
+	@Test
+	void desenvolvimento12DaUmVirgula12PoPorTurno() {
+		novaVila();
+		bonusDesenvolvimento(12);
+		Construcao casa = obra(TipoConstrucao.CASA, NivelConstrucao.N1, EstadoConstrucao.EM_OBRA, 100);
+		aloca(casa, Profissao.CONSTRUTOR);
+		double ef = ganhoEsperado(casa);
+		etapa.executar(vila, 1);
+		double esperado = ef * 1.12;
+		Construcao c = recarrega(casa);
+		assertThat(c.getPoAtual()).isEqualTo((int) Math.floor(esperado + 1e-9));
+		assertThat(c.getConfiguracao()).contains(FRACAO);
+		etapa.executar(vila, 2);
+		etapa.executar(vila, 3);
+		assertThat(recarrega(casa).getPoAtual()).isEqualTo((int) Math.floor(esperado * 3 + 1e-6));
+	}
+
+	@Test
+	void semBonusMantemGanhoBase() {
+		novaVila();
+		Construcao casa = obra(TipoConstrucao.CASA, NivelConstrucao.N1, EstadoConstrucao.EM_OBRA, 100);
+		aloca(casa, Profissao.CONSTRUTOR);
+		double ef = ganhoEsperado(casa);
+		etapa.executar(vila, 1);
+		assertThat(recarrega(casa).getPoAtual()).isEqualTo((int) Math.floor(ef + 1e-9));
 	}
 
 }

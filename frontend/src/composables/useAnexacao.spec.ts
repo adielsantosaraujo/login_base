@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ehAnexavel } from './useAnexacao'
 
 const base = [
@@ -19,5 +19,17 @@ describe('ehAnexavel', () => {
   it('exclui região não adjacente e já possuída', () => {
     expect(ehAnexavel(3, base)).toBe(false)
     expect(ehAnexavel(1, base)).toBe(false)
+  })
+})
+
+describe('anexarRegiao', () => {
+  it('faz POST sem corpo', async () => {
+    const http = await import('../api/http')
+    const spy = vi.spyOn(http, 'post').mockResolvedValue({ regiao: { indice: 2, tipo: 'FLORESTA', possuida: true }, estoque: {}, custo: { ouro: 0, madeira: 0, pedra: 0 } })
+    const { useAnexacao } = await import('./useAnexacao')
+    const r = await useAnexacao().anexarRegiao(2)
+    expect(spy).toHaveBeenCalledWith('/api/jogo/regioes/2/anexar')
+    expect(r).not.toBeNull()
+    spy.mockRestore()
   })
 })

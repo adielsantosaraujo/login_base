@@ -20,8 +20,8 @@ public class FamiliaService {
 	public static final int FAMILIAS_INICIAIS = 4;
 	public static final int IDADE_PAIS_MESES = 40 * 12;
 	public static final int IDADE_FILHOS_MESES = 18 * 12;
-	public static final int PONTOS_CARACTERISTICAS_INICIAIS = 20;
-	public static final int PONTOS_PROFISSOES_INICIAIS = 10;
+	public static final int PONTOS_CARACTERISTICAS_INICIAIS = DistribuicaoPopulacao.LIMITE_CARACTERISTICAS;
+	public static final int PONTOS_PROFISSOES_INICIAIS = DistribuicaoPopulacao.LIMITE_PROFISSOES;
 
 	private final FamiliaRepository familiaRepository;
 	private final CidadaoRepository cidadaoRepository;
@@ -67,7 +67,8 @@ public class FamiliaService {
 		return familias;
 	}
 
-	/** Cidadão sem persistir: características 0 e pontos pendentes iniciais (20 de características, 10 de profissões). */
+	/** Cidadão sem persistir: características 0 e pontos pendentes iniciais (20 de características, 10 de profissões).
+	 * Os valores reais escolhidos pelo jogador são gravados em {@code PopulacaoService.confirmar}. */
 	Cidadao gerarCidadao(Familia familia, String nome, Sexo sexo, int idadeMeses) {
 		Cidadao c = new Cidadao(familia.getVilaId(), familia.getId(), nome, sexo, idadeMeses);
 		c.setPontosCarPendentes(PONTOS_CARACTERISTICAS_INICIAIS);

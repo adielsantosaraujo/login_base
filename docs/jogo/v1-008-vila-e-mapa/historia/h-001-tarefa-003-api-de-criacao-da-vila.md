@@ -1,81 +1,117 @@
 # H-001 · Tarefa 003 — API de criação da vila
 
 **História:** [h-001-criar-vila-escolhendo-regioes-iniciais.md](h-001-criar-vila-escolhendo-regioes-iniciais.md) · **Domínio:** [../vila.md](../vila.md), [../regioes.md](../regioes.md) ·
-**Depende de:** [h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md](h-001-tarefa-001-modelo-de-dados-da-vila-e-regioes.md), [h-001-tarefa-002-geracao-de-jazidas-por-semente.md](h-001-tarefa-002-geracao-de-jazidas-por-semente.md) · **Camada:** Backend
+**Depende de:** [h-001-tarefa-002-geracao-do-mapa-por-semente.md](h-001-tarefa-002-geracao-do-mapa-por-semente.md) · **Camada:** Backend · **Spec:** [/openspec/changes/redesenho-criacao-vila-populacao/specs/jogo-criacao-vila/spec.md#requirement-criação-da-vila-a-partir-da-prévia](/openspec/changes/redesenho-criacao-vila-populacao/specs/jogo-criacao-vila/spec.md#requirement-criação-da-vila-a-partir-da-prévia)
 
 ## Objetivo
 
-Implementar endpoint `POST /api/jogo/vila` que valida as 3 regiões escolhidas (adjacência, tipo Urbana obrigatório), cria a vila com recursos e casas iniciais, gera jazidas.
+Implementar endpoints de prévia (`POST /api/jogo/vila/previa`, `GET /api/jogo/vila/previa`) e criação (`POST /api/jogo/vila`) conforme §1–§3 do handoff. Validar seleção (3 regiões conexas, ≥1 Urbana, `previaId` vigente), criar vila com 16 regiões (tipo + bônus), estoque e casas iniciais, apagar prévia.
 
 ## Contexto necessário
 
-- [../vila.md](../vila.md) — regras de criação (seção 1.3, 4.7) e recursos iniciais (3.2)
-  > Escolha: 1ª qualquer, 2ª e 3ª adjacentes; ≥1 Urbana.
-  > Recursos iniciais: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200.
-  > Casas iniciais: 4 N1 nos ladrilhos (0,0), (2,0), (4,0), (6,0) da 1ª região Urbana.
+- [Design D3, D4, D5, D6](/openspec/changes/redesenho-criacao-vila-populacao/design.md#d3-prévia-persistida-em-vila_previa)
+  > `vila_previa` (usuario_id, previa_id UUID, semente, rodada); V17 cria tabelas.
+  > POST/GET `/previa`: resposta com 16 regiões, tipos e 3 bônus cada.
+  > POST `/vila`: `{ "previaId", "indices": [6, 7, 10] }`; validações em ordem; grava 16 regiões + bônus; efeitos: 3 possuídas, estoque, 4 casas, 16 cidadãos, prévia apagada.
 
-- [../regioes.md](../regioes.md) — adjacência ortogonal (seção 1.2)
-  > Região 6 é adjacente a 2, 5, 7, 10.
+- [/docs/designe/handoff/api/contratos-api.md](/docs/designe/handoff/api/contratos-api.md) — §1–§3 (Endpoints da Prévia e Criação da Vila)
+  > `POST /previa`: 200 ou 409 VILA_JA_EXISTE.
+  > `GET /previa`: 200 (mesmo formato) ou 404 ou 409 VILA_JA_EXISTE.
+  > `POST /vila`: 201 ou 400 (SELECAO_INVALIDA, REGIAO_NAO_ADJACENTE, SEM_REGIAO_URBANA) ou 409 (VILA_JA_EXISTE, PREVIA_EXPIRADA).
 
 ## Backend
 
+**Entidades (novas):**
+- [/src/main/java/com/example/loginbase/jogo/modelo/VilaPrevia.java](/src/main/java/com/example/loginbase/jogo/modelo/VilaPrevia.java) — `@Entity`, `usuario_id` (PK), `previa_id` UUID, `semente` bigint, `rodada` int, `criado_em` timestamp.
+- [/src/main/java/com/example/loginbase/jogo/modelo/RegiaoBonus.java](/src/main/java/com/example/loginbase/jogo/modelo/RegiaoBonus.java) — `@Entity`, PK `id` bigint identity; UKs `(regiao_id, bonus)` e `(regiao_id, posicao)`; checks de posição/faixa.
+
+**Repositórios (novos):**
+- [/src/main/java/com/example/loginbase/jogo/repositorio/VilaPreviaRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/VilaPreviaRepository.java) — finder: `findByUsuarioId`, `deleteByUsuarioId`.
+- [/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoRepository.java) (já existe ou novo) — finder: `findByVilaIdAndIndice`, `findAllByVilaId`.
+- [/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoBonusRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoBonusRepository.java) (novo) — finder: `findByRegiaoId`.
+
+**Serviços (novos):**
+- [/src/main/java/com/example/loginbase/jogo/servico/VilaPreviaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaPreviaService.java)
+  - `PreviaMapaDTO gerar(Long usuarioId)` — cria ou renova `vila_previa`; usa `GeradorMapaService.gerar(semente)`.
+  - `PreviaMapaDTO obter(Long usuarioId)` throws `PreviaNaoEncontradaException`.
+  - `VilaPrevia exigirVigente(Long usuarioId, UUID previaId)` throws `PreviaExpiradaException`.
+  - `void remover(Long usuarioId)`.
+
+- [/src/main/java/com/example/loginbase/jogo/servico/VilaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaService.java)
+  - `Vila criarVila(Long usuarioId, UUID previaId, List<Integer> indices)` — valida conforme D4 (ordem); retorna `Vila`.
+  - `Vila criarVilaComSemente(Long usuarioId, long semente, List<Integer> indices)` — cria a vila com o mapa da semente informada, sem passar pela prévia (usado também pelos testes).
+  - Validações em ordem (D4): (1) sem vila; (2) prévia vigente; (3) 3 índices distintos 1..16; (4) conexas (BFS); (5) ≥1 Urbana.
+  - Efeitos: grava 16 regiões + bônus; marca 3 como possuídas; ladrilhos das 3; estoque; 4 casas N1 na 1ª Urbana; 16 cidadãos; apaga prévia.
+  - Resposta `{ vilaId, proximaEtapa: DISTRIBUIR_POPULACAO }` é montada no `VilaControlador` como `CriarVilaRespostaDTO`.
+
 **Controlador (novo):**
-- [/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java) (novo)
-  - Endpoint: `POST /api/jogo/vila`
-  - Corpo: `{ "regioesEscolhidas": [6, 7, 2], "tipos": { "6": "URBANA", "7": "RURAL", "2": "COLETA" } }`
-  - Resposta sucesso (201): `{ "vilaId": "uuid...", "nome": "Vila do Jogador X", "regioes": [...], "estoque": {...} }`
-  - Resposta erro (400/409): `{ "erro": "..." }`
+- [/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java)
+  - `POST /api/jogo/vila/previa` → `200 PreviaMapaDTO` ou `409 VILA_JA_EXISTE`.
+  - `GET /api/jogo/vila/previa` → `200 PreviaMapaDTO` ou `404 PREVIA_NAO_ENCONTRADA` ou `409 VILA_JA_EXISTE`.
+  - `POST /api/jogo/vila` com `{ previaId, indices }` → `201 { vilaId, proximaEtapa }` ou erros (D5).
 
-**Serviço (novo):**
-- [/src/main/java/com/example/loginbase/jogo/servico/VilaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaService.java) (novo)
-  - Método: `Vila criarVila(Long usuarioId, List<Integer> indices, Map<Integer, TipoRegiao> tipos)` throws VilaJaExisteException, RegiaoNaoAdjacenteException, etc.
-  - Validações:
-    1. Usuário não tem vila (uniqueness username → usuario_id)
-    2. indices.size() == 3
-    3. 1ª região: qualquer (1-16)
-    4. 2ª região: adjacente ortogonalmente à 1ª
-    5. 3ª região: adjacente à 1ª ou 2ª
-    6. ≥1 tipo == URBANA
-    7. Indices válidos (1-16)
-  - Criação: 
-    - Gerar semente aleatória
-    - Criar Vila (id=UUID, usuario_id, semente, turno_criacao=1, bem_alimentada=false)
-    - Criar 3 regiões com tipos escolhidos (possuida=true)
-    - Gerar jazidas para essas 3 regiões
-    - Criar 13 regiões vazias (possuida=false)
-    - Criar estoque com recursos iniciais (Madeira 200, ...)
-    - **Criar 4 casas N1**: na 1ª região Urbana, ladrilhos (0,0), (2,0), (4,0), (6,0)
-    - Retornar Vila
+**DTOs (novos):**
+- `PreviaMapaDTO` — `previaId` (UUID), `rodada` (int), `regioes` (List<RegiaoPreviaDTO>).
+- `RegiaoPreviaDTO` — `indice` (int), `tipo` (TipoRegiao), `bonus` (List<RegiaoBonusDTO>).
+- `RegiaoBonusDTO` — `bonus` (BonusRegiao enum), `posicao` (int), `valor` (int).
+- `CriarVilaRespostaDTO` — `vilaId` (Long), `proximaEtapa` (String).
+- `CriarVilaRequest` — `previaId` (UUID), `indices` (List<Integer>).
 
-**Entidades auxiliares:**
-- Exceções: `VilaJaExisteException`, `RegiaoNaoAdjacenteException`, `UrbanaObrigatoriaException`
+**Exceções (novas ou atualizar):**
+- `JogoException` ganha getter `String codigo` e construtor com código.
+- `VilaJaExisteException` → `VILA_JA_EXISTE` (409).
+- `PreviaNaoEncontradaException` → `PREVIA_NAO_ENCONTRADA` (404).
+- `PreviaExpiradaException` → `PREVIA_EXPIRADA` (409); mensagem: "O mapa mudou. Escolha as regiões novamente".
+- `SelecaoInvalidaException` → `SELECAO_INVALIDA` (400).
+- `RegiaoNaoAdjacenteException` → `REGIAO_NAO_ADJACENTE` (400).
+- `UrbanaObrigatoriaException` → `SEM_REGIAO_URBANA` (400).
 
 ## Frontend
 
-Não se aplica (será chamado pelo frontend h-001-tarefa-004).
+Não se aplica (será chamado pela tarefa 004).
 
 ## Arquivos prováveis
 
-- [/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java) (novo)
-- [/src/main/java/com/example/loginbase/jogo/servico/VilaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaService.java) (novo)
-- [/src/main/java/com/example/loginbase/jogo/excecao/VilaJaExisteException.java](/src/main/java/com/example/loginbase/jogo/excecao/VilaJaExisteException.java) (novo)
-- [/src/main/java/com/example/loginbase/jogo/excecao/RegiaoNaoAdjacenteException.java](/src/main/java/com/example/loginbase/jogo/excecao/RegiaoNaoAdjacenteException.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/modelo/VilaPrevia.java](/src/main/java/com/example/loginbase/jogo/modelo/VilaPrevia.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/modelo/RegiaoBonus.java](/src/main/java/com/example/loginbase/jogo/modelo/RegiaoBonus.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/repositorio/VilaPreviaRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/VilaPreviaRepository.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoBonusRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoBonusRepository.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/servico/VilaPreviaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaPreviaService.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/servico/VilaService.java](/src/main/java/com/example/loginbase/jogo/servico/VilaService.java) (reescrever)
+- [/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/VilaControlador.java) (novo ou atualizar)
+- [/src/main/java/com/example/loginbase/jogo/dto/PreviaMapaDTO.java](/src/main/java/com/example/loginbase/jogo/dto/PreviaMapaDTO.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/dto/RegiaoPreviaDTO.java](/src/main/java/com/example/loginbase/jogo/dto/RegiaoPreviaDTO.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/dto/RegiaoBonusDTO.java](/src/main/java/com/example/loginbase/jogo/dto/RegiaoBonusDTO.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/dto/CriarVilaRequest.java](/src/main/java/com/example/loginbase/jogo/dto/CriarVilaRequest.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/dto/CriarVilaRespostaDTO.java](/src/main/java/com/example/loginbase/jogo/dto/CriarVilaRespostaDTO.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/excecao/PreviaNaoEncontradaException.java](/src/main/java/com/example/loginbase/jogo/excecao/PreviaNaoEncontradaException.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/excecao/PreviaExpiradaException.java](/src/main/java/com/example/loginbase/jogo/excecao/PreviaExpiradaException.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/excecao/SelecaoInvalidaException.java](/src/main/java/com/example/loginbase/jogo/excecao/SelecaoInvalidaException.java) (novo)
+- [/src/main/java/com/example/loginbase/jogo/comum/CodigoErro.java](/src/main/java/com/example/loginbase/jogo/comum/CodigoErro.java) (novo)
+- [/src/main/resources/db/migration/V17__regioes_v2_bonus_e_previa.sql](/src/main/resources/db/migration/V17__regioes_v2_bonus_e_previa.sql) (novo)
+- Atualizar: `JogoException`, `VilaJaExisteException`, `RegiaoNaoAdjacenteException`, `UrbanaObrigatoriaException`.
 
 ## Testes
 
-- **Teste de integração**: POST com 3 regiões válidas (6, 7, 2; tipos URBANA, URBANA, COLETA) → 201, vila criada, recursos iniciais corretos, 4 casas em (0,0), (2,0), (4,0), (6,0).
-- **Teste de validação**: POST com região 1 e 3 (não adjacentes) → 400, mensagem "segunda região não é adjacente".
-- **Teste de validação**: POST sem Urbana (Rural, Rural, Coleta) → 400, "ao menos 1 Urbana obrigatória".
-- **Teste de unicidade**: usuário com vila já criada tenta POST novamente → 409, "usuário já tem vila".
+- **Prévia geração:** POST `/previa` sem vila → 200, `rodada` 1, 16 regiões, tipos e bônus; POST novamente → `rodada` 2, novo `previaId`.
+- **Prévia obtenção:** GET `/previa` com prévia → 200 (mesmo formato); sem prévia → 404; com vila → 409 VILA_JA_EXISTE.
+- **Criação simples:** POST `/vila` com regiões 6, 7, 10 (conexas, ≥1 Urbana) → 201 `{ vilaId, proximaEtapa: DISTRIBUIR_POPULACAO }`.
+- **Validação: seleção invalida:** 3 regiões não distintas ou índices > 16 → 400 SELECAO_INVALIDA.
+- **Validação: não conexas:** regiões 1, 3, 16 (desconectadas) → 400 REGIAO_NAO_ADJACENTE.
+- **Validação: sem Urbana:** 3 regiões sem nenhuma Urbana → 400 SEM_REGIAO_URBANA.
+- **Validação: prévia expirada:** POST com `previaId` inválido ou desfasado → 409 PREVIA_EXPIRADA.
+- **Unicidade:** usuário com vila tenta POST `/vila` → 409 VILA_JA_EXISTE.
+- **Efeitos:** 16 regiões criadas; 3 marcadas `possuida=true`; estoque com valores iniciais; 4 casas N1; 16 cidadãos; prévia apagada.
+- **Concorrência:** `uk_vila_usuario` previne duplicatas.
 
 ## Definição de pronto
 
-- Critérios de aceite da história cobertos por esta tarefa: CA1–CA5
-- Build do backend (`./mvnw verify`) sem erros
-- Testes listados passando
-- Endpoint documentado em Swagger/OpenAPI
+- Critérios de aceite da história cobertos por esta tarefa: CA1–CA9.
+- Build (`./mvnw verify`) sem erros.
+- Endpoints passam em testes de integração.
+- Contrato conforme D4, erros conforme D5.
 
 ## Fora de escopo
 
-- Distribuição automática de pontos da família inicial (tarefa posterior).
-- Batismo de vila (pode usar nome padrão ou deixar para tela).
+- UI/frontend (tarefa 004).
+- Edição/remoção de vila após criação.

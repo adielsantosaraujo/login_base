@@ -9,7 +9,7 @@ Implementar tela de construção exibindo a grade 10x10 da região (ladrilhos co
 ## Contexto necessário
 
 - [../construcoes.md](../construcoes.md) — Tabela de custos (seção 4.4)
-  > Cada prédio mostra: nome, tipo (Urbana/Rural/Coleta), profissão, Madeira, Pedra, ... PO.
+  > Cada prédio mostra: nome, tipos de região permitidos (ex.: Floresta, Planície), profissão, Madeira, Pedra, ... PO.
 
 - [../../v1-008-vila-e-mapa/regioes.md](../../v1-008-vila-e-mapa/regioes.md) — Grade 4x4, regiões 1–16, tipo de região.
 
@@ -30,7 +30,7 @@ Não se aplica.
 - **Componente `SeletorConstrucao.vue`**:
   - Modal/painel com lista de prédios possíveis para tipo de região.
   - Cada item: nome, custos (ícones Madeira/Pedra/...), PO, vagas.
-  - Aba para filtrar: Todos, Urbana, Rural, Coleta.
+  - Aba para filtrar: Todos, Floresta, Planície, Urbana, Litoral, Montanha.
   - Click em prédio → exibe preview e botão "Construir".
 
 - **Validações visuais**:

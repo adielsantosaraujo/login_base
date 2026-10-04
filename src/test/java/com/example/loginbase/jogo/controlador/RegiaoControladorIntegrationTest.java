@@ -2,6 +2,7 @@ package com.example.loginbase.jogo.controlador;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -29,12 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
 import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.servico.AnexacaoService;
@@ -53,6 +56,7 @@ class RegiaoControladorIntegrationTest {
 	@Autowired RegiaoRepository regiaoRepository;
 	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
 	@Autowired EstoqueService estoqueService;
+	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired EventoTurnoRepository eventoRepository;
 	@MockitoBean ConsultaMasmorras consultaMasmorras;
 
@@ -71,9 +75,13 @@ class RegiaoControladorIntegrationTest {
 			Regiao r = new Regiao(vila.getId(), i);
 			if (i == 6 || i == 7 || i == 10) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.RURAL);
 			}
-			regiaoRepository.save(r);
+			// tipo e bônus são gravados na criação, inclusive nas regiões não possuídas
+			r.setTipo(i == 6 ? TipoRegiao.URBANA : i == 3 ? TipoRegiao.MONTANHA : TipoRegiao.FLORESTA);
+			r = regiaoRepository.save(r);
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.ROCHA, 1, 40));
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.FERRO, 2, 20));
+			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.CARVAO, 3, 10));
 		}
 		regiaoRepository.flush();
 		estoqueService.inicializar(vila, Map.of(Recurso.OURO, new BigDecimal(ouro),
@@ -81,24 +89,25 @@ class RegiaoControladorIntegrationTest {
 		return vila;
 	}
 
-	private ResultActions anexar(Usuario u, int indice, String tipo) throws Exception {
+	private ResultActions anexar(Usuario u, int indice) throws Exception {
 		return mvc.perform(post("/api/jogo/regioes/" + indice + "/anexar").with(user(u.getEmail()).roles("USER"))
-				.with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{\"tipo\":\"" + tipo + "\"}"));
+				.with(csrf()));
 	}
 
 	@Test
 	void semAutenticacaoDevolve401() throws Exception {
-		mvc.perform(post("/api/jogo/regioes/2/anexar").with(csrf()).contentType(MediaType.APPLICATION_JSON)
-				.content("{\"tipo\":\"COLETA\"}")).andExpect(status().isUnauthorized());
+		mvc.perform(post("/api/jogo/regioes/2/anexar").with(csrf())).andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	void anexaRegiaoAdjacenteDebitaEstoqueEPersisteJazidas() throws Exception {
 		Usuario u = novoUsuario();
 		Vila vila = vila(u, "500", "500", "500");
-		anexar(u, 3, "COLETA").andExpect(status().isOk())
+		anexar(u, 3).andExpect(status().isOk())
 				.andExpect(jsonPath("$.regiao.indice").value(3))
-				.andExpect(jsonPath("$.regiao.tipo").value("COLETA"))
+				.andExpect(jsonPath("$.regiao.tipo").value("MONTANHA"))
+				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
+				.andExpect(jsonPath("$.regiao.bonus[0].bonus").value("ROCHA"))
 				.andExpect(jsonPath("$.regiao.possuida").value(true))
 				.andExpect(jsonPath("$.custo.ouro").value(150))
 				.andExpect(jsonPath("$.custo.madeira").value(50))
@@ -108,7 +117,7 @@ class RegiaoControladorIntegrationTest {
 
 		Regiao r3 = regiaoRepository.findByVilaIdAndIndice(vila.getId(), 3).orElseThrow();
 		assertThat(r3.isPossuida()).isTrue();
-		assertThat(r3.getTipo()).isEqualTo(TipoRegiao.COLETA);
+		assertThat(r3.getTipo()).isEqualTo(TipoRegiao.MONTANHA);
 		assertThat(estoqueService.quantidade(vila, Recurso.OURO)).isEqualByComparingTo("350");
 		assertThat(estoqueService.quantidade(vila, Recurso.PEDRA)).isEqualByComparingTo("450");
 		assertThat(ladrilhoJazidaRepository.findAllByRegiaoId(r3.getId())).hasSize(100);
@@ -124,10 +133,43 @@ class RegiaoControladorIntegrationTest {
 	}
 
 	@Test
+	void anexarSomaBonusDaRegiaoAoMapa() throws Exception {
+		Usuario u = novoUsuario();
+		vila(u, "500", "500", "500");
+		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
+				.andExpect(jsonPath("$.vila.bonusRegiao.ROCHA").value(120));
+		anexar(u, 3).andExpect(status().isOk());
+		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
+				.andExpect(jsonPath("$.vila.bonusRegiao.ROCHA").value(160))
+				.andExpect(jsonPath("$.vila.bonusRegiao.length()").value(13));
+	}
+
+	@Test
+	void anexarUrbanaNaoGeraJazidas() throws Exception {
+		Usuario u = novoUsuario();
+		Vila vila = vila(u, "500", "500", "500");
+		Regiao r2 = regiaoRepository.findByVilaIdAndIndice(vila.getId(), 2).orElseThrow();
+		r2.setTipo(TipoRegiao.URBANA);
+		regiaoRepository.saveAndFlush(r2);
+		anexar(u, 2).andExpect(status().isOk()).andExpect(jsonPath("$.regiao.tipo").value("URBANA"));
+		assertThat(ladrilhoJazidaRepository.findAllByRegiaoId(r2.getId())).isEmpty();
+	}
+
+	@Test
+	void regiaoSemTipoDevolve400() throws Exception {
+		Usuario u = novoUsuario();
+		Vila vila = vila(u, "500", "500", "500");
+		Regiao r3 = regiaoRepository.findByVilaIdAndIndice(vila.getId(), 3).orElseThrow();
+		r3.setTipo(null);
+		regiaoRepository.saveAndFlush(r3);
+		anexar(u, 3).andExpect(status().isBadRequest()).andExpect(jsonPath("$.erro").value("Região sem tipo"));
+	}
+
+	@Test
 	void regiaoNaoAdjacenteDevolve400() throws Exception {
 		Usuario u = novoUsuario();
 		vila(u, "500", "500", "500");
-		anexar(u, 1, "RURAL").andExpect(status().isBadRequest())
+		anexar(u, 1).andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.erro").value(containsString("adjacente")));
 	}
 
@@ -136,7 +178,7 @@ class RegiaoControladorIntegrationTest {
 		Usuario u = novoUsuario();
 		vila(u, "500", "500", "500");
 		when(consultaMasmorras.nivelMasmorraAtiva(any(), eq(11))).thenReturn(Optional.of(3));
-		anexar(u, 11, "RURAL").andExpect(status().isBadRequest())
+		anexar(u, 11).andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.erro").value(containsString("masmorra ativa")));
 	}
 
@@ -144,7 +186,7 @@ class RegiaoControladorIntegrationTest {
 	void recursosInsuficientesNaoDebitaNada() throws Exception {
 		Usuario u = novoUsuario();
 		Vila vila = vila(u, "100", "500", "500");
-		anexar(u, 3, "COLETA").andExpect(status().is4xxClientError())
+		anexar(u, 3).andExpect(status().is4xxClientError())
 				.andExpect(jsonPath("$.erro").value(containsString("Recursos insuficientes")));
 		assertThat(estoqueService.quantidade(vila, Recurso.MADEIRA)).isEqualByComparingTo("500");
 		assertThat(regiaoRepository.findByVilaIdAndIndice(vila.getId(), 3).orElseThrow().isPossuida()).isFalse();
@@ -154,7 +196,7 @@ class RegiaoControladorIntegrationTest {
 	void regiaoJaPossuidaDevolve400() throws Exception {
 		Usuario u = novoUsuario();
 		vila(u, "500", "500", "500");
-		anexar(u, 6, "RURAL").andExpect(status().isBadRequest())
+		anexar(u, 6).andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.erro").value(containsString("já possuída")));
 	}
 
@@ -162,13 +204,13 @@ class RegiaoControladorIntegrationTest {
 	void indiceForaDaGradeDevolve404() throws Exception {
 		Usuario u = novoUsuario();
 		vila(u, "500", "500", "500");
-		anexar(u, 17, "RURAL").andExpect(status().isNotFound());
+		anexar(u, 17).andExpect(status().isNotFound());
 	}
 
 	@Test
 	void semVilaDevolve404() throws Exception {
 		Usuario u = novoUsuario();
-		anexar(u, 3, "RURAL").andExpect(status().isNotFound());
+		anexar(u, 3).andExpect(status().isNotFound());
 	}
 
 	@Test

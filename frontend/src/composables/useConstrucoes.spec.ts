@@ -41,8 +41,10 @@ describe('useConstrucoes', () => {
   })
 
   it('verifica região permitida', () => {
-    const item = { regiao: 'URBANA' } as never
+    const item = { regioes: ['URBANA', 'PLANICIE'] } as never
     expect(permitidoNaRegiao(item, 'URBANA')).toBe(true)
-    expect(permitidoNaRegiao(item, 'RURAL')).toBe(false)
+    expect(permitidoNaRegiao(item, 'PLANICIE')).toBe(true)
+    expect(permitidoNaRegiao(item, 'LITORAL')).toBe(false)
+    expect(permitidoNaRegiao(item, null)).toBe(false)
   })
 })

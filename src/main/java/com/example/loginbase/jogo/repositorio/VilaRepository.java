@@ -17,4 +17,7 @@ public interface VilaRepository extends JpaRepository<Vila, Long> {
 	@Query("select v.id from Vila v order by v.id")
 	List<Long> findAllIds();
 
+	@Query("select v.id from Vila v where v.populacaoConfirmada = true order by v.id")
+	List<Long> findIdsComPopulacaoConfirmada();
+
 }

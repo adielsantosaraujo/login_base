@@ -28,6 +28,11 @@ class ApiInfraWebMvcTest {
 		String erro() {
 			throw new JogoException(HttpStatus.CONFLICT, "conflito de teste");
 		}
+
+		@GetMapping("/api/teste/erro-codigo")
+		String erroCodigo() {
+			throw new JogoException(HttpStatus.BAD_REQUEST, CodigoErro.SELECAO_INVALIDA, "seleção inválida");
+		}
 	}
 
 	@Autowired
@@ -45,6 +50,15 @@ class ApiInfraWebMvcTest {
 	void jogoExceptionViraErroComStatus() throws Exception {
 		mvc.perform(get("/api/teste/erro").with(user("a@b.c").roles("USER")))
 				.andExpect(status().isConflict())
-				.andExpect(jsonPath("$.erro").value("conflito de teste"));
+				.andExpect(jsonPath("$.erro").value("conflito de teste"))
+				.andExpect(jsonPath("$.codigo").doesNotExist());
+	}
+
+	@Test
+	void jogoExceptionComCodigoViraErroECodigo() throws Exception {
+		mvc.perform(get("/api/teste/erro-codigo").with(user("a@b.c").roles("USER")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.erro").value("seleção inválida"))
+				.andExpect(jsonPath("$.codigo").value("SELECAO_INVALIDA"));
 	}
 }

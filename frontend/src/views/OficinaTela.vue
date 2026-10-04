@@ -87,14 +87,14 @@ function rotuloEstadoFab(e: string) {
               {{ rotuloSubtipo(f.subtipo) }}
               <em v-if="f.itemId != null" data-testid="aprimoramento">(Aprimoramento)</em>
             </td>
-            <td>L{{ f.nivel }}</td>
+            <td class="num">L{{ f.nivel }}</td>
             <td>{{ f.artesaoNome }}</td>
             <td class="progresso">
               <ProgressBar :value="percentualPf(f)" :show-value="false" />
-              <span data-testid="pf">{{ f.pfAtual }}/{{ f.pfTotal }} PF</span>
+              <span class="num" data-testid="pf">{{ f.pfAtual }}/{{ f.pfTotal }} PF</span>
             </td>
             <td :data-testid="`estado-${f.id}`">{{ rotuloEstadoFab(f.estado) }}</td>
-            <td>{{ f.turnosEstimados != null ? `${f.turnosEstimados} turno(s)` : '-' }}</td>
+            <td class="num">{{ f.turnosEstimados != null ? `${f.turnosEstimados} turno(s)` : '-' }}</td>
             <td>
               <template v-if="f.estado === 'PAUSADA'">
                 <Button v-if="reatribuindo !== f.id" label="Reatribuir artesão" size="small" severity="secondary"
@@ -123,12 +123,15 @@ function rotuloEstadoFab(e: string) {
 </template>
 
 <style scoped>
+h1, h2, h3, h4 { font-family: var(--vl-font-display); color: var(--vl-text); }
+.num { font-family: var(--vl-font-mono); }
 .lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .lista li { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 .fila { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.fila th { color: var(--vl-text-2); border-bottom: 1px solid var(--vl-border); }
 .fila th, .fila td { text-align: left; padding: 0.4rem 0.6rem; }
 .progresso { min-width: 8rem; }
 .reatribuir, .acoes { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
-.erro { color: var(--p-red-500, #dc2626); }
+.erro { color: var(--vl-error); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 </style>

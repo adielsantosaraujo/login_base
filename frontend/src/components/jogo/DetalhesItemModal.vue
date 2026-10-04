@@ -38,5 +38,7 @@ const editavel = computed(() => props.item.cidadaoId == null)
 </template>
 
 <style scoped>
+h3, h4 { font-family: var(--vl-font-display); color: var(--vl-text); }
+li { font-family: var(--vl-font-mono); }
 .acoes { margin-top: 0.5rem; }
 </style>

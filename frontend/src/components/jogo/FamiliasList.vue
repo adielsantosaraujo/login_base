@@ -97,7 +97,11 @@ function alternar(id: number) {
 .tabela td {
   text-align: left;
   padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid var(--p-content-border-color, #ddd);
+  color: var(--vl-text);
+  border-bottom: 1px solid var(--vl-border);
+}
+.tabela td:nth-child(3) {
+  font-family: var(--vl-font-mono);
 }
 .membros {
   margin: 0.25rem 0;

@@ -1,11 +1,13 @@
 import { ref } from 'vue'
 import { get } from '../api/http'
+import { ROTULO_TIPO, type BonusDaRegiao, type BonusRegiao, type TipoRegiao } from '../domain/regioes'
 
-export type TipoRegiao = 'RURAL' | 'URBANA' | 'COLETA'
+export type { TipoRegiao }
 
 export interface RegiaoResumo {
   indice: number
   tipo: TipoRegiao | null
+  bonus: BonusDaRegiao[]
   possuida: boolean
   masmorraAtiva: boolean
   nivelMasmorra: number | null
@@ -13,7 +15,7 @@ export interface RegiaoResumo {
 }
 
 export interface MapaVila {
-  vila: { id: number; nome: string }
+  vila: { id: number; nome: string; bonusRegiao: Partial<Record<BonusRegiao, number>> }
   regioes: RegiaoResumo[]
 }
 
@@ -35,14 +37,8 @@ export interface Ladrilho {
 }
 
 export interface RegiaoDetalhe {
-  regiao: { id: number | null; indice: number; tipo: TipoRegiao | null; possuida: boolean }
+  regiao: { id: number | null; indice: number; tipo: TipoRegiao | null; possuida: boolean; bonus?: BonusDaRegiao[] }
   ladrilhos: Ladrilho[]
-}
-
-export const ROTULOS_TIPO: Record<string, string> = {
-  RURAL: 'Rural',
-  URBANA: 'Urbana',
-  COLETA: 'Coleta',
 }
 
 export const ROTULOS_JAZIDA: Record<string, string> = {
@@ -82,6 +78,9 @@ export const ROTULOS_CONSTRUCAO: Record<string, string> = {
   MINA_ENXOFRE: 'Mina de enxofre',
   CABANA_CACA: 'Cabana de caça',
 }
+
+/** Rótulos dos tipos de região (domínio) mesclados com os de construção (usados por PainelPredio/UpgradeModal). */
+export const ROTULOS_TIPO: Record<string, string> = { ...ROTULO_TIPO, ...ROTULOS_CONSTRUCAO }
 
 export const ROTULOS_ESTADO: Record<string, string> = {
   EM_OBRA: 'Em obra',

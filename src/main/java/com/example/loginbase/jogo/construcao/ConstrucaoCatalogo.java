@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.example.loginbase.jogo.cidadao.Profissao;
+import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Jazida;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.recurso.Recurso;
@@ -20,7 +21,7 @@ public final class ConstrucaoCatalogo {
 	public record Entrada(
 			TipoConstrucao tipo,
 			String nome,
-			TipoRegiao regiaoPermitida,
+			BonusRegiao bonusRegiao,
 			List<Profissao> profissoes,
 			Map<Recurso, Integer> custoN1,
 			int poN1,
@@ -41,30 +42,30 @@ public final class ConstrucaoCatalogo {
 	private static final int[] MIN_CARREGADORES_ARMAZEM = {1, 2, 4};
 
 	static {
-		def(TipoConstrucao.CASA, "Casa", TipoRegiao.URBANA, List.of(), 4, null, m(20, 10, 10, 0, 0, 0, 0));
-		def(TipoConstrucao.ARMAZEM, "Armazém", TipoRegiao.URBANA, List.of(Profissao.CARREGADOR), 6, null, m(30, 20, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.SERRARIA, "Serraria", TipoRegiao.URBANA, List.of(Profissao.MADEIREIRO), 6, null, m(30, 10, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.OLARIA, "Olaria", TipoRegiao.URBANA, List.of(Profissao.CONSTRUTOR), 6, null, m(20, 20, 10, 0, 0, 0, 0));
-		def(TipoConstrucao.FUNDICAO, "Fundição", TipoRegiao.URBANA, List.of(Profissao.FERREIRO), 8, null, m(0, 30, 0, 20, 0, 20, 0));
-		def(TipoConstrucao.TECELAGEM, "Tecelagem", TipoRegiao.URBANA, List.of(Profissao.COSTUREIRO), 6, null, m(0, 10, 0, 20, 0, 0, 0));
-		def(TipoConstrucao.CURTUME, "Curtume", TipoRegiao.URBANA, List.of(Profissao.COSTUREIRO), 6, null, m(0, 0, 0, 20, 0, 10, 0));
-		def(TipoConstrucao.COZINHA, "Cozinha", TipoRegiao.URBANA, List.of(Profissao.COZINHEIRO), 6, null, m(0, 0, 0, 15, 0, 15, 0));
-		def(TipoConstrucao.FERRARIA, "Ferraria", TipoRegiao.URBANA, List.of(Profissao.FERREIRO), 8, null, m(0, 0, 0, 20, 10, 20, 0));
-		def(TipoConstrucao.ALFAIATARIA, "Alfaiataria", TipoRegiao.URBANA, List.of(Profissao.COSTUREIRO), 6, null, m(0, 0, 0, 20, 5, 10, 5));
-		def(TipoConstrucao.CARPINTARIA, "Carpintaria", TipoRegiao.URBANA, List.of(Profissao.MADEIREIRO), 6, null, m(0, 10, 0, 30, 0, 0, 0));
-		def(TipoConstrucao.MERCADO, "Mercado", TipoRegiao.URBANA, List.of(Profissao.COMERCIANTE), 6, null, m(0, 20, 0, 30, 0, 0, 0));
-		def(TipoConstrucao.ESTALAGEM, "Estalagem", TipoRegiao.URBANA, List.of(Profissao.COZINHEIRO, Profissao.COMERCIANTE), 8, null, m(0, 0, 0, 30, 0, 20, 10));
-		def(TipoConstrucao.QUARTEL, "Quartel", TipoRegiao.URBANA, List.of(Profissao.GUERREIRO), 8, null, m(0, 40, 0, 30, 10, 0, 0));
-		def(TipoConstrucao.FAZENDA_PLANTIO, "Fazenda de plantio", TipoRegiao.RURAL, List.of(Profissao.AGRICULTOR), 4, null, m(15, 0, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.FAZENDA_CRIACAO, "Fazenda de criação", TipoRegiao.RURAL, List.of(Profissao.FAZENDEIRO), 4, null, m(25, 0, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.ACAMPAMENTO_LENHADORES, "Acampamento de lenhadores", TipoRegiao.COLETA, List.of(Profissao.MADEIREIRO), 4, Jazida.FLORESTA, m(15, 5, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.PEDREIRA, "Pedreira", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 4, Jazida.ROCHA, m(20, 0, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.BARREIRO, "Barreiro", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 4, Jazida.BARREIRO, m(15, 0, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.MINA_FERRO, "Mina de ferro", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 6, Jazida.VEIO_DE_FERRO, m(30, 20, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.MINA_CARVAO, "Mina de carvão", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 6, Jazida.VEIO_DE_CARVAO, m(30, 20, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.SALINA, "Salina", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 4, Jazida.SALINA, m(20, 10, 0, 0, 0, 0, 0));
-		def(TipoConstrucao.MINA_ENXOFRE, "Mina de enxofre", TipoRegiao.COLETA, List.of(Profissao.MINEIRO), 8, Jazida.ENXOFRE, m(30, 30, 0, 0, 5, 0, 0));
-		def(TipoConstrucao.CABANA_CACA, "Cabana de caça", TipoRegiao.COLETA, List.of(Profissao.CACADOR), 4, Jazida.FLORESTA, m(15, 0, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.CASA, "Casa", null, List.of(), 4, null, m(20, 10, 10, 0, 0, 0, 0));
+		def(TipoConstrucao.ARMAZEM, "Armazém", null, List.of(Profissao.CARREGADOR), 6, null, m(30, 20, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.SERRARIA, "Serraria", BonusRegiao.INDUSTRIA, List.of(Profissao.MADEIREIRO), 6, null, m(30, 10, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.OLARIA, "Olaria", BonusRegiao.INDUSTRIA, List.of(Profissao.CONSTRUTOR), 6, null, m(20, 20, 10, 0, 0, 0, 0));
+		def(TipoConstrucao.FUNDICAO, "Fundição", BonusRegiao.INDUSTRIA, List.of(Profissao.FERREIRO), 8, null, m(0, 30, 0, 20, 0, 20, 0));
+		def(TipoConstrucao.TECELAGEM, "Tecelagem", BonusRegiao.INDUSTRIA, List.of(Profissao.COSTUREIRO), 6, null, m(0, 10, 0, 20, 0, 0, 0));
+		def(TipoConstrucao.CURTUME, "Curtume", BonusRegiao.INDUSTRIA, List.of(Profissao.COSTUREIRO), 6, null, m(0, 0, 0, 20, 0, 10, 0));
+		def(TipoConstrucao.COZINHA, "Cozinha", BonusRegiao.INDUSTRIA, List.of(Profissao.COZINHEIRO), 6, null, m(0, 0, 0, 15, 0, 15, 0));
+		def(TipoConstrucao.FERRARIA, "Ferraria", null, List.of(Profissao.FERREIRO), 8, null, m(0, 0, 0, 20, 10, 20, 0));
+		def(TipoConstrucao.ALFAIATARIA, "Alfaiataria", null, List.of(Profissao.COSTUREIRO), 6, null, m(0, 0, 0, 20, 5, 10, 5));
+		def(TipoConstrucao.CARPINTARIA, "Carpintaria", null, List.of(Profissao.MADEIREIRO), 6, null, m(0, 10, 0, 30, 0, 0, 0));
+		def(TipoConstrucao.MERCADO, "Mercado", null, List.of(Profissao.COMERCIANTE), 6, null, m(0, 20, 0, 30, 0, 0, 0));
+		def(TipoConstrucao.ESTALAGEM, "Estalagem", null, List.of(Profissao.COZINHEIRO, Profissao.COMERCIANTE), 8, null, m(0, 0, 0, 30, 0, 20, 10));
+		def(TipoConstrucao.QUARTEL, "Quartel", null, List.of(Profissao.GUERREIRO), 8, null, m(0, 40, 0, 30, 10, 0, 0));
+		def(TipoConstrucao.FAZENDA_PLANTIO, "Fazenda de plantio", BonusRegiao.PLANTACOES, List.of(Profissao.AGRICULTOR), 4, null, m(15, 0, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.FAZENDA_CRIACAO, "Fazenda de criação", BonusRegiao.CRIACOES, List.of(Profissao.FAZENDEIRO), 4, null, m(25, 0, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.ACAMPAMENTO_LENHADORES, "Acampamento de lenhadores", BonusRegiao.FLORESTA, List.of(Profissao.MADEIREIRO), 4, Jazida.FLORESTA, m(15, 5, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.PEDREIRA, "Pedreira", BonusRegiao.ROCHA, List.of(Profissao.MINEIRO), 4, Jazida.ROCHA, m(20, 0, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.BARREIRO, "Barreiro", BonusRegiao.BARREIRO, List.of(Profissao.MINEIRO), 4, Jazida.BARREIRO, m(15, 0, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.MINA_FERRO, "Mina de ferro", BonusRegiao.FERRO, List.of(Profissao.MINEIRO), 6, Jazida.VEIO_DE_FERRO, m(30, 20, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.MINA_CARVAO, "Mina de carvão", BonusRegiao.CARVAO, List.of(Profissao.MINEIRO), 6, Jazida.VEIO_DE_CARVAO, m(30, 20, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.SALINA, "Salina", BonusRegiao.SALINAS, List.of(Profissao.MINEIRO), 4, Jazida.SALINA, m(20, 10, 0, 0, 0, 0, 0));
+		def(TipoConstrucao.MINA_ENXOFRE, "Mina de enxofre", BonusRegiao.ENXOFRE, List.of(Profissao.MINEIRO), 8, Jazida.ENXOFRE, m(30, 30, 0, 0, 5, 0, 0));
+		def(TipoConstrucao.CABANA_CACA, "Cabana de caça", BonusRegiao.FLORESTA, List.of(Profissao.CACADOR), 4, Jazida.FLORESTA, m(15, 0, 0, 0, 0, 0, 0));
 	}
 
 	private ConstrucaoCatalogo() {
@@ -88,9 +89,9 @@ public final class ConstrucaoCatalogo {
 		}
 	}
 
-	private static void def(TipoConstrucao tipo, String nome, TipoRegiao regiao, List<Profissao> profissoes, int po,
+	private static void def(TipoConstrucao tipo, String nome, BonusRegiao bonus, List<Profissao> profissoes, int po,
 			Jazida jazida, Map<Recurso, Integer> custo) {
-		ENTRADAS.put(tipo, new Entrada(tipo, nome, regiao, profissoes, Map.copyOf(custo), po, jazida));
+		ENTRADAS.put(tipo, new Entrada(tipo, nome, bonus, profissoes, Map.copyOf(custo), po, jazida));
 	}
 
 	private static int idx(NivelConstrucao nivel) {
@@ -105,13 +106,23 @@ public final class ConstrucaoCatalogo {
 		return List.copyOf(ENTRADAS.values());
 	}
 
-	public static TipoRegiao regiaoPermitida(TipoConstrucao tipo) {
-		return de(tipo).regiaoPermitida();
+	/** Bônus de região exigido pelo prédio; vazio para prédios urbanos. */
+	public static Optional<BonusRegiao> bonusRegiao(TipoConstrucao tipo) {
+		return Optional.ofNullable(de(tipo).bonusRegiao());
+	}
+
+	/** Tipos de região em que o prédio pode ser construído (ordem do enum). */
+	public static List<TipoRegiao> regioesPermitidas(TipoConstrucao tipo) {
+		BonusRegiao bonus = de(tipo).bonusRegiao();
+		if (bonus == null) {
+			return List.of(TipoRegiao.URBANA);
+		}
+		return TipoRegiao.atuais().stream().filter(t -> t.bonus().contains(bonus)).toList();
 	}
 
 	/** Verdadeiro se o tipo pode ser construído na região informada. */
 	public static boolean permiteRegiao(TipoConstrucao tipo, TipoRegiao regiao) {
-		return de(tipo).regiaoPermitida() == regiao;
+		return regioesPermitidas(tipo).contains(regiao);
 	}
 
 	public static List<Profissao> profissoes(TipoConstrucao tipo) {
@@ -124,7 +135,7 @@ public final class ConstrucaoCatalogo {
 	}
 
 	public static boolean ehPredioDeColeta(TipoConstrucao tipo) {
-		return de(tipo).regiaoPermitida() == TipoRegiao.COLETA;
+		return de(tipo).jazidaAssociada() != null;
 	}
 
 	public static Map<Recurso, Integer> custoN1(TipoConstrucao tipo) {

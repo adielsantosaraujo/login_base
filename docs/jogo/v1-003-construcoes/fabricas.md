@@ -13,8 +13,9 @@ Fábricas processam recursos brutos em produtos acabados ou intermediários atra
 - **R3**: Se faltar insumo, executa ciclos possíveis (seção 4.5) [proposta].
 - **R4**: Produção = `Σ (eficiência) × ciclos × multiplicador do nível` (seção 4.3, 4.5) [proposta].
 - **R5**: Fundição N2+ permite fabricar Aço (seção 4.5) [proposta].
-- **R6**: Fábrica ocupa 1x1 (N1), 2x2 (N2), 3x3 (N3) em Região Urbana (seção 1.4) [req].
+- **R6**: Toda fábrica ocupa 1x1 (N1), 2x2 (N2), 3x3 (N3) em região do tipo Urbana (seção 1.4) [req].
 - **R7**: Fábricas precisam de trabalhadores especializados para funcionar (seção 4.1) [req].
+- **R8**: Bônus Indústria da vila aumenta ciclos disponíveis em +1% por ponto (seção 4.5).
 
 ## Números e tabelas
 
@@ -68,6 +69,12 @@ Custos N2 = 2,5×, N3 = 5×.
 - Ciclos: 0,6 × 2 = 1,2/turno.
 - Produção: 1,2 × 5 Refeição = 6 Refeições.
 - Consumo: 1,2 × (2 Grãos + 1 Carne) = 2,4 Grãos, 1,2 Carne.
+
+**Exemplo 5: Serraria com bônus Indústria**
+- Serraria N1 com 1 Madeireiro (eficiência 1,0) e vila com bônus Indústria 30.
+- Ciclos: 1,0 × 3 × (1 + 30/100) = 3,90 ciclos/turno.
+- Produção: 3,90 × 1 Tábua = 3,90 Tábuas/turno.
+- Sem bônus: 1,0 × 3 = 3,0 ciclos/turno.
 
 ## Interações com outros domínios
 

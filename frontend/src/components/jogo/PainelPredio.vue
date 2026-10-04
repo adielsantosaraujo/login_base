@@ -133,7 +133,8 @@ async function desalocar(cidadaoId: number) {
 </template>
 
 <style scoped>
-.erro { color: var(--p-red-500, #dc2626); }
+h3, h4 { font-family: var(--vl-font-display); }
+.erro { color: var(--vl-error); }
 .lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .lista li { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .alocar, .acoes { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }

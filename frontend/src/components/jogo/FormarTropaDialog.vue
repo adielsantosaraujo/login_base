@@ -96,7 +96,7 @@ function confirmar() {
 .lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .lista li { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .inelegivel { opacity: 0.6; }
-.motivo, .erro { color: var(--p-red-500, #dc2626); }
+.motivo, .erro { color: var(--vl-error); }
 .dica { font-size: 0.9em; opacity: 0.8; }
 .acoes { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
 </style>

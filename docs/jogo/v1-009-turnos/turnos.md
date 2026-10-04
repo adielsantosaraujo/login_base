@@ -13,10 +13,11 @@ O jogo avança por turnos globais sincronizados: um turno representa 1 mês de j
 - **R3 — Ordens:** Entre turnos, o jogador dá ordens (construir, alocar, casar, fabricar, formar tropa, enviar expedição, comerciar). Ordens que gastam recursos debitam no ato; os efeitos de tempo são resolvidos no processamento do turno.
 - **R4 — Concorrência:** Batalhas são resolvidas em rodadas independentes do turno do jogo: uma batalha inteira é resolvida dentro do passo 8 de um turno [req].
 - **R5 — Idempotência:** Reexecução de um turno para a mesma vila não altera o resultado (útil para recuperação de falhas).
+- **R6 — População pendente:** O processamento de turno ignora vilas cuja população ainda não foi confirmada (H-001, §Population pending); essas vilas não têm eventos de produção, envelhecimento ou mudanças no estoque.
 
 ## Ordem de resolução por vila
 
-A resolução segue 13 passos em sequência:
+A resolução segue 13 passos em sequência. **Nota:** Os passos 1 (Produção), 2 (Ouro passivo), 5 (Obras) e 7 (Quartel) aplicam bônus de região da vila (fator = 1 + bônus ÷ 100) conforme definido em [v1-010-recursos-e-producao/producao.md](../v1-010-recursos-e-producao/producao.md) (regra R7).
 
 | Passo | Etapa | Doc de domínio |
 |---|---|---|

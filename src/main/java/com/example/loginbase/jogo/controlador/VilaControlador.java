@@ -6,14 +6,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.loginbase.jogo.comum.UsuarioAtual;
 import com.example.loginbase.jogo.dto.CriarVilaRequest;
-import com.example.loginbase.jogo.dto.PreviaVilaDTO;
+import com.example.loginbase.jogo.dto.CriarVilaRespostaDTO;
+import com.example.loginbase.jogo.dto.PreviaMapaDTO;
 import com.example.loginbase.jogo.dto.VilaResumoDTO;
 import com.example.loginbase.jogo.modelo.Vila;
+import com.example.loginbase.jogo.servico.VilaPreviaService;
 import com.example.loginbase.jogo.servico.VilaService;
 
 @RestController
@@ -22,17 +23,19 @@ public class VilaControlador {
 
 	private final UsuarioAtual usuarioAtual;
 	private final VilaService vilaService;
+	private final VilaPreviaService previaService;
 
-	public VilaControlador(UsuarioAtual usuarioAtual, VilaService vilaService) {
+	public VilaControlador(UsuarioAtual usuarioAtual, VilaService vilaService, VilaPreviaService previaService) {
 		this.usuarioAtual = usuarioAtual;
 		this.vilaService = vilaService;
+		this.previaService = previaService;
 	}
 
 	@PostMapping
-	public ResponseEntity<VilaResumoDTO> criar(@RequestBody CriarVilaRequest req) {
-		Vila vila = vilaService.criarVila(usuarioAtual.idUsuario(), req.regioesEscolhidas(), req.tipos(),
-				req.semente());
-		return ResponseEntity.status(HttpStatus.CREATED).body(vilaService.resumo(vila));
+	public ResponseEntity<CriarVilaRespostaDTO> criar(@RequestBody CriarVilaRequest req) {
+		Vila vila = vilaService.criarVila(usuarioAtual.idUsuario(), req.previaId(), req.indices());
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(new CriarVilaRespostaDTO(vila.getId(), "DISTRIBUIR_POPULACAO"));
 	}
 
 	@GetMapping
@@ -40,10 +43,14 @@ public class VilaControlador {
 		return vilaService.resumo(usuarioAtual.idUsuario());
 	}
 
-	@GetMapping("/preview")
-	public PreviaVilaDTO preview(@RequestParam(required = false) Long semente) {
-		usuarioAtual.idUsuario();
-		return vilaService.previa(semente);
+	@PostMapping("/previa")
+	public PreviaMapaDTO gerarPrevia() {
+		return previaService.gerar(usuarioAtual.idUsuario());
+	}
+
+	@GetMapping("/previa")
+	public PreviaMapaDTO obterPrevia() {
+		return previaService.obter(usuarioAtual.idUsuario());
 	}
 
 }

@@ -53,9 +53,10 @@ function linhaClasse(linha: LinhaEstoque): string {
 </template>
 
 <style scoped>
-.barra { background: #e5e7eb; border-radius: 4px; height: 0.6rem; width: 8rem; overflow: hidden; }
-.barra-preenchida { background: #16a34a; height: 100%; }
-.barra-preenchida.alerta { background: #dc2626; }
-.status-alerta { color: #b91c1c; font-weight: 600; }
-:deep(.linha-alerta) { background: #fee2e2 !important; }
+.barra { background: var(--vl-surface-4); border-radius: var(--vl-radius-chip); height: 0.6rem; width: 8rem; overflow: hidden; }
+.barra-preenchida { background: var(--vl-accent); height: 100%; }
+.barra-preenchida.alerta { background: var(--vl-error); }
+.status-alerta { color: var(--vl-error); font-weight: 600; }
+:deep(.linha-alerta) { background: color-mix(in oklch, var(--vl-error) 14%, transparent) !important; } /* transparencia derivada do token */
+[data-testid="quantidade"], [data-testid="capacidade"] { font-family: var(--vl-font-mono); }
 </style>

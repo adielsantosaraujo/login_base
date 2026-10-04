@@ -75,6 +75,6 @@ function confirmar() {
 .lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
 .lista li { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
 .insuficiente { opacity: 0.7; }
-.aviso, .erro { color: var(--p-red-500, #dc2626); }
+.aviso, .erro { color: var(--vl-error); }
 .acoes { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
 </style>

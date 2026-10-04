@@ -12,7 +12,7 @@ const getMock = vi.mocked(get)
 const postMock = vi.mocked(post)
 
 const catalogo = [
-  { tipo: 'CASA', nome: 'Casa', regiao: 'URBANA', custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
+  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA'], bonusRegiao: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
 ]
 
 function montar() {

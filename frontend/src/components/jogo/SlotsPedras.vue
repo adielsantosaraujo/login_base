@@ -73,5 +73,5 @@ async function confirmar(id: number) {
 <style scoped>
 .lista { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
 .confirmacao { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-left: 0.5rem; }
-.erro { color: var(--p-red-500, #dc2626); }
+.erro { color: var(--vl-error); }
 </style>

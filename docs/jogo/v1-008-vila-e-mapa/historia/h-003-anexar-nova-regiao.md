@@ -4,7 +4,7 @@
 
 ## História
 
-Como jogador com vila já criada, quero anexar uma nova região adjacente, pagando recursos, e escolhendo seu tipo.
+Como jogador com vila já criada, quero anexar uma nova região adjacente, pagando recursos, mantendo seu tipo sorteado na criação.
 
 ## Contexto
 
@@ -13,7 +13,7 @@ Como jogador com vila já criada, quero anexar uma nova região adjacente, pagan
 - Fórmula: Ouro = round(150 × 1,35^(k−3)); Madeira = Pedra = 50 × (k−2).
 - Regiões com masmorra ativa não podem ser anexadas.
 - Regiões limpas de masmorra ficam 6 turnos sem poder gerar nova masmorra (mas podem ser anexadas).
-- Anexação é imediata ao pagar; o jogador escolhe o tipo no ato.
+- Tipo e bônus são gravados na criação da vila; anexação os mantém sem oferecer escolha.
 
 ## Critérios de aceite
 
@@ -41,11 +41,11 @@ Como jogador com vila já criada, quero anexar uma nova região adjacente, pagan
 - **Quando** tenta anexar com k=4
 - **Então** erro: "Recursos insuficientes"
 
-### CA5 — Anexação conclui com tipo escolhido
+### CA5 — Anexação conclui mantendo tipo sorteado
 
-- **Dado** vila com Ouro 203, Madeira 100, Pedra 100 disponíveis, região 3 está vazia e adjacente
-- **Quando** submete anexação de região 3 tipo COLETA
-- **Então** região 3 passa a ser possuída com tipo COLETA; estoque debita Ouro 203, Madeira 100, Pedra 100; região aparece no mapa com cor/ícone de Coleta
+- **Dado** vila com Ouro 203, Madeira 100, Pedra 100 disponíveis, região 3 está vazia e adjacente (tipo Montanha e bônus sorteados na criação)
+- **Quando** submete anexação de região 3 sem escolher tipo
+- **Então** região 3 passa a ser possuída com o tipo Montanha sorteado; estoque debita Ouro 203, Madeira 100, Pedra 100; região aparece no mapa com cor/ícone de Montanha
 
 ## Tarefas
 

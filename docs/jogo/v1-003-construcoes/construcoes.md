@@ -14,12 +14,13 @@ O coração da vila é formado por prédios: casas para moradia, fazendas para p
 - **R4**: Custo de upgrade: N1→N2 = 2,5 × custo N1; N2→N3 = 5 × custo N1; arredondado para cima (seção 4.1).
 - **R5**: Durante obra (construção ou upgrade) o prédio não funciona; trabalhadores ficam ociosos (seção 4.1).
 - **R6**: Demolir devolve 25% dos recursos gastos (total acumulado) (seção 4.1).
-- **R7**: Cada construção tem PO total; por turno, cada Construtor alocado à obra adiciona `eficiência × 1,0` PO; Carregador adiciona `eficiência × 0,5` PO (seção 4.2).
+- **R7**: Cada construção tem PO total; por turno, cada Construtor alocado à obra adiciona `eficiência × 1,0` PO; Carregador adiciona `eficiência × 0,5` PO (seção 4.2). Bônus Desenvolvimento da vila aumenta PO em +1% por ponto (seção 4.2).
 - **R8**: Máximo de trabalhadores por obra: 2 (N1), 4 (N2), 6 (N3) (seção 4.2).
 - **R9**: Recursos debitados ao iniciar a obra; cancelar devolve 50% (seção 4.2).
 - **R10**: Todos os prédios precisam de pessoas para funcionar, exceto Casa (funciona com moradores) (seção 4.1) [req].
 - **R11**: Bonificação por nível — N1: 2 vagas, ×1,0 produção, 4 ladrilhos de coleta; N2: 5 vagas, ×1,2 produção, 10 ladrilhos; N3: 10 vagas, ×1,5 produção, 20 ladrilhos (seção 4.3) [proposta].
 - **R12**: Alocação de trabalhadores respeita vagas do prédio (seção 5.3).
+- **R13**: Cada prédio é permitido apenas em regiões cujo tipo tenha o bônus associado ao prédio; prédios sem bônus associado são urbanos (só Urbana) (seção 4.1).
 
 ## Números e tabelas
 
@@ -27,32 +28,32 @@ O coração da vila é formado por prédios: casas para moradia, fazendas para p
 
 Custos de N2/N3 seguem multiplicadores 2,5× e 5× (seção 4.1).
 
-| Construção | Região | Profissão | Madeira | Pedra | Argila | Tábua | Ferro | Tijolo | Tecido | PO N1 | PO N2 | PO N3 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Casa | Urbana | — | 20 | 10 | 10 | — | — | — | — | 4 | 10 | 20 |
-| Armazém | Urbana | Carregador | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
-| Serraria | Urbana | Madeireiro | 30 | 10 | — | — | — | — | — | 6 | 15 | 30 |
-| Olaria | Urbana | Construtor | 20 | 20 | 10 | — | — | — | — | 6 | 15 | 30 |
-| Fundição | Urbana | Ferreiro | — | 30 | — | 20 | — | 20 | — | 8 | 20 | 40 |
-| Tecelagem | Urbana | Costureiro | — | 10 | — | 20 | — | — | — | 6 | 15 | 30 |
-| Curtume | Urbana | Costureiro | — | — | — | 20 | — | 10 | — | 6 | 15 | 30 |
-| Cozinha | Urbana | Cozinheiro | — | — | — | 15 | — | 15 | — | 6 | 15 | 30 |
-| Ferraria | Urbana | Ferreiro | — | — | — | 20 | 10 | 20 | — | 8 | 20 | 40 |
-| Alfaiataria | Urbana | Costureiro | — | — | — | 20 | 5 | 10 | 5 | 6 | 15 | 30 |
-| Carpintaria | Urbana | Madeireiro | — | 10 | — | 30 | — | — | — | 6 | 15 | 30 |
-| Mercado | Urbana | Comerciante | — | 20 | — | 30 | — | — | — | 6 | 15 | 30 |
-| Estalagem | Urbana | Cozinheiro/Comerciante | — | — | — | 30 | — | 20 | 10 | 8 | 20 | 40 |
-| Quartel | Urbana | Guerreiro | — | 40 | — | 30 | 10 | — | — | 8 | 20 | 40 |
-| Fazenda de plantio | Rural | Agricultor | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
-| Fazenda de criação | Rural | Fazendeiro | 25 | — | — | — | — | — | — | 4 | 10 | 20 |
-| Acampamento de lenhadores | Coleta | Madeireiro | 15 | 5 | — | — | — | — | — | 4 | 10 | 20 |
-| Pedreira | Coleta | Mineiro | 20 | — | — | — | — | — | — | 4 | 10 | 20 |
-| Barreiro | Coleta | Mineiro | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
-| Mina de ferro | Coleta | Mineiro | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
-| Mina de carvão | Coleta | Mineiro | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
-| Salina | Coleta | Mineiro | 20 | 10 | — | — | — | — | — | 4 | 10 | 20 |
-| Mina de enxofre | Coleta | Mineiro | 30 | 30 | — | — | 5 | — | — | 8 | 20 | 40 |
-| Cabana de caça | Coleta | Caçador | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
+| Construção | Região | Bônus | Profissão | Madeira | Pedra | Argila | Tábua | Ferro | Tijolo | Tecido | PO N1 | PO N2 | PO N3 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Casa | Urbana | — | — | 20 | 10 | 10 | — | — | — | — | 4 | 10 | 20 |
+| Armazém | Urbana | — | Carregador | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
+| Serraria | Urbana | Indústria | Madeireiro | 30 | 10 | — | — | — | — | — | 6 | 15 | 30 |
+| Olaria | Urbana | Indústria | Construtor | 20 | 20 | 10 | — | — | — | — | 6 | 15 | 30 |
+| Fundição | Urbana | Indústria | Ferreiro | — | 30 | — | 20 | — | 20 | — | 8 | 20 | 40 |
+| Tecelagem | Urbana | Indústria | Costureiro | — | 10 | — | 20 | — | — | — | 6 | 15 | 30 |
+| Curtume | Urbana | Indústria | Costureiro | — | — | — | 20 | — | 10 | — | 6 | 15 | 30 |
+| Cozinha | Urbana | Indústria | Cozinheiro | — | — | — | 15 | — | 15 | — | 6 | 15 | 30 |
+| Ferraria | Urbana | — | Ferreiro | — | — | — | 20 | 10 | 20 | — | 8 | 20 | 40 |
+| Alfaiataria | Urbana | — | Costureiro | — | — | — | 20 | 5 | 10 | 5 | 6 | 15 | 30 |
+| Carpintaria | Urbana | — | Madeireiro | — | 10 | — | 30 | — | — | — | 6 | 15 | 30 |
+| Mercado | Urbana | — | Comerciante | — | 20 | — | 30 | — | — | — | 6 | 15 | 30 |
+| Estalagem | Urbana | — | Cozinheiro/Comerciante | — | — | — | 30 | — | 20 | 10 | 8 | 20 | 40 |
+| Quartel | Urbana | — | Guerreiro | — | 40 | — | 30 | 10 | — | — | 8 | 20 | 40 |
+| Fazenda de plantio | Floresta, Planície | Plantações | Agricultor | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
+| Fazenda de criação | Planície | Criações | Fazendeiro | 25 | — | — | — | — | — | — | 4 | 10 | 20 |
+| Acampamento de lenhadores | Floresta, Planície | Floresta | Madeireiro | 15 | 5 | — | — | — | — | — | 4 | 10 | 20 |
+| Pedreira | Montanha | Rocha | Mineiro | 20 | — | — | — | — | — | — | 4 | 10 | 20 |
+| Barreiro | Floresta | Barreiro | Mineiro | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
+| Mina de ferro | Montanha | Ferro | Mineiro | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
+| Mina de carvão | Montanha | Carvão | Mineiro | 30 | 20 | — | — | — | — | — | 6 | 15 | 30 |
+| Salina | Litoral | Salinas | Mineiro | 20 | 10 | — | — | — | — | — | 4 | 10 | 20 |
+| Mina de enxofre | Litoral | Enxofre | Mineiro | 30 | 30 | — | — | 5 | — | — | 8 | 20 | 40 |
+| Cabana de caça | Floresta, Planície | Floresta | Caçador | 15 | — | — | — | — | — | — | 4 | 10 | 20 |
 
 Exemplo de upgrade: Casa N1→N2 = 50 Madeira, 25 Pedra, 25 Argila, 10 PO; N2→N3 = 100 Madeira, 50 Pedra, 50 Argila, 20 PO.
 
@@ -81,6 +82,11 @@ Exemplo de upgrade: Casa N1→N2 = 50 Madeira, 25 Pedra, 25 Argila, 10 PO; N2→
 - Eficiência do Agricultor: base 0,5 + 0,1 × PE Agricultor. Supor PE 5 → eficiência 1,0.
 - Produção: 1,0 × 6 Grãos × 1,0 (N1) = 6 Grãos/turno.
 - Com N2: eficiência 1,0 × 6 × 1,2 = 7,2 Grãos.
+
+**Exemplo 4: Obra com bônus Desenvolvimento**
+- Obra de Casa N1 com 1 Construtor de eficiência 1,0 e vila com bônus Desenvolvimento 12.
+- PO por turno: 1,0 × 1,0 × (1 + 12/100) = 1,12 PO/turno.
+- Sem bônus: mesma obra produziria 1,0 PO/turno.
 
 ## Interações com outros domínios
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 
 /**
- * Percorre todas as vilas e processa cada uma em transação própria (REQUIRES_NEW). Atenção: o
+ * Percorre as vilas com população confirmada (as pendentes são ignoradas) e processa cada uma em transação própria (REQUIRES_NEW). Atenção: o
  * agendador roda tudo numa transação externa, mas o resultado de cada vila é confirmado
  * (commit) de forma independente. Falha em uma vila gera o evento FALHA_PROCESSAMENTO e as
  * demais continuam.
@@ -32,7 +32,7 @@ public class TurnoProcessorPorVila implements TurnoProcessor {
 
 	@Override
 	public void processarTurno(int numero) {
-		for (Long vilaId : vilaRepository.findAllIds()) {
+		for (Long vilaId : vilaRepository.findIdsComPopulacaoConfirmada()) {
 			try {
 				processadorVila.processarVila(vilaId, numero);
 			} catch (RuntimeException e) {

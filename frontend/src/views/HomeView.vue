@@ -16,5 +16,8 @@ import Card from 'primevue/card'
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  background: var(--vl-bg);
+  color: var(--vl-text);
+  font-family: var(--vl-font-sans);
 }
 </style>

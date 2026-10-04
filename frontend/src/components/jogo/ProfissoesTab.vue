@@ -85,7 +85,8 @@ const eficienciaPct = (e: number) => `${(e * 100).toFixed(0)}%`
 <style scoped>
 .rolagem { overflow-x: auto; }
 .tabela { border-collapse: collapse; width: 100%; max-width: 40rem; }
-.tabela th, .tabela td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--p-content-border-color, #ddd); }
+.tabela th, .tabela td { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--vl-border); color: var(--vl-text); }
+.tabela td[data-testid] { font-family: var(--vl-font-mono); }
 .distribuicao { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: 1rem; }
-.excedido { color: var(--p-red-500, #c00); }
+.excedido { color: var(--vl-error); }
 </style>

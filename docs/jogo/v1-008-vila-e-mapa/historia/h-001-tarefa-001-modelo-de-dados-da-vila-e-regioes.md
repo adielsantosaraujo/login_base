@@ -25,8 +25,12 @@ Criar as tabelas base do jogo (jogo_turno, vila, regiao, ladrilho_jazida) e suas
 - [/src/main/java/com/example/loginbase/jogo/repositorio/VilaRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/VilaRepository.java) (novo) — finder: findByUsuarioId, existsByUsuarioId
 - [/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoRepository.java](/src/main/java/com/example/loginbase/jogo/repositorio/RegiaoRepository.java) (novo) — finder: findByVilaIdAndIndice, findAllByVilaId
 
-**Migração Flyway (novo):**
-- [/src/main/resources/db/migration/V3__Criacao_tabelas_jogo_base.sql](/src/main/resources/db/migration/V3__Criacao_tabelas_jogo_base.sql) (novo)
+**Observações:**
+- `V3__Criacao_tabelas_jogo_base.sql` já existe (fase anterior).
+- `V17__regioes_v2_bonus_e_previa.sql` cria `regiao_bonus` e `vila_previa` (esta task atualiza modelos para V17); ids continuam BIGINT.
+
+**Migração Flyway (V17, novo):**
+- [/src/main/resources/db/migration/V17__regioes_v2_bonus_e_previa.sql](/src/main/resources/db/migration/V17__regioes_v2_bonus_e_previa.sql) (novo)
   ```sql
   CREATE TABLE jogo_turno (
     numero INT PRIMARY KEY,

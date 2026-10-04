@@ -60,9 +60,9 @@ async function enviar() {
 
     <DataTable :value="linhas" data-key="recurso" size="small" data-testid="tabela-precos">
       <Column field="nome" header="Recurso" />
-      <Column field="estoque" header="Em estoque" />
-      <Column field="precoVenda" header="Preço de venda" />
-      <Column field="precoCompra" header="Preço de compra" />
+      <Column field="estoque" header="Em estoque" body-class="num" />
+      <Column field="precoVenda" header="Preço de venda" body-class="num" />
+      <Column field="precoCompra" header="Preço de compra" body-class="num" />
     </DataTable>
 
     <form class="ordem" data-testid="form-ordem" @submit.prevent="enviar">
@@ -96,12 +96,12 @@ async function enviar() {
     <h3>Histórico de ordens</h3>
     <DataTable :value="m.ordens.value" data-key="id" size="small" data-testid="tabela-historico">
       <template #empty>Nenhuma ordem realizada.</template>
-      <Column field="turno" header="Turno" />
+      <Column field="turno" header="Turno" body-class="num" />
       <Column field="tipo" header="Tipo" />
       <Column field="recurso" header="Recurso" />
-      <Column field="quantidade" header="Qtd." />
-      <Column field="precoUnitario" header="Preço unit." />
-      <Column field="ouroTotal" header="Ouro total" />
+      <Column field="quantidade" header="Qtd." body-class="num" />
+      <Column field="precoUnitario" header="Preço unit." body-class="num" />
+      <Column field="ouroTotal" header="Ouro total" body-class="num" />
     </DataTable>
   </div>
 </template>
@@ -109,7 +109,10 @@ async function enviar() {
 <style scoped>
 .mercado { display: flex; flex-direction: column; gap: 1rem; }
 .ordem { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
-.aviso { color: var(--p-orange-500, #f97316); }
-.sucesso { color: var(--p-green-500, #16a34a); }
-.erro { color: var(--p-red-500, #dc2626); }
+.aviso { color: var(--vl-warn); }
+.sucesso { color: var(--vl-accent); }
+.erro { color: var(--vl-error); }
+.mercado h3 { font-family: var(--vl-font-display); color: var(--vl-text); }
+.mercado :deep(.num) { font-family: var(--vl-font-mono); }
+[data-testid="resumo"] { font-family: var(--vl-font-mono); }
 </style>

@@ -46,5 +46,6 @@ async function aoClicar(p: { x: number; y: number; ladrilho: Ladrilho | null }) 
 
 <style scoped>
 .painel-marcacao { display: flex; flex-direction: column; gap: 0.5rem; }
-.dica { font-size: 0.85rem; color: var(--p-text-muted-color, #64748b); margin: 0; }
+h3 { font-family: var(--vl-font-display); }
+.dica { font-size: 0.85rem; color: var(--vl-text-3); margin: 0; }
 </style>

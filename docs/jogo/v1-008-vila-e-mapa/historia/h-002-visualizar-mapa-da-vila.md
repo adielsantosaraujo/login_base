@@ -4,37 +4,38 @@
 
 ## História
 
-Como jogador, quero visualizar a grade 4×4 das minha regiões com indicação de posse, tipo, masmorras, e poder clicar em uma região para expandir e ver os 10×10 ladrilhos com construções e jazidas.
+Como jogador, quero visualizar a grade 4×4 das minhas regiões com indicação de posse, tipo, bônus e masmorras, e poder clicar em uma região para expandir e ver os 10×10 ladrilhos com construções e jazidas.
 
 ## Contexto
 
-- A grade principal mostra 16 regiões (4×4).
-- Células possuídas mostram tipo (Rural/Urbana/Coleta) e ícone/cor.
-- Células vazias mostram como disponíveis para anexação.
+- A grade principal mostra 16 regiões (4×4) com tipo e 3 bônus visíveis.
+- Células possuídas mostram tipo (Floresta, Planície, Urbana, Litoral, Montanha) e ícone/cor.
+- Células não possuídas também mostram tipo e bônus sorteados na criação.
 - Células com masmorra ativa mostram ícone de masmorra + nível.
 - Ao clicar numa região, expande-se uma subgrada 10×10 mostrando ladrilhos.
 - Cada ladrilho pode ter: jazida, construção, recurso (marcação de coleta).
+- Ladrilhos não Urbanas sem gravação mostram ladrilhos gerados pela semente.
 - Telas 1, 3, 4 do roadmap (11.4).
 
 ## Critérios de aceite
 
-### CA1 — Grade 4×4 mostra regiões possuídas com tipo e cor
+### CA1 — Grade 4×4 mostra regiões com tipo, bônus e cor
 
-- **Dado** um jogador com vila contendo regiões 6 (Urbana), 7 (Rural), 2 (Coleta)
+- **Dado** um jogador com vila contendo regiões 6 (Urbana), 7 (Floresta), 2 (Montanha)
 - **Quando** acessa a tela de mapa
-- **Então** a grade mostra 3 células preenchidas (índices 6, 7, 2) com cores/ícones para os tipos; 13 células vazias (índice visível); clickable
+- **Então** a grade mostra 16 células (3 possuídas, 13 não possuídas) com cores/ícones para os tipos; tipo e 3 bônus visíveis em cada célula; clickable
 
 ### CA2 — Clique numa região mostra 10×10 ladrilhos com jazidas e construções
 
 - **Dado** a grade 4×4 já exibida, região 6 (Urbana) selecionada
 - **Quando** o jogador clica em região 6
-- **Então** a tela expande ou abre subgrada 10×10; mostra ladrilhos com ícones (Floresta, Pedra, etc. se Coleta; prédios se construído); 4 casas N1 nos ladrilhos (0,0), (2,0), (4,0), (6,0)
+- **Então** a tela expande ou abre subgrada 10×10; mostra ladrilhos com ícones; 4 casas N1 nos ladrilhos (0,0), (2,0), (4,0), (6,0); tipo e bônus da região exibidos
 
 ### CA3 — Célula com masmorra mostra ícone e nível
 
 - **Dado** região 10 (não possuída) com masmorra ativa nível 5
 - **Quando** visualiza a grade
-- **Então** célula 10 exibe ícone de masmorra + "N5" sobreposto
+- **Então** célula 10 exibe tipo, bônus, ícone de masmorra + "N5" sobreposto
 
 ### CA4 — Navegação entre regiões sem recarregar
 
@@ -46,7 +47,7 @@ Como jogador, quero visualizar a grade 4×4 das minha regiões com indicação d
 
 - **Dado** a tela de mapa
 - **Quando** o jogador vê o lado ou sobrepõe ícone
-- **Então** legenda exibe: "Rural" (cor verde), "Urbana" (cor azul), "Coleta" (cor marrom), "Masmorra" (ícone caverna), "Construção" (ícone prédio), etc.
+- **Então** legenda exibe: "Floresta" (cor verde), "Planície" (cor bege), "Urbana" (cor amarela), "Litoral" (cor azul), "Montanha" (cor cinza), "Masmorra" (ícone caverna), "Construção" (ícone prédio), etc.
 
 ## Tarefas
 

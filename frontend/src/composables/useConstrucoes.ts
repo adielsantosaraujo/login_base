@@ -1,11 +1,14 @@
 import { ref } from 'vue'
 import { get, post } from '../api/http'
+import type { BonusRegiao, TipoRegiao } from '../domain/regioes'
 
 export interface CatalogoConstrucao {
   tipo: string
   nome: string
-  /** Região permitida; null = qualquer. */
-  regiao: 'RURAL' | 'URBANA' | 'COLETA' | null
+  /** Tipos de região em que a construção é permitida. */
+  regioes: TipoRegiao[]
+  /** Bônus de região associado à construção, se houver. */
+  bonusRegiao: BonusRegiao | null
   custoN1: Record<string, number>
   tamanho: number
   poN1: number
@@ -33,7 +36,7 @@ export interface CriarConstrucao {
 }
 
 export function permitidoNaRegiao(item: CatalogoConstrucao, tipoRegiao: string | null | undefined): boolean {
-  return item.regiao == null || item.regiao === tipoRegiao
+  return !!tipoRegiao && item.regioes.includes(tipoRegiao as TipoRegiao)
 }
 
 export function useConstrucoes() {

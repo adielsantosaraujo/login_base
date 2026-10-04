@@ -24,7 +24,8 @@ Centralizar dados de todos os prédios (custos, PO, vagas, região, profissão) 
 
 - **Enum `ConstrucaoCatalogo`** em `/src/main/java/com/example/loginbase/jogo/construcao/ConstrucaoCatalogo.java`:
   - Tipos: CASA, ARMAZEM, SERRARIA, OLARIA, FUNDIÇÃO, TECELAGEM, CURTUME, COZINHA, FERRARIA, ALFAIATARIA, CARPINTARIA, MERCADO, ESTALAGEM, QUARTEL, FAZENDA_PLANTIO, FAZENDA_CRIACAO, ACAMPAMENTO_LENHADORES, PEDREIRA, BARREIRO, MINA_FERRO, MINA_CARVAO, SALINA, MINA_ENXOFRE, CABANA_CACA.
-  - Campos: nome, regiaoPermitida (URBANA, RURAL, COLETA), profissaoPrincipal (enum ou null), custoN1 (Map<TipoRecurso, quantidade>), poN1, vagasN1.
+  - Campos: nome, bonusRegiao (BonusRegiao, nulo = urbano), profissaoPrincipal (enum ou null), custoN1 (Map<TipoRecurso, quantidade>), poN1, vagasN1.
+  - Método `regioesPermitidas()` derivado de `TipoRegiao.bonus()`.
   - Método `getCusto(Nivel)` retorna custo multiplicado por 2,5 ou 5.
   - Método `getPO(Nivel)` retorna PO multiplicado.
   - Método `getVagas(Nivel)` retorna vagas multiplicadas (tabela seção 4.3).

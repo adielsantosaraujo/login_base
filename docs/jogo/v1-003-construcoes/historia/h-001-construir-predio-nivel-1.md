@@ -18,14 +18,14 @@ Como jogador, quero construir um prédio (Casa, Fazenda, Fábrica, etc.) em nív
 
 ### CA1 — Rejeição por tipo de região errado
 
-- **Dado** jogador em região Rural com autorização para construir Quartel (tipo Urbana)
+- **Dado** jogador em região Floresta com autorização para construir Quartel (tipo Urbana)
 - **Quando** submete ordem de construção do Quartel
-- **Então** API retorna erro 400 com mensagem "Prédio não permitido nesta região"
+- **Então** API retorna erro 400 com mensagem "Quartel só pode ser construído em região Urbana"
 
 ### CA2 — Rejeição por ladrilho ocupado
 
-- **Dado** Fazenda N1 já colocada em (5, 5) da região Coleta 10
-- **Quando** tenta construir Pedreira N1 em (5, 5)
+- **Dado** Fazenda de plantio N1 em (5, 5) da região Planície 10
+- **Quando** tenta construir Acampamento de lenhadores N1 em (5, 5)
 - **Então** API retorna erro 400 "Ladrilho ocupado"
 
 ### CA3 — Débito de recursos e criação bem-sucedida
@@ -46,11 +46,11 @@ Como jogador, quero construir um prédio (Casa, Fazenda, Fábrica, etc.) em nív
 - **Quando** tenta construir Casa N1 (20 Madeira necessária)
 - **Então** API retorna erro 400 "Recursos insuficientes"
 
-### CA6 — Prédio de coleta em região errada
+### CA6 — Prédio em região sem bônus associado
 
-- **Dado** região Urbana (sem jazidas)
-- **Quando** tenta construir Acampamento de lenhadores N1
-- **Então** rejeitado: "Prédio de coleta só em Região de Coleta"
+- **Dado** região Floresta (tipo Floresta, sem bônus de Minério)
+- **Quando** tenta construir Mina de ferro N1 (requer bônus de Minério)
+- **Então** rejeitado: "Mina de ferro só pode ser construído em região Montanha"
 
 ## Tarefas
 

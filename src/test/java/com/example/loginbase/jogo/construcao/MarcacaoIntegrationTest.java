@@ -58,7 +58,7 @@ class MarcacaoIntegrationTest {
 			Regiao r = new Regiao(vila.getId(), i);
 			if (i == 1) {
 				r.setPossuida(true);
-				r.setTipo(TipoRegiao.COLETA);
+				r.setTipo(TipoRegiao.FLORESTA);
 			}
 			r = regiaoRepository.save(r);
 			if (i == 1) {

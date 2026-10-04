@@ -27,5 +27,6 @@ onUnmounted(() => clearInterval(timer))
 
 <style scoped>
 .estoque-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-.erro { color: #b91c1c; }
+.estoque-topo h1 { font-family: var(--vl-font-display); color: var(--vl-text); }
+.erro { color: var(--vl-error); }
 </style>

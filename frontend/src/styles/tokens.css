@@ -1,0 +1,70 @@
+/* Tokens do tema Vilarejo (sempre escuro). Hex aproximados nos comentários. */
+:root {
+  --vl-bg: oklch(0.16 0.01 60); /* #1a1714 */
+  --vl-surface-1: oklch(0.19 0.012 60); /* #211d19 */
+  --vl-surface-2: oklch(0.20 0.012 60); /* #24201c */
+  --vl-surface-3: oklch(0.22 0.012 60); /* #27231f */
+  --vl-surface-4: oklch(0.25 0.012 60); /* #2b2622 */
+  --vl-border: oklch(0.28 0.012 60); /* #36302a */
+  --vl-text: oklch(0.94 0.01 80); /* #f2eee8 */
+  --vl-text-2: oklch(0.72 0.015 70); /* #b0a89e */
+  --vl-text-3: oklch(0.60 0.012 70); /* #8d867c */
+  --vl-accent: oklch(0.80 0.13 75); /* #e8b55a */
+  --vl-accent-bg: oklch(0.80 0.13 75 / 0.12);
+  --vl-accent-ink: oklch(0.18 0.01 60); /* #1d1a17 */
+  --vl-warn: oklch(0.78 0.10 60); /* #d9a06a */
+  --vl-error: oklch(0.72 0.15 30); /* #e07a5f */
+
+  /* Tipos de região */
+  --vl-tipo-floresta: #6cbf72;
+  --vl-tipo-planicie: oklch(0.80 0.13 120); /* #b3d36a */
+  --vl-tipo-urbana: #e8b55a;
+  --vl-tipo-litoral: oklch(0.80 0.08 215); /* #8fcde0 */
+  --vl-tipo-montanha: #a9afba;
+
+  /* Bônus de região */
+  --vl-bonus-floresta: oklch(0.72 0.13 145);
+  --vl-bonus-barreiro: oklch(0.68 0.11 45);
+  --vl-bonus-plantacoes: oklch(0.80 0.13 120);
+  --vl-bonus-criacoes: oklch(0.76 0.09 70);
+  --vl-bonus-rocha: oklch(0.74 0.02 250);
+  --vl-bonus-ferro: oklch(0.66 0.07 230);
+  --vl-bonus-carvao: oklch(0.60 0.01 260);
+  --vl-bonus-salinas: oklch(0.86 0.04 210);
+  --vl-bonus-enxofre: oklch(0.86 0.14 100);
+  --vl-bonus-militar: oklch(0.66 0.13 20);
+  --vl-bonus-industria: oklch(0.72 0.11 50);
+  --vl-bonus-comercio: oklch(0.80 0.13 75);
+  --vl-bonus-desenvolvimento: oklch(0.76 0.11 290);
+
+  /* Jazidas (aliases dos bônus) */
+  --vl-jazida-floresta: var(--vl-bonus-floresta);
+  --vl-jazida-rocha: var(--vl-bonus-rocha);
+  --vl-jazida-barreiro: var(--vl-bonus-barreiro);
+  --vl-jazida-veio-de-ferro: var(--vl-bonus-ferro);
+  --vl-jazida-veio-de-carvao: var(--vl-bonus-carvao);
+  --vl-jazida-salina: var(--vl-bonus-salinas);
+  --vl-jazida-enxofre: var(--vl-bonus-enxofre);
+  --vl-jazida-campo: var(--vl-bonus-plantacoes);
+
+  /* Fontes */
+  --vl-font-display: 'Bricolage Grotesque', sans-serif;
+  --vl-font-sans: 'IBM Plex Sans', sans-serif;
+  --vl-font-mono: 'IBM Plex Mono', monospace;
+
+  /* Raios */
+  --vl-radius-chip: 6px;
+  --vl-radius-tab: 8px;
+  --vl-radius-slot: 10px;
+  --vl-radius-tile: 12px;
+  --vl-radius-card: 14px;
+  --vl-radius-panel: 16px;
+  --vl-radius-pill: 999px;
+}
+
+body {
+  background: var(--vl-bg);
+  color: var(--vl-text);
+  font-family: var(--vl-font-sans);
+  margin: 0;
+}

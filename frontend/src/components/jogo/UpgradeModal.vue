@@ -99,7 +99,8 @@ async function confirmar() {
 </template>
 
 <style scoped>
-.falta { color: var(--p-red-500, #dc2626); }
-.erro { color: var(--p-red-500, #dc2626); }
+h3, h4 { font-family: var(--vl-font-display); }
+.falta { color: var(--vl-error); }
+.erro { color: var(--vl-error); }
 .posicao, .acoes { display: flex; gap: 1rem; margin-top: 0.5rem; }
 </style>

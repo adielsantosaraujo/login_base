@@ -5,34 +5,35 @@
 
 ## Objetivo
 
-Implementar endpoints REST para obter dados do mapa (grade 4×4 com regiões possuídas, tipo, masmorra) e detalhes de uma região (10×10 ladrilhos com construções e jazidas).
+Implementar endpoints REST para obter dados do mapa (grade 4×4 com regiões, tipo, bônus, masmorra) e detalhes de uma região (10×10 ladrilhos com construções e jazidas).
 
 ## Contexto necessário
 
-- [../vila.md](../vila.md) — estrutura de vila e regiões (11.1, 11.2)
-  > Vila tem 16 regiões; cada região pode estar possuída (tipo definido) ou vazia (tipo nulo).
+- [design.md — D11. Mapa, resumo e anexação](/openspec/changes/redesenho-criacao-vila-populacao/design.md#d11-mapa-resumo-e-anexação)
+  > Mapa mostra tipo e bônus das 16 regiões; ladrilhos gerados se ausentes (tipo ≠ Urbana).
 
 - [../regioes.md](../regioes.md) — regiões e jazidas
-  > Regiões em Coleta têm jazidas; em Rural/Urbana, Jazz irrelevante.
+  > Regiões têm tipo (Floresta, Planície, Urbana, Litoral, Montanha) e jazidas em tipos não-Urbanos.
 
 ## Backend
 
-**Controlador (novo):**
-- [/src/main/java/com/example/loginbase/jogo/controlador/MapaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/MapaControlador.java) (novo)
+**Controlador (novo/existente):**
+- [/src/main/java/com/example/loginbase/jogo/controlador/MapaControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/MapaControlador.java)
   - Endpoint: `GET /api/jogo/vila/mapa`
-  - Resposta: `{ "vila": { id, nome, ... }, "regioes": [ { indice: 1, tipo: null }, { indice: 6, tipo: "URBANA", possuida: true, masmorra: null }, ... ] }`
+  - Resposta: `{ "vila": { ..., "bonusRegiao": {"FLORESTA": 25, ...} }, "regioes": [ { "indice": 1, "tipo": "MONTANHA", "bonus": [...], "possuida": false, "masmorra": null }, ... ] }`
   - Endpoint: `GET /api/jogo/regioes/{indice}`
-  - Resposta: `{ "regiao": { id, indice, tipo, possuida }, "ladrilhos": [ { x: 0, y: 0, jazida: "Floresta", construcao: { tipo: "Casa", nivel: 1 } }, ... ] }`
+  - Resposta: `{ "regiao": { id, indice, tipo, bonus: [...], possuida }, "ladrilhos": [ { x: 0, y: 0, jazida: "Floresta", construcao: { tipo: "Casa", nivel: 1 } }, ... ] }`
 
 **Serviço (novo/existente):**
-- [/src/main/java/com/example/loginbase/jogo/servico/MapaService.java](/src/main/java/com/example/loginbase/jogo/servico/MapaService.java) (novo)
-  - Método: `MapaDTO obterMapaVila(Long usuarioId)` — lista 16 regiões com tipo, possuida, masmorra
-  - Método: `RegiaoDetalheDTO obterRegiaoDetalhada(Long usuarioId, int indiceRegiao)` — 10×10 ladrilhos com jazidas e construções
+- [/src/main/java/com/example/loginbase/jogo/servico/MapaService.java](/src/main/java/com/example/loginbase/jogo/servico/MapaService.java)
+  - Método: `MapaDTO obterMapaVila(Long usuarioId)` — lista 16 regiões com tipo, bônus, possuida, masmorra
+  - Método: `RegiaoDetalheDTO obterRegiaoDetalhada(Long usuarioId, int indiceRegiao)` — 10×10 ladrilhos com jazidas e construções; gera ladrilhos se ausentes e tipo ≠ URBANA
 
-**DTOs (novos):**
-- `MapaDTO` com lista de `RegiaoResumoDTO`
-- `RegiaoResumoDTO`: indice, tipo, possuida, masmorraAtiva, nivelMasmorra
-- `RegiaoDetalheDTO`: regiao (indice, tipo), ladrilhos (array 10×10 com Jazz e Construção)
+**DTOs (novos/existentes):**
+- `MapaDTO` com lista de `RegiaoResumoDTO` e `bonusRegiao` da vila
+- `RegiaoResumoDTO`: indice, tipo, bonus (array de RegiaoBonusDTO), possuida, masmorraAtiva, nivelMasmorra
+- `RegiaoDetalheDTO`: regiao (indice, tipo, bonus), ladrilhos (array 10×10 com Jazz e Construção)
+- `RegiaoBonusDTO`: bonus (enum), posicao (1-3), valor (int)
 - `LadrilhoDTO`: x, y, jazida, construcao (null se não houver)
 
 ## Frontend
@@ -49,8 +50,9 @@ Não se aplica.
 
 ## Testes
 
-- **Teste de integração**: GET /api/jogo/vila/mapa com usuário autenticado → 200, retorna 16 regiões, 3 possuídas, tipos corretos.
-- **Teste de integração**: GET /api/jogo/regioes/6 para região possuída → 200, 100 ladrilhos (10×10), 4 casas nos ladrilhos (0,0), (2,0), (4,0), (6,0).
+- **Teste de integração**: GET /api/jogo/vila/mapa com usuário autenticado → 200, retorna 16 regiões, 3 possuídas, tipos, bônus e `bonusRegiao` da vila corretos.
+- **Teste de integração**: GET /api/jogo/regioes/6 para região possuída → 200, 100 ladrilhos (10×10), 4 casas nos ladrilhos (0,0), (2,0), (4,0), (6,0), tipo e bônus.
+- **Teste de geração**: GET /api/jogo/regioes/2 para região não possuída Montanha sem ladrilhos → 200, 100 ladrilhos gerados pela semente, tipo e bônus.
 - **Teste de segurança**: GET sem autenticação → 401.
 - **Teste de autorização**: GET /api/jogo/regioes/10 (região de outra vila) → 403 ou acesso negado.
 

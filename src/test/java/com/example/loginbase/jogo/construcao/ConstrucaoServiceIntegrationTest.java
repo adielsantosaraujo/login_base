@@ -36,7 +36,7 @@ class ConstrucaoServiceIntegrationTest {
 	@Autowired EstoqueService estoqueService;
 	@Autowired VerificadorOcupacaoLadrilhos verificador;
 
-	/** Regiões 1 (URBANA) e 2 (RURAL) possuídas; as demais não. */
+	/** Regiões 1 (URBANA) e 2 (PLANICIE) possuídas; as demais não. */
 	private Vila vila(String madeira, String pedra, String argila) {
 		Usuario u = new Usuario();
 		u.setNome("Jogador");
@@ -48,7 +48,7 @@ class ConstrucaoServiceIntegrationTest {
 			Regiao r = new Regiao(vila.getId(), i);
 			if (i <= 2) {
 				r.setPossuida(true);
-				r.setTipo(i == 1 ? TipoRegiao.URBANA : TipoRegiao.RURAL);
+				r.setTipo(i == 1 ? TipoRegiao.URBANA : TipoRegiao.PLANICIE);
 			}
 			regiaoRepository.save(r);
 		}
@@ -76,7 +76,7 @@ class ConstrucaoServiceIntegrationTest {
 	}
 
 	@Test
-	void quartelEmRegiaoRuralRejeitado() {
+	void quartelEmRegiaoNaoUrbanaRejeitado() {
 		Vila vila = vila("100", "100", "100");
 		assertThatThrownBy(() -> service.criar(vila, TipoConstrucao.QUARTEL, 2, 0, 0))
 				.isInstanceOf(JogoException.class).hasMessageContaining("região");
