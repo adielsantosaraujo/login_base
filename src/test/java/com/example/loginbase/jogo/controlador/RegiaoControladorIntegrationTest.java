@@ -29,15 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.RegiaoTerreno;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoTerrenoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.servico.AnexacaoService;
@@ -54,9 +54,9 @@ class RegiaoControladorIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired EstoqueService estoqueService;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired RegiaoTerrenoRepository regiaoTerrenoRepository;
 	@Autowired EventoTurnoRepository eventoRepository;
 	@MockitoBean ConsultaMasmorras consultaMasmorras;
 
@@ -76,12 +76,19 @@ class RegiaoControladorIntegrationTest {
 			if (i == 6 || i == 7 || i == 10) {
 				r.setPossuida(true);
 			}
-			// tipo e bônus são gravados na criação, inclusive nas regiões não possuídas
+			// tipo e terrenos são gravados na criação, inclusive nas regiões não possuídas
 			r.setTipo(i == 6 ? TipoRegiao.URBANA : i == 3 ? TipoRegiao.MONTANHA : TipoRegiao.FLORESTA);
 			r = regiaoRepository.save(r);
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.ROCHA, 1, 40));
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.FERRO, 2, 20));
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.CARVAO, 3, 10));
+			if (i == 6 || i == 2) {
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.INDUSTRIA, 1, 45));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.COMERCIO, 2, 30));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.DESENVOLVIMENTO, 3, 25));
+			}
+			else {
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.ROCHA, 1, 40));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.FERRO, 2, 35));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.CARVAO, 3, 25));
+			}
 		}
 		regiaoRepository.flush();
 		estoqueService.inicializar(vila, Map.of(Recurso.OURO, new BigDecimal(ouro),
@@ -100,14 +107,15 @@ class RegiaoControladorIntegrationTest {
 	}
 
 	@Test
-	void anexaRegiaoAdjacenteDebitaEstoqueEPersisteJazidas() throws Exception {
+	void anexaRegiaoAdjacenteDebitaEstoqueEPersisteLadrilhos() throws Exception {
 		Usuario u = novoUsuario();
 		Vila vila = vila(u, "500", "500", "500");
 		anexar(u, 3).andExpect(status().isOk())
 				.andExpect(jsonPath("$.regiao.indice").value(3))
 				.andExpect(jsonPath("$.regiao.tipo").value("MONTANHA"))
-				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
-				.andExpect(jsonPath("$.regiao.bonus[0].bonus").value("ROCHA"))
+				.andExpect(jsonPath("$.regiao.terrenos", hasSize(3)))
+				.andExpect(jsonPath("$.regiao.terrenos[0].terreno").value("ROCHA"))
+				.andExpect(jsonPath("$.regiao.terrenos[0].percentual").value(40))
 				.andExpect(jsonPath("$.regiao.possuida").value(true))
 				.andExpect(jsonPath("$.custo.ouro").value(150))
 				.andExpect(jsonPath("$.custo.madeira").value(50))
@@ -120,7 +128,9 @@ class RegiaoControladorIntegrationTest {
 		assertThat(r3.getTipo()).isEqualTo(TipoRegiao.MONTANHA);
 		assertThat(estoqueService.quantidade(vila, Recurso.OURO)).isEqualByComparingTo("350");
 		assertThat(estoqueService.quantidade(vila, Recurso.PEDRA)).isEqualByComparingTo("450");
-		assertThat(ladrilhoJazidaRepository.findAllByRegiaoId(r3.getId())).hasSize(100);
+		assertThat(ladrilhoRepository.findByRegiaoIdOrderByYAscXAsc(r3.getId())).hasSize(100);
+		assertThat(regiaoTerrenoRepository.findByRegiaoIdOrderByPosicao(r3.getId())).extracting(RegiaoTerreno::getTerreno)
+				.containsExactly(TipoTerreno.ROCHA, TipoTerreno.FERRO, TipoTerreno.CARVAO);
 		assertThat(eventoRepository.findAll()).anyMatch(
 				e -> e.getVilaId().equals(vila.getId()) && e.getTipo() == TipoEventoTurno.REGIAO_ANEXADA);
 
@@ -133,26 +143,32 @@ class RegiaoControladorIntegrationTest {
 	}
 
 	@Test
-	void anexarSomaBonusDaRegiaoAoMapa() throws Exception {
-		Usuario u = novoUsuario();
-		vila(u, "500", "500", "500");
-		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
-				.andExpect(jsonPath("$.vila.bonusRegiao.ROCHA").value(120));
-		anexar(u, 3).andExpect(status().isOk());
-		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
-				.andExpect(jsonPath("$.vila.bonusRegiao.ROCHA").value(160))
-				.andExpect(jsonPath("$.vila.bonusRegiao.length()").value(13));
-	}
-
-	@Test
-	void anexarUrbanaNaoGeraJazidas() throws Exception {
+	void anexarUrbanaGera100LadrilhosComOsTresTerrenos() throws Exception {
 		Usuario u = novoUsuario();
 		Vila vila = vila(u, "500", "500", "500");
 		Regiao r2 = regiaoRepository.findByVilaIdAndIndice(vila.getId(), 2).orElseThrow();
 		r2.setTipo(TipoRegiao.URBANA);
 		regiaoRepository.saveAndFlush(r2);
-		anexar(u, 2).andExpect(status().isOk()).andExpect(jsonPath("$.regiao.tipo").value("URBANA"));
-		assertThat(ladrilhoJazidaRepository.findAllByRegiaoId(r2.getId())).isEmpty();
+		anexar(u, 2).andExpect(status().isOk()).andExpect(jsonPath("$.regiao.tipo").value("URBANA"))
+				.andExpect(jsonPath("$.regiao.terrenos", hasSize(3)))
+				.andExpect(jsonPath("$.regiao.terrenos[0].terreno").value("INDUSTRIA"))
+				.andExpect(jsonPath("$.regiao.terrenos[1].terreno").value("COMERCIO"))
+				.andExpect(jsonPath("$.regiao.terrenos[2].terreno").value("DESENVOLVIMENTO"));
+		var ladrilhos = ladrilhoRepository.findByRegiaoIdOrderByYAscXAsc(r2.getId());
+		assertThat(ladrilhos).hasSize(100);
+		assertThat(ladrilhos.stream().filter(l -> l.getTerreno() == TipoTerreno.INDUSTRIA).count()).isEqualTo(45);
+		assertThat(ladrilhos.stream().filter(l -> l.getTerreno() == TipoTerreno.COMERCIO).count()).isEqualTo(30);
+		assertThat(ladrilhos.stream().filter(l -> l.getTerreno() == TipoTerreno.DESENVOLVIMENTO).count())
+				.isEqualTo(25);
+	}
+
+	@Test
+	void mapaNaoTemSomaDeBonusDaVilaAposAnexar() throws Exception {
+		Usuario u = novoUsuario();
+		vila(u, "500", "500", "500");
+		anexar(u, 3).andExpect(status().isOk());
+		mvc.perform(get("/api/jogo/vila/mapa").with(user(u.getEmail()).roles("USER")))
+				.andExpect(jsonPath("$.regioes[2].terrenos", hasSize(3)));
 	}
 
 	@Test

@@ -4,11 +4,11 @@
 
 ## História
 
-Como jogador, quero marcar ladrilhos com jazida para um prédio de coleta, determinando quantos trabalhadores podem ser produtivos nele.
+Como jogador, quero marcar ladrilhos com o tipo de terreno correspondente ao prédio de coleta, determinando quantos trabalhadores podem ser produtivos nele.
 
 ## Contexto
 
-- Prédios de coleta exigem marcação de ladrilhos com jazida compatível (seção 4.6).
+- Prédios de coleta exigem marcação de ladrilhos com tipo de terreno compatível (seção 4.6).
 - Máximo de marcados por nível: N1 = 4, N2 = 10, N3 = 20 (seção 4.6).
 - Trabalhadores produtivos = `min(alocados, floor(marcados ÷ 2))` (seção 4.6).
 - Marcação é conectada ortogonalmente ao prédio (seção 4.6).
@@ -18,15 +18,15 @@ Como jogador, quero marcar ladrilhos com jazida para um prédio de coleta, deter
 
 ### CA1 — Marcar ladrilho compatível
 
-- **Dado** Acampamento de lenhadores N1 em (5, 5); ladrilho (5, 6) tem Floresta
+- **Dado** Acampamento de lenhadores N1 (terreno Floresta) em (5, 5); ladrilho (5, 6) tem terreno Floresta
 - **Quando** marca (5, 6)
 - **Então** ladrilho marcado; 1 trabalhador produtivo com 2 alocados (piso(2÷2)=1)
 
-### CA2 — Rejeição: jazida incompatível
+### CA2 — Rejeição: terreno incompatível
 
-- **Dado** Pedreira N1 (requer Rocha); ladrilho (6, 5) tem Floresta
+- **Dado** Pedreira N1 (requer terreno Rocha); ladrilho (6, 5) tem terreno Floresta
 - **Quando** tenta marcar (6, 5)
-- **Então** rejeitado "Jazida incompatível"
+- **Então** rejeitado "Terreno incompatível"
 
 ### CA3 — Rejeição: limite de marcados
 

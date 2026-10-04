@@ -1,14 +1,15 @@
 import { ref } from 'vue'
 import { get, post } from '../api/http'
-import type { BonusRegiao, TipoRegiao } from '../domain/regioes'
+import type { TipoRegiao } from '../domain/regioes'
+import type { TipoTerreno } from '../domain/terrenos'
 
 export interface CatalogoConstrucao {
   tipo: string
   nome: string
   /** Tipos de região em que a construção é permitida. */
   regioes: TipoRegiao[]
-  /** Bônus de região associado à construção, se houver. */
-  bonusRegiao: BonusRegiao | null
+  /** Terreno cujo bônus de ladrilho se aplica à construção, se houver. */
+  terreno: TipoTerreno | null
   custoN1: Record<string, number>
   tamanho: number
   poN1: number

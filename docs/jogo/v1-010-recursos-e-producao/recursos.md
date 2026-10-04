@@ -15,8 +15,8 @@ Os recursos são o núcleo da economia da vila, produzidos por prédios e consum
 - R5: Sem o mínimo de Carregadores (N1 1, N2 2, N3 4) o Armazém não soma nada.
 - R6: Itens e pedras ficam no inventário da vila, sem limite.
 - R7: No passo 4 do turno, excedente acima da capacidade é perdido (registrado no relatório).
-- R8: Imposto: 0,5 Ouro por cidadão ≥18 anos por turno, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + bônus ÷ 100), arredondado em 2 casas decimais [proposta].
-- R9: Estalagem: 4 Ouro por refeição servida, multiplicado pelo fator de bônus Comércio da vila, arredondado em 2 casas decimais [proposta].
+- R8: Imposto: 0,5 Ouro por cidadão ≥18 anos por turno, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + média dos bonus_total das âncoras dos Mercados e Estalagens em ladrilho Comércio ÷ 100), arredondado em 2 casas decimais [proposta].
+- R9: Estalagem: 4 Ouro por refeição servida, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + média dos bonus_total das âncoras dos Mercados e Estalagens em ladrilho Comércio ÷ 100), arredondado em 2 casas decimais [proposta].
 
 ## Números e tabelas
 
@@ -72,8 +72,10 @@ Vila nova recebe:
 **Exemplo de imposto com bônus Comércio:**
 - Vila inicial com 16 adultos (≥18 anos)
 - Imposto base: 0,5 × 16 = 8 Ouro
-- Vila tem Comércio 47 → fator = 1 + 47 ÷ 100 = 1,47
+- Único prédio do grupo Mercado+Estalagem em ladrilho Comércio: um Mercado com bonus_total 47 (média = 47)
+- Fator = 1 + 47 ÷ 100 = 1,47
 - Imposto no turno: 8 × 1,47 = **11,76 Ouro**
+- Comparação: se nenhum Mercado ou Estalagem estivesse em ladrilho Comércio (fator 1,0) = 8 Ouro
 
 ## Interações com outros domínios
 

@@ -17,7 +17,7 @@ defineProps<{ nivel: number }>()
   font-size: 0.7rem;
   font-weight: 700;
   font-family: var(--vl-font-mono);
-  background: var(--vl-bonus-militar);
+  background: var(--vl-terreno-mi);
   color: var(--vl-accent-ink);
   border-radius: var(--vl-radius-pill);
   padding: 0.05rem 0.4rem;

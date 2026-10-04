@@ -6,10 +6,10 @@ import type { RegiaoPrevia } from '../../domain/regioes'
 const regiao: RegiaoPrevia = {
   indice: 6,
   tipo: 'URBANA',
-  bonus: [
-    { bonus: 'DESENVOLVIMENTO', posicao: 3, valor: 12 },
-    { bonus: 'COMERCIO', posicao: 1, valor: 47 },
-    { bonus: 'INDUSTRIA', posicao: 2, valor: 30 },
+  terrenos: [
+    { terreno: 'DESENVOLVIMENTO', posicao: 3, percentual: 25 },
+    { terreno: 'COMERCIO', posicao: 2, percentual: 30 },
+    { terreno: 'INDUSTRIA', posicao: 1, percentual: 45 },
   ],
 }
 
@@ -18,12 +18,18 @@ function montar(props: { ordem: number; disponivel: boolean }) {
 }
 
 describe('RegiaoTile', () => {
-  it('tem aria-label detalhado com bônus em ordem decrescente', () => {
+  it('tem aria-label detalhado com a composição em ordem decrescente', () => {
     const w = montar({ ordem: 0, disponivel: true })
     expect(w.attributes('aria-label')).toBe(
-      'Região 06 · Urbana · Comércio 47, Indústria 30, Desenvolvimento 12',
+      'Região 06 · Urbana · Indústria 45% · Comércio 30% · Desenvolvimento 25%',
     )
     expect(w.attributes('aria-pressed')).toBe('false')
+  })
+
+  it('lista os 3 terrenos com percentual', () => {
+    const w = montar({ ordem: 0, disponivel: true })
+    expect(w.findAll('[data-testid^="terreno-"]')).toHaveLength(3)
+    expect(w.get('[data-testid="terreno-INDUSTRIA"]').text()).toContain('45%')
   })
 
   it('emite alternar ao clicar quando disponível', async () => {

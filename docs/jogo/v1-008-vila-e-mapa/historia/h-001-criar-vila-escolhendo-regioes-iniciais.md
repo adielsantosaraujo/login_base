@@ -4,18 +4,18 @@
 
 ## História
 
-Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) e escolher 3 regiões vizinhas entre si para fundar minha vila.
+Como novo jogador, quero ver a prévia do mapa (tipos e percentuais de terreno de cada região) e escolher 3 regiões vizinhas entre si para fundar minha vila.
 
 ## Contexto
 
 - Cada usuário autenticado tem exatamente 1 vila.
 - O servidor mantém uma **prévia persistida** por usuário (tabela `vila_previa`) com semente e rodada; `POST /previa` gera ou renova; `GET /previa` devolve vigente; "Gerar novo mapa" é ilimitado.
 - Na criação, o jogador escolhe 3 regiões (índices 1-16 da grade 4×4) que formam um **conjunto conexo** (ortogonalmente vizinhas entre si).
-- Os 5 tipos e 3 bônus de cada região são gerados deterministicamente da semente; o jogador vê a prévia antes de escolher.
+- Os 5 tipos e 3 terrenos com percentuais de cada região são gerados deterministicamente da semente; o jogador vê a prévia antes de escolher.
 - Ao menos 1 das 3 regiões escolhidas deve ser **Urbana**.
-- A vila é criada com a semente da prévia; gravas-se as 16 regiões com tipo e bônus, e marca-se as 3 como possuídas.
-- **Bônus da vila** = soma dos bônus das 3 regiões possuídas.
-- A vila recebe 4 casas N1 iniciais na **1ª região Urbana** (na ordem de seleção).
+- A vila é criada com a semente da prévia; gravas-se as 16 regiões com tipo e percentuais de terreno, e marca-se as 3 como possuídas.
+- O painel de seleção mostra a composição de cada região e o total de ladrilhos por terreno nas regiões escolhidas.
+- A vila recebe 4 casas N1 iniciais na **1ª região Urbana** (na ordem de seleção), nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura (y = 0..9, x = 0..9).
 - A vila recebe recursos iniciais: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200.
 - Erros: `VILA_JA_EXISTE` (409), `PREVIA_EXPIRADA` (409), `SELECAO_INVALIDA` (400), `REGIAO_NAO_ADJACENTE` (400), `SEM_REGIAO_URBANA` (400).
 
@@ -25,7 +25,7 @@ Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) 
 
 - **Dado** um novo usuário autenticado sem vila
 - **Quando** o usuário acessa a tela de criação, ou clica "Gerar novo mapa"
-- **Então** `POST /previa` (ou `GET /previa`) retorna os 5 tipos e 3 bônus de cada uma das 16 regiões, com `rodada` e `previaId`
+- **Então** `POST /previa` (ou `GET /previa`) retorna os 5 tipos e 3 terrenos com percentuais de cada uma das 16 regiões, com `rodada` e `previaId`
 
 ### CA2 — Escolha de 3 regiões conexas é aceita
 
@@ -41,7 +41,7 @@ Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) 
 
 ### CA4 — Escolha sem região Urbana é rejeitada
 
-- **Dado** o usuário tentando escolher regiões 2 (Planície), 3 (Litoral), 11 (Floresta)
+- **Dado** o usuário tentando escolher regiões 2 (Planície), 3 (Litoral), 7 (Floresta)
 - **Quando** o usuário submete a escolha
 - **Então** `POST /api/jogo/vila` retorna `400 SEM_REGIAO_URBANA` "Ao menos uma região deve ser Urbana"
 
@@ -55,7 +55,7 @@ Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) 
 
 - **Dado** a vila foi criada com regiões 6 (Urbana), 7 (Litoral), 10 (Planície)
 - **Quando** a criação completa
-- **Então** o estoque contém: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200; 4 casas N1 em (0,0), (2,0), (4,0), (6,0) **da região 6** (1ª Urbana na ordem [6, 7, 10]); 16 cidadãos pendentes 20/10; prévia apagada
+- **Então** o estoque contém: Madeira 200, Pedra 100, Argila 50, Tábua 20, Grãos 200, Carne 40, Ouro 200; 4 casas N1 **da região 6** (1ª Urbana na ordem [6, 7, 10]) nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura e todas em terreno Desenvolvimento; 16 cidadãos pendentes 20/10; prévia apagada
 
 ### CA7 — Gerar novo mapa incrementa rodada
 
@@ -69,11 +69,11 @@ Como novo jogador, quero ver a prévia do mapa (tipos e bônus de cada região) 
 - **Quando** o usuário tenta enviar `POST /api/jogo/vila` com `previaId` = "uuid-1"
 - **Então** retorna `409 PREVIA_EXPIRADA` "O mapa mudou. Escolha as regiões novamente"; frontend recarrega a prévia (`GET /previa`)
 
-### CA9 — Bônus da vila = soma das 3 regiões selecionadas
+### CA9 — Percentuais gravados e total de ladrilhos por terreno
 
-- **Dado** região 6 com bônus {INDÚSTRIA 42, COMÉRCIO 28, DESENVOLVIMENTO 15}, região 7 com {SALINAS 38, ENXOFRE 22, MILITAR 18}, região 10 com {PLANTAÇÕES 45, CRIAÇÕES 26, FLORESTA 12}
+- **Dado** região 6 com 3 percentuais de terrenos (posição 1º: INDÚSTRIA 42%, posição 2º: COMÉRCIO 28%, posição 3º: DESENVOLVIMENTO 30%), região 7 com (posição 1º: SALINAS 38%, posição 2º: ENXOFRE 22%, posição 3º: MILITAR 40%), região 10 com (posição 1º: PLANTAÇÕES 45%, posição 2º: CRIAÇÕES 26%, posição 3º: FLORESTA 29%)
 - **Quando** a vila é criada com essas 3
-- **Então** a vila grava 16 regiões com tipo e bônus; bônus da vila = {INDÚSTRIA 42, COMÉRCIO 28, DESENVOLVIMENTO 15, SALINAS 38, ENXOFRE 22, MILITAR 18, PLANTAÇÕES 45, CRIAÇÕES 26, FLORESTA 12}; soma total 246 (verificável em `GET /api/jogo/vila`)
+- **Então** a vila grava as 16 regiões com 3 terrenos cada (posição 1..3; b1 20–60, b2 20–(90−b1), b3 = 100−b1−b2 ≥ 10; soma 100) e 100 ladrilhos por região na proporção exata; o painel exibe "Indústria 42% · Comércio 28% · Desenvolvimento 30%" etc. e o total de ladrilhos: In 42, Co 28, De 30, Sa 38, En 22, Mi 40, Pl 45, Cr 26, Fl 29
 
 ## Tarefas
 

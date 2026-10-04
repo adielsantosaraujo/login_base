@@ -20,7 +20,7 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.dto.RegiaoBonusDTO;
+import com.example.loginbase.jogo.dto.RegiaoTerrenoDTO;
 import com.example.loginbase.jogo.dto.VilaResumoDTO;
 import com.example.loginbase.jogo.excecao.RegiaoNaoAdjacenteException;
 import com.example.loginbase.jogo.excecao.SelecaoInvalidaException;
@@ -28,8 +28,10 @@ import com.example.loginbase.jogo.excecao.UrbanaObrigatoriaException;
 import com.example.loginbase.jogo.excecao.VilaJaExisteException;
 import com.example.loginbase.jogo.excecao.VilaNaoEncontradaException;
 import com.example.loginbase.jogo.modelo.GradeRegioes;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.RegiaoTerreno;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.modelo.VilaPrevia;
@@ -37,19 +39,18 @@ import com.example.loginbase.jogo.servico.GeradorMapaService.RegiaoGerada;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
 import com.example.loginbase.jogo.repositorio.JogoTurnoRepository;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoTerrenoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 
 /**
- * Criação e consulta da vila do usuário, e prévia das jazidas por semente.
+ * Criação e consulta da vila do usuário, e prévia dos terrenos por semente.
  */
 @Service
 public class VilaService {
 
 	private static final int REGIOES_INICIAIS = 3;
-	private static final int[] X_CASAS_INICIAIS = { 0, 2, 4, 6 };
+	private static final int CASAS_INICIAIS = 4;
 
 	private static final Map<Recurso, BigDecimal> ESTOQUE_INICIAL = new EnumMap<>(Recurso.class);
 
@@ -65,37 +66,33 @@ public class VilaService {
 
 	private final VilaRepository vilaRepository;
 	private final RegiaoRepository regiaoRepository;
-	private final LadrilhoJazidaRepository ladrilhoRepository;
 	private final ConstrucaoRepository construcaoRepository;
 	private final JogoTurnoRepository turnoRepository;
 	private final UsuarioRepository usuarioRepository;
-	private final GeradorJazidaService gerador;
 	private final EstoqueService estoqueService;
 	private final FamiliaService familiaService;
 	private final GeradorMapaService geradorMapa;
-	private final RegiaoBonusRepository regiaoBonusRepository;
 	private final VilaPreviaService previaService;
-	private final BonusRegiaoService bonusRegiaoService;
+	private final TerrenoRegiaoService terrenoRegiaoService;
+	private final RegiaoTerrenoRepository regiaoTerrenoRepository;
 
 	public VilaService(VilaRepository vilaRepository, RegiaoRepository regiaoRepository,
-			LadrilhoJazidaRepository ladrilhoRepository, ConstrucaoRepository construcaoRepository,
+			ConstrucaoRepository construcaoRepository,
 			JogoTurnoRepository turnoRepository, UsuarioRepository usuarioRepository,
-			GeradorJazidaService gerador, EstoqueService estoqueService, FamiliaService familiaService,
-			GeradorMapaService geradorMapa, RegiaoBonusRepository regiaoBonusRepository,
-			VilaPreviaService previaService, BonusRegiaoService bonusRegiaoService) {
-		this.bonusRegiaoService = bonusRegiaoService;
+			EstoqueService estoqueService, FamiliaService familiaService,
+			GeradorMapaService geradorMapa, VilaPreviaService previaService,
+			TerrenoRegiaoService terrenoRegiaoService, RegiaoTerrenoRepository regiaoTerrenoRepository) {
 		this.vilaRepository = vilaRepository;
 		this.regiaoRepository = regiaoRepository;
-		this.ladrilhoRepository = ladrilhoRepository;
 		this.construcaoRepository = construcaoRepository;
 		this.turnoRepository = turnoRepository;
 		this.usuarioRepository = usuarioRepository;
-		this.gerador = gerador;
 		this.estoqueService = estoqueService;
 		this.familiaService = familiaService;
 		this.geradorMapa = geradorMapa;
-		this.regiaoBonusRepository = regiaoBonusRepository;
 		this.previaService = previaService;
+		this.terrenoRegiaoService = terrenoRegiaoService;
+		this.regiaoTerrenoRepository = regiaoTerrenoRepository;
 	}
 
 	/** Cria a vila a partir da prévia vigente (validações na ordem: vila, prévia, índices, conexo, Urbana). */
@@ -127,24 +124,29 @@ public class VilaService {
 
 		Vila vila = vilaRepository.save(new Vila(usuarioId, nome, semente, turnoCriacao));
 
+		Long urbanaId = null;
 		for (RegiaoGerada gerada : mapa) {
 			Regiao regiao = new Regiao(vila.getId(), gerada.indice());
 			regiao.setTipo(gerada.tipo());
 			regiao.setPossuida(indices.contains(gerada.indice()));
 			regiao = regiaoRepository.save(regiao);
 			Long regiaoId = regiao.getId();
-			regiaoBonusRepository.saveAll(gerada.bonus().stream()
-					.map(b -> new RegiaoBonus(regiaoId, b.bonus(), b.posicao(), b.valor())).toList());
+			if (gerada.indice() == regiaoUrbana) {
+				urbanaId = regiaoId;
+			}
+			regiaoTerrenoRepository.saveAll(gerada.terrenos().stream()
+					.map(t -> new RegiaoTerreno(regiaoId, t.terreno(), t.posicao(), t.percentual())).toList());
 			if (regiao.isPossuida()) {
-				ladrilhoRepository.saveAll(gerador.gerarLadrilhos(semente, gerada.indice(), regiaoId));
+				terrenoRegiaoService.gerarLadrilhosSeAusentes(semente, regiao);
 			}
 		}
 
 		estoqueService.inicializar(vila, ESTOQUE_INICIAL);
 
 		List<Long> casaIds = new ArrayList<>();
-		for (int x : X_CASAS_INICIAIS) {
-			casaIds.add(construcaoRepository.save(novaCasa(vila.getId(), regiaoUrbana, x, 0)).getId());
+		for (Ladrilho l : terrenoRegiaoService.primeirosLadrilhos(urbanaId, TipoTerreno.DESENVOLVIMENTO,
+				CASAS_INICIAIS)) {
+			casaIds.add(construcaoRepository.save(novaCasa(vila.getId(), regiaoUrbana, l.getX(), l.getY())).getId());
 		}
 		familiaService.gerarFamiliasIniciais(vila, casaIds, semente);
 		return vila;
@@ -166,18 +168,17 @@ public class VilaService {
 	@Transactional(readOnly = true)
 	public VilaResumoDTO resumo(Vila vila) {
 		List<Regiao> doBanco = regiaoRepository.findAllByVilaId(vila.getId());
-		Map<Long, List<RegiaoBonusDTO>> bonusPorRegiao = bonusRegiaoService
-				.bonusDasRegioes(doBanco.stream().map(Regiao::getId).toList());
+		Map<Long, List<RegiaoTerrenoDTO>> terrenosPorRegiao = terrenoRegiaoService
+				.terrenosDasRegioes(doBanco.stream().map(Regiao::getId).toList());
 		List<VilaResumoDTO.Regiao> regioes = doBanco.stream()
 				.sorted(Comparator.comparing(Regiao::getIndice))
 				.map(r -> new VilaResumoDTO.Regiao(r.getIndice(), r.getTipo(), r.isPossuida(),
-						bonusPorRegiao.getOrDefault(r.getId(), List.of())))
+						terrenosPorRegiao.getOrDefault(r.getId(), List.of())))
 				.toList();
 		Map<String, BigDecimal> estoque = new LinkedHashMap<>();
 		estoqueService.listar(vila).forEach((r, q) -> estoque.put(r.name(), q));
 		return new VilaResumoDTO(vila.getId(), vila.getNome(), vila.getSemente(), vila.getTurnoCriacao(),
-				regioes, estoque, vila.isPopulacaoConfirmada(),
-				bonusRegiaoService.bonusDaVila(vila.getId()));
+				regioes, estoque, vila.isPopulacaoConfirmada());
 	}
 
 	private static void validarSelecao(List<Integer> indices) {

@@ -33,8 +33,11 @@ import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.modelo.Regiao;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.modelo.Ladrilho;
+import com.example.loginbase.jogo.modelo.RegiaoTerreno;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoTerrenoRepository;
 import com.example.loginbase.jogo.repositorio.VilaPreviaRepository;
 import com.example.loginbase.jogo.servico.MapaTestes;
 import tools.jackson.databind.JsonNode;
@@ -51,11 +54,11 @@ class VilaControladorIntegrationTest {
 
 	@Autowired MockMvc mvc;
 	@Autowired VilaPreviaRepository previaRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired RegiaoTerrenoRepository regiaoTerrenoRepository;
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired FamiliaRepository familiaRepository;
 	@Autowired CidadaoRepository cidadaoRepository;
@@ -107,21 +110,35 @@ class VilaControladorIntegrationTest {
 		var regioes = regiaoRepository.findAllByVilaId(vila.getId());
 		assertEquals(16, regioes.size());
 		assertEquals(3, regioes.stream().filter(Regiao::isPossuida).count());
+		int total = 0;
 		for (Regiao r : regioes) {
 			assertEquals(previa.tipos().get(r.getIndice() - 1), r.getTipo());
-			assertEquals(3, regiaoBonusRepository.findByRegiaoIdOrderByPosicao(r.getId()).size());
+			List<RegiaoTerreno> terrenos = regiaoTerrenoRepository.findByRegiaoIdOrderByPosicao(r.getId());
+			assertEquals(3, terrenos.size());
+			total += terrenos.size();
 			if (r.isPossuida()) {
-				assertEquals(100, ladrilhoRepository.findAllByRegiaoId(r.getId()).size());
+				List<Ladrilho> ladrilhos = ladrilhoRepository.findByRegiaoIdOrderByYAscXAsc(r.getId());
+				assertEquals(100, ladrilhos.size());
+				for (RegiaoTerreno t : terrenos) {
+					assertEquals(t.getPercentual(),
+							ladrilhos.stream().filter(l -> l.getTerreno() == t.getTerreno()).count());
+				}
+			} else {
+				assertEquals(0, ladrilhoRepository.findByRegiaoIdOrderByYAscXAsc(r.getId()).size());
 			}
 		}
+		assertEquals(48, total);
 
 		List<Construcao> casas = construcaoRepository.findByVilaId(vila.getId());
 		assertEquals(4, casas.size());
-		assertEquals(List.of(0, 2, 4, 6), casas.stream().map(Construcao::getX).sorted().toList());
-		casas.forEach(c -> {
-			assertEquals(urbana, c.getRegiaoIndice());
-			assertEquals(0, c.getY());
-		});
+		Regiao regiaoUrbana = regioes.stream().filter(r -> r.getIndice() == urbana).findFirst().orElseThrow();
+		List<String> esperadas = ladrilhoRepository
+				.findByRegiaoIdAndTerrenoOrderByYAscXAsc(regiaoUrbana.getId(), TipoTerreno.DESENVOLVIMENTO).stream()
+				.limit(4).map(l -> l.getX() + "," + l.getY()).toList();
+		assertEquals(4, esperadas.size());
+		assertEquals(esperadas, casas.stream().sorted(java.util.Comparator.comparingInt(Construcao::getY)
+				.thenComparingInt(Construcao::getX)).map(c -> c.getX() + "," + c.getY()).toList());
+		casas.forEach(c -> assertEquals(urbana, c.getRegiaoIndice()));
 
 		List<Familia> familias = familiaRepository.findByVilaId(vila.getId());
 		assertEquals(4, familias.size());
@@ -132,8 +149,8 @@ class VilaControladorIntegrationTest {
 				.andExpect(status().isOk()).andExpect(jsonPath("$.vilaId").value(vila.getId()))
 				.andExpect(jsonPath("$.estoque.MADEIRA").value(200))
 				.andExpect(jsonPath("$.regioes.length()").value(16))
-				.andExpect(jsonPath("$.regioes[0].bonus.length()").value(3))
-				.andExpect(jsonPath("$.bonusRegiao.length()").value(13));
+				.andExpect(jsonPath("$.regioes[0].terrenos.length()").value(3))
+				.andExpect(jsonPath("$.regioes[0].bonus").doesNotExist());
 	}
 
 	@Test

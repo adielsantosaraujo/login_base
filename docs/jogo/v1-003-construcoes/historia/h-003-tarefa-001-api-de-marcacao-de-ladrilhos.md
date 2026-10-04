@@ -4,12 +4,12 @@
 
 ## Objetivo
 
-Implementar endpoints `POST /api/jogo/construcoes/{id}/marcacoes` (marcar) e `DELETE /api/jogo/construcoes/{id}/marcacoes/{x}/{y}` (desmarcar) com validações de jazida, conectividade e limite.
+Implementar endpoints `POST /api/jogo/construcoes/{id}/marcacoes` (marcar) e `DELETE /api/jogo/construcoes/{id}/marcacoes/{x}/{y}` (desmarcar) com validações de terreno, conectividade e limite.
 
 ## Contexto necessário
 
 - [../predios-de-coleta.md](../predios-de-coleta.md) — Prédios de coleta (seção 4.6)
-  > Máximo: N1 4, N2 10, N3 20. Jazida compatível, conectado ortogonalmente.
+  > Máximo: N1 4, N2 10, N3 20. Terreno compatível, conectado ortogonalmente.
 
 - [../construcoes.md](../construcoes.md) — Tabela de produção (seção 4.5)
 
@@ -19,7 +19,7 @@ Implementar endpoints `POST /api/jogo/construcoes/{id}/marcacoes` (marcar) e `DE
   - Request: `{ x: 5, y: 6 }`
   - Validações:
     - Construção deve ser de coleta.
-    - Ladrilho deve ter jazida compatível.
+    - Ladrilho deve ter terreno compatível com o prédio.
     - Não deve estar marcado.
     - Conectividade ortogonal ao prédio.
     - Não exceder limite de marcados.
@@ -47,8 +47,8 @@ Implementar endpoints `POST /api/jogo/construcoes/{id}/marcacoes` (marcar) e `DE
 - **Serviço**: validações em MarcacaoService.
 
 - **Testes**:
-  - Marcar com jazida correta.
-  - Rejeitar jazida errada.
+  - Marcar ladrilho do terreno do prédio.
+  - Rejeitar terreno diferente.
   - Rejeitar sem conectividade.
   - Rejeitar após limite.
   - Desmarcar com sucesso.
@@ -66,8 +66,8 @@ Não se aplica (UI em tarefa h-003-tarefa-002).
 
 ## Testes
 
-- `testMarcarJazidaCompativel_Sucesso`.
-- `testMarcarJazidaErrada_Erro`.
+- `testMarcarLadrilhoDoTerrenoDoPredio_Sucesso`.
+- `testMarcarTerreno Diferente_Erro`.
 - `testMarcacoesAposLimite_Erro`.
 - `testDesmarcar_Sucesso`.
 
@@ -78,4 +78,4 @@ Não se aplica (UI em tarefa h-003-tarefa-002).
 
 ## Fora de escopo
 
-- Cache de jazidas.
+- Cache de terrenos.

@@ -9,7 +9,7 @@ import DialogoAnexacao from './DialogoAnexacao.vue'
 
 const regiao = {
   indice: 2, tipo: 'MONTANHA' as const, possuida: false, masmorraAtiva: false, nivelMasmorra: null, masmorraId: null,
-  bonus: [{ bonus: 'ROCHA' as const, posicao: 1, valor: 30 }, { bonus: 'FERRO' as const, posicao: 2, valor: 20 }],
+  terrenos: [{ terreno: 'ROCHA' as const, posicao: 1, percentual: 30 }, { terreno: 'FERRO' as const, posicao: 2, percentual: 20 }],
 }
 
 function montar() {
@@ -32,13 +32,13 @@ describe('DialogoAnexacao', () => {
     })
   })
 
-  it('exibe tipo e bônus e não tem seletor de tipo', async () => {
+  it('exibe tipo e terrenos e não tem seletor de tipo', async () => {
     const w = montar()
     await flushPromises()
     const doc = document.body
     expect(doc.querySelector('[data-testid="regiao-tipo"]')?.textContent).toContain('Montanha')
-    expect(doc.querySelector('[data-testid="bonus-ROCHA"]')?.textContent).toContain('+30%')
-    expect(doc.querySelector('[data-testid="bonus-FERRO"]')).not.toBeNull()
+    expect(doc.querySelector('[data-testid="terreno-ROCHA"]')?.textContent).toContain('30%')
+    expect(doc.querySelector('[data-testid="terreno-FERRO"]')).not.toBeNull()
     expect(doc.querySelector('[data-testid="tipo-anexacao"]')).toBeNull()
     w.unmount()
   })

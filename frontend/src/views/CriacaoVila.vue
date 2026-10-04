@@ -7,7 +7,7 @@ import { useCriacaoVila } from '../composables/useVila'
 
 const {
   previa, selecionadas, gerando, enviando, erro,
-  conectado, totaisBonus, dicaSelecao, valida, emFoco,
+  conectado, totaisLadrilhos, dicaSelecao, valida, emFoco,
   carregarPrevia, alternar, gerar, criar, setHover, limparHover,
 } = useCriacaoVila()
 
@@ -61,7 +61,7 @@ function limpar() {
         <SelecaoPainel
           :selecionadas="selecionadas"
           :regioes="previa.regioes"
-          :totais="totaisBonus"
+          :totais="totaisLadrilhos"
           :conectado="conectado"
           :valida="valida"
           :enviando="enviando"

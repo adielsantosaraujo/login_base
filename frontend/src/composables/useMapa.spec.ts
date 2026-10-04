@@ -10,7 +10,7 @@ vi.mock('../api/http', () => {
 })
 
 import * as http from '../api/http'
-import { rotulo, ROTULOS_CONSTRUCAO, ROTULOS_JAZIDA, ROTULOS_TIPO, useMapaVila, useRegiaoDetalhes } from './useMapa'
+import { rotulo, ROTULOS_CONSTRUCAO, ROTULOS_TIPO, useMapaVila, useRegiaoDetalhes } from './useMapa'
 
 const getMock = (http as unknown as { __mock: ReturnType<typeof vi.fn> }).__mock
 
@@ -21,19 +21,19 @@ describe('useMapa', () => {
   })
 
   it('carrega o mapa da vila', async () => {
-    getMock.mockResolvedValue({ vila: { id: 1, nome: 'V', bonusRegiao: { ROCHA: 40 } }, regioes: [{ indice: 1, tipo: 'MONTANHA', bonus: [{ bonus: 'ROCHA', posicao: 1, valor: 40 }] }] })
+    getMock.mockResolvedValue({ vila: { id: 1, nome: 'V' }, regioes: [{ indice: 1, tipo: 'MONTANHA', terrenos: [{ terreno: 'ROCHA', posicao: 1, percentual: 40 }] }] })
     const m = useMapaVila()
     await m.carregar()
     expect(getMock).toHaveBeenCalledWith('/api/jogo/vila/mapa')
     expect(m.regioes.value).toHaveLength(1)
-    expect(m.regioes.value[0].bonus[0].bonus).toBe('ROCHA')
-    expect(m.mapa.value?.vila.bonusRegiao.ROCHA).toBe(40)
+    expect(m.regioes.value[0].terrenos[0].terreno).toBe('ROCHA')
+    expect(m.mapa.value?.vila.nome).toBe('V')
   })
 
   it('expõe masmorraId nas regiões', async () => {
     getMock.mockResolvedValue({
       vila: { id: 1, nome: 'V' },
-      regioes: [{ indice: 3, tipo: 'LITORAL', bonus: [], possuida: false, masmorraAtiva: true, nivelMasmorra: 4, masmorraId: 7 }],
+      regioes: [{ indice: 3, tipo: 'LITORAL', terrenos: [], possuida: false, masmorraAtiva: true, nivelMasmorra: 4, masmorraId: 7 }],
     })
     const m = useMapaVila()
     await m.carregar()
@@ -48,7 +48,7 @@ describe('useMapa', () => {
   })
 
   it('carrega detalhes da região', async () => {
-    getMock.mockResolvedValue({ regiao: { id: 1, indice: 6, tipo: 'URBANA', possuida: true, bonus: [] }, ladrilhos: [] })
+    getMock.mockResolvedValue({ regiao: { id: 1, indice: 6, tipo: 'URBANA', possuida: true, terrenos: [] }, ladrilhos: [] })
     const d = useRegiaoDetalhes()
     await d.carregar(6)
     expect(getMock).toHaveBeenCalledWith('/api/jogo/regioes/6')
@@ -64,7 +64,7 @@ describe('useMapa', () => {
   })
 
   it('mapeia rótulos', () => {
-    expect(rotulo(ROTULOS_JAZIDA, 'VEIO_DE_FERRO')).toBe('Veio de ferro')
-    expect(rotulo(ROTULOS_JAZIDA, 'X')).toBe('X')
+    expect(rotulo(ROTULOS_CONSTRUCAO, 'MINA_FERRO')).toBe('Mina de ferro')
+    expect(rotulo(ROTULOS_CONSTRUCAO, 'X')).toBe('X')
   })
 })

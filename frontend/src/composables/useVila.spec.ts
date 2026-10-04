@@ -24,7 +24,7 @@ function previa(id = 'p1', rodada = 1): PreviaMapa {
     regioes: Array.from({ length: 16 }, (_, k) => ({
       indice: k + 1,
       tipo: tipos[k % 4],
-      bonus: [{ bonus: 'FLORESTA' as const, posicao: 1, valor: 10 }],
+      terrenos: [{ terreno: 'FLORESTA' as const, posicao: 1, percentual: 10 }],
     })),
   }
 }
@@ -88,7 +88,7 @@ describe('useCriacaoVila', () => {
     c.alternar(1)
     c.alternar(2)
     expect(c.conectado.value).toBe(true)
-    expect(c.totaisBonus.value.FLORESTA).toBe(20)
+    expect(c.totaisLadrilhos.value.FLORESTA).toBe(20)
     expect(c.emFoco.value).toBe(2)
     c.setHover(9)
     expect(c.emFoco.value).toBe(9)

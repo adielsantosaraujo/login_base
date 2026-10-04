@@ -4,6 +4,7 @@ import { ApiError, get, post } from '../api/http'
 import { marcarVilaCriada, resetarGuardaVila } from '../router/guardaVila'
 import * as regioes from '../domain/regioes'
 import type { PreviaMapa } from '../domain/regioes'
+import { totaisLadrilhos as somarLadrilhos } from '../domain/terrenos'
 
 export function useCriacaoVila() {
   const router = useRouter()
@@ -18,7 +19,7 @@ export function useCriacaoVila() {
   const listaRegioes = () => previa.value?.regioes ?? []
 
   const conectado = computed(() => regioes.conectado(selecionadas.value))
-  const totaisBonus = computed(() => regioes.totaisBonus(selecionadas.value, listaRegioes()))
+  const totaisLadrilhos = computed(() => somarLadrilhos(selecionadas.value, listaRegioes()))
   const dicaSelecao = computed(() => regioes.dicaSelecao(selecionadas.value, listaRegioes()))
   const valida = computed(() => regioes.selecaoValida(selecionadas.value, listaRegioes()))
   /** Região em foco: hover ou, na ausência, a última selecionada. */
@@ -114,7 +115,7 @@ export function useCriacaoVila() {
 
   return {
     previa, selecionadas, hover, gerando, enviando, erro,
-    conectado, totaisBonus, dicaSelecao, valida, emFoco,
+    conectado, totaisLadrilhos, dicaSelecao, valida, emFoco,
     podeSelecionar, carregarPrevia, alternar, gerar, criar, setHover, limparHover,
   }
 }

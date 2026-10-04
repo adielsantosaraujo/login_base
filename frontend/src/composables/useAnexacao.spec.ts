@@ -25,7 +25,7 @@ describe('ehAnexavel', () => {
 describe('anexarRegiao', () => {
   it('faz POST sem corpo', async () => {
     const http = await import('../api/http')
-    const spy = vi.spyOn(http, 'post').mockResolvedValue({ regiao: { indice: 2, tipo: 'FLORESTA', possuida: true }, estoque: {}, custo: { ouro: 0, madeira: 0, pedra: 0 } })
+    const spy = vi.spyOn(http, 'post').mockResolvedValue({ regiao: { indice: 2, tipo: 'FLORESTA', possuida: true, terrenos: [] }, estoque: {}, custo: { ouro: 0, madeira: 0, pedra: 0 } })
     const { useAnexacao } = await import('./useAnexacao')
     const r = await useAnexacao().anexarRegiao(2)
     expect(spy).toHaveBeenCalledWith('/api/jogo/regioes/2/anexar')

@@ -11,9 +11,9 @@ import com.example.loginbase.jogo.cidadao.Cidadao;
 import com.example.loginbase.jogo.cidadao.CidadaoRepository;
 import com.example.loginbase.jogo.cidadao.Profissao;
 import com.example.loginbase.jogo.construcao.ConsultaTrabalhadores.Trabalhador;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.servico.BonusRegiaoService;
+import com.example.loginbase.jogo.servico.BonusTerrenoService;
+import com.example.loginbase.jogo.servico.GrupoBonusVila;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -35,17 +35,17 @@ public class ObraService {
 	private final CidadaoRepository cidadaoRepository;
 	private final ConsultaTrabalhadores consultaTrabalhadores;
 	private final RegistroEventoTurnoService registro;
-	private final BonusRegiaoService bonusRegiaoService;
+	private final BonusTerrenoService bonusTerrenoService;
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	public ObraService(ConstrucaoRepository construcaoRepository, CidadaoRepository cidadaoRepository,
 			ConsultaTrabalhadores consultaTrabalhadores, RegistroEventoTurnoService registro,
-			BonusRegiaoService bonusRegiaoService) {
+			BonusTerrenoService bonusTerrenoService) {
 		this.construcaoRepository = construcaoRepository;
 		this.cidadaoRepository = cidadaoRepository;
 		this.consultaTrabalhadores = consultaTrabalhadores;
 		this.registro = registro;
-		this.bonusRegiaoService = bonusRegiaoService;
+		this.bonusTerrenoService = bonusTerrenoService;
 	}
 
 	@Transactional
@@ -53,12 +53,14 @@ public class ObraService {
 		List<Construcao> obras = new ArrayList<>(construcaoRepository.findByVilaIdAndEstado(vila.getId(), EstadoConstrucao.EM_OBRA));
 		obras.addAll(construcaoRepository.findByVilaIdAndEstado(vila.getId(), EstadoConstrucao.EM_UPGRADE));
 		obras.sort(java.util.Comparator.comparing(Construcao::getId));
+		double fator = obras.isEmpty() ? 1.0
+				: bonusTerrenoService.fator(vila.getId(), GrupoBonusVila.DESENVOLVIMENTO).doubleValue();
 		for (Construcao obra : obras) {
-			processar(vila, turno, obra);
+			processar(vila, turno, obra, fator);
 		}
 	}
 
-	private void processar(Vila vila, int turno, Construcao obra) {
+	private void processar(Vila vila, int turno, Construcao obra, double fator) {
 		int limite = ConstrucaoCatalogo.maxTrabalhadoresObra(obra.getNivel());
 		List<Trabalhador> trabalhadores = consultaTrabalhadores.trabalhadores(obra, vila).stream()
 				.filter(t -> t.profissao() == Profissao.CONSTRUTOR || t.profissao() == Profissao.CARREGADOR)
@@ -67,7 +69,7 @@ public class ObraService {
 		for (Trabalhador t : trabalhadores) {
 			ganho += t.eficiencia() * (t.profissao() == Profissao.CONSTRUTOR ? 1.0 : 0.5);
 		}
-		ganho *= 1 + bonusRegiaoService.bonus(vila.getId(), BonusRegiao.DESENVOLVIMENTO) / 100.0;
+		ganho *= fator;
 		double acumulado = lerFracao(obra) + ganho;
 		int inteiro = (int) Math.floor(acumulado + 1e-9);
 		double fracao = Math.max(0, acumulado - inteiro);

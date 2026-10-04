@@ -6,7 +6,7 @@ import type { RegiaoPrevia } from '../../domain/regioes'
 const regioes: RegiaoPrevia[] = Array.from({ length: 16 }, (_, k) => ({
   indice: k + 1,
   tipo: 'URBANA' as const,
-  bonus: [{ bonus: 'COMERCIO' as const, posicao: 1, valor: 10 }],
+  terrenos: [{ terreno: 'COMERCIO' as const, posicao: 1, percentual: 100 }],
 }))
 
 describe('MapaPrevia', () => {

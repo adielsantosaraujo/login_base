@@ -18,20 +18,20 @@ const getMock = vi.mocked(get)
 const postMock = vi.mocked(post)
 
 const ESPECIAIS: Record<number, RegiaoPrevia> = {
-  6: { indice: 6, tipo: 'URBANA', bonus: [
-    { bonus: 'COMERCIO', posicao: 1, valor: 47 },
-    { bonus: 'INDUSTRIA', posicao: 2, valor: 30 },
-    { bonus: 'DESENVOLVIMENTO', posicao: 3, valor: 12 },
+  6: { indice: 6, tipo: 'URBANA', terrenos: [
+    { terreno: 'INDUSTRIA', posicao: 1, percentual: 45 },
+    { terreno: 'COMERCIO', posicao: 2, percentual: 30 },
+    { terreno: 'DESENVOLVIMENTO', posicao: 3, percentual: 25 },
   ] },
-  7: { indice: 7, tipo: 'LITORAL', bonus: [
-    { bonus: 'SALINAS', posicao: 1, valor: 38 },
-    { bonus: 'MILITAR', posicao: 2, valor: 20 },
-    { bonus: 'ENXOFRE', posicao: 3, valor: 6 },
+  7: { indice: 7, tipo: 'LITORAL', terrenos: [
+    { terreno: 'SALINAS', posicao: 1, percentual: 40 },
+    { terreno: 'MILITAR', posicao: 2, percentual: 35 },
+    { terreno: 'ENXOFRE', posicao: 3, percentual: 25 },
   ] },
-  10: { indice: 10, tipo: 'PLANICIE', bonus: [
-    { bonus: 'CRIACOES', posicao: 1, valor: 41 },
-    { bonus: 'FLORESTA', posicao: 2, valor: 25 },
-    { bonus: 'PLANTACOES', posicao: 3, valor: 14 },
+  10: { indice: 10, tipo: 'PLANICIE', terrenos: [
+    { terreno: 'CRIACOES', posicao: 1, percentual: 40 },
+    { terreno: 'FLORESTA', posicao: 2, percentual: 35 },
+    { terreno: 'PLANTACOES', posicao: 3, percentual: 25 },
   ] },
 }
 
@@ -43,7 +43,7 @@ function previa(id = 'p1', rodada = 1): PreviaMapa {
       ESPECIAIS[k + 1] ?? {
         indice: k + 1,
         tipo: 'FLORESTA' as const,
-        bonus: [{ bonus: 'FLORESTA' as const, posicao: 1, valor: 10 }],
+        terrenos: [{ terreno: 'FLORESTA' as const, posicao: 1, percentual: 100 }],
       },
     ),
   }
@@ -98,13 +98,15 @@ describe('CriacaoVila', () => {
     expect(w.get('[data-testid="rodada"]').text()).toBe('Mapa nº 2')
   })
 
-  it('soma dos bônus no painel', async () => {
+  it('mostra ladrilhos por terreno no painel', async () => {
     const w = await montar()
+    expect(w.get('[data-testid="ladrilhos-vazio"]').text()).toBe('Selecione regiões para ver os ladrilhos')
     for (const i of [6, 7, 10]) await clicar(w, i)
-    const valor = (b: string) => w.get(`[data-testid="bonus-${b}"]`).text()
-    expect(valor('COMERCIO')).toContain('47')
-    expect(valor('ENXOFRE')).toContain('6')
-    expect(w.get('[data-testid="bonus-ROCHA"]').classes()).toContain('esmaecido')
+    const painel = w.get('aside')
+    const valor = (t: string) => painel.get(`[data-testid="terreno-${t}"]`).text()
+    expect(valor('INDUSTRIA')).toContain('45')
+    expect(valor('ENXOFRE')).toContain('25')
+    expect(painel.find('[data-testid="terreno-ROCHA"]').exists()).toBe(false)
   })
 
   it('seleção sem Urbana mostra dica e botão inválido', async () => {

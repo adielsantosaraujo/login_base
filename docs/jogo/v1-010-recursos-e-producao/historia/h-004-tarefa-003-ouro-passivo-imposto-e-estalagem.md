@@ -26,7 +26,8 @@ Implementar a etapa 2 do turno (ouro passivo) que coleta imposto de cidadãos e 
     - **Estalagem**
       - Se não houver Estalagem ativa: skip
       - Contar Cozinheiros/Comerciantes alocados
-      - Calcular capacidade: `floor(5 × Σ eficiência × mult. nível)` Refeições (arredondada para baixo — [../comercio.md#regras](../comercio.md#regras), R9)
+      - **Fator de Comércio:** calcular a média do bonus_total das âncoras dos Mercados e Estalagens que estão em ladrilho Comércio; fator = 1 + (média ÷ 100). Se nenhum prédio de comércio estiver em ladrilho Comércio, fator = 1,0.
+      - Calcular capacidade: `floor(5 × Σ eficiência × mult. nível × fator de Comércio)` Refeições (arredondada para baixo — [../comercio.md#regras](../comercio.md#regras), R9)
       - Refeições servidas = `min(capacidade, floor(Refeições em estoque))`
       - Debitar do estoque, adicionar Ouro (4 por Refeição)
       - Gravar evento ESTALAGEM_RECEITA
@@ -35,11 +36,13 @@ Implementar a etapa 2 do turno (ouro passivo) que coleta imposto de cidadãos e 
   - `testImpostoBasico()`: 10 adultos → +5 Ouro
   - `testImpostoSemAdultos()`: população só menores → +0 Ouro
   - `testEstalagemN1()`: 1 Cozinheiro eficiência 1,0, 5 Refeições → consume 5, gera 20 Ouro
+  - `testEstalagemN1ComFatorComercio()`: Mercado em Comércio bonus_total 47, Estalagem em Comércio bonus_total 33 → média (47+33)÷2 = 40 → fator 1 + 40÷100 = 1,4; 1 Cozinheiro eficiência 1,0 → floor(5 × 1,0 × 1,0 × 1,4) = **7 Refeições** capacidade; com 7 em estoque → consume 7, gera **28 Ouro**
   - `testEstalagemSemRefeicao()`: 0 Refeição → gera 0 Ouro
   - `testEstalagemN2Multiplicador()`: N2, 2 Cozinheiros eficiência 1,0, 30 Refeições → consome 12, gera 48 Ouro
   - `testEstalagemRefeicoesInsuficientes()`: capacidade 10, 3 Refeições → consome 3, gera 12 Ouro
   - `testEstalagemArredondamento()`: N2, 2 Cozinheiros eficiência 1,2, 30 Refeições → capacidade 14,4 → serve 14, gera 56 Ouro
   - `testEstalagemSemTrabalhadores()`: Estalagem sem alocados → 0 Ouro da Estalagem, imposto cobrado
+  - `testEstalagemFatorComercioZero()`: nenhum Mercado/Estalagem em Comércio → fator 1,0 → capacidade normal sem multiplicador
   - `testEventosRegistrados()`: cada passo gera evento_turno
 
 ## Frontend

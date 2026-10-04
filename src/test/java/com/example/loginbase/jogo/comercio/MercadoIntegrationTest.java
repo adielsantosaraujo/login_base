@@ -36,9 +36,15 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
+import com.example.loginbase.jogo.modelo.Ladrilho;
+import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.TipoRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
@@ -58,6 +64,8 @@ class MercadoIntegrationTest {
 	@Autowired EstoqueService estoqueService;
 	@Autowired MercadoService mercadoService;
 	@Autowired EventoTurnoRepository eventoRepository;
+	@Autowired RegiaoRepository regiaoRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 
 	private Usuario usuario;
 	private Vila vila;
@@ -120,6 +128,38 @@ class MercadoIntegrationTest {
 				.andExpect(jsonPath("$.recursoNovo").value(0.0));
 		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("9");
 		assertThat(qtd(Recurso.MADEIRA)).isEqualByComparingTo("0");
+	}
+
+	@Test
+	void bonusComercioNaoAlteraPrecoDeVenda() throws Exception {
+		novaVila();
+		Regiao r = new Regiao(vila.getId(), 6);
+		r.setTipo(TipoRegiao.URBANA);
+		r.setPossuida(true);
+		r = regiaoRepository.saveAndFlush(r);
+		Construcao mercado = mercado(EstadoConstrucao.ATIVA);
+		mercado.setRegiaoIndice(6);
+		mercado = construcaoRepository.saveAndFlush(mercado);
+		ladrilhoRepository.saveAndFlush(new Ladrilho(r.getId(), mercado.getX(), 0, TipoTerreno.COMERCIO, 80, 0));
+		Construcao estalagem = new Construcao();
+		estalagem.setVilaId(vila.getId());
+		estalagem.setTipo(TipoConstrucao.ESTALAGEM);
+		estalagem.setNivel(NivelConstrucao.N1);
+		estalagem.setRegiaoIndice(6);
+		estalagem.setX(seq++);
+		estalagem.setY(0);
+		estalagem.setTamanho(1);
+		estalagem.setEstado(EstadoConstrucao.ATIVA);
+		estalagem.setPoTotal(4);
+		estalagem.setPoAtual(4);
+		construcaoRepository.saveAndFlush(estalagem);
+		ladrilhoRepository.saveAndFlush(new Ladrilho(r.getId(), estalagem.getX(), 0, TipoTerreno.COMERCIO, 80, 0));
+		comerciante(mercado, 20);
+		estoqueService.creditar(vila, Recurso.MADEIRA, BigDecimal.valueOf(10));
+		// mesmo resultado do caso sem bonus (vendeMadeiraComPeAlto)
+		ordem("MADEIRA", "VENDA", 10).andExpect(status().isOk()).andExpect(jsonPath("$.precoUnitario").value(0.9))
+				.andExpect(jsonPath("$.ouroNovo").value(9.0));
+		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("9");
 	}
 
 	@Test

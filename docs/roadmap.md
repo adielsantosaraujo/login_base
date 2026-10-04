@@ -114,7 +114,7 @@ graph LR
 - Incursões de masmorras nível 10 em regiões possuídas.
 - Controle manual de tropas em batalha (v1 é automático).
 - Troca de tipo de região após criação.
-- Esgotamento de jazidas em regiões de Coleta.
+- Esgotamento de ladrilhos de coleta.
 
 ## Questões em aberto
 

@@ -19,18 +19,18 @@ class TipoRegiaoTest {
 
 	static Stream<Arguments> tabela() {
 		return Stream.of(
-				Arguments.of(TipoRegiao.FLORESTA, List.of(BonusRegiao.FLORESTA, BonusRegiao.BARREIRO, BonusRegiao.PLANTACOES)),
-				Arguments.of(TipoRegiao.PLANICIE, List.of(BonusRegiao.PLANTACOES, BonusRegiao.CRIACOES, BonusRegiao.FLORESTA)),
-				Arguments.of(TipoRegiao.URBANA, List.of(BonusRegiao.INDUSTRIA, BonusRegiao.COMERCIO, BonusRegiao.DESENVOLVIMENTO)),
-				Arguments.of(TipoRegiao.LITORAL, List.of(BonusRegiao.SALINAS, BonusRegiao.ENXOFRE, BonusRegiao.MILITAR)),
-				Arguments.of(TipoRegiao.MONTANHA, List.of(BonusRegiao.ROCHA, BonusRegiao.FERRO, BonusRegiao.CARVAO)));
+				Arguments.of(TipoRegiao.FLORESTA, List.of(TipoTerreno.FLORESTA, TipoTerreno.BARREIRO, TipoTerreno.PLANTACOES)),
+				Arguments.of(TipoRegiao.PLANICIE, List.of(TipoTerreno.PLANTACOES, TipoTerreno.CRIACOES, TipoTerreno.FLORESTA)),
+				Arguments.of(TipoRegiao.URBANA, List.of(TipoTerreno.INDUSTRIA, TipoTerreno.COMERCIO, TipoTerreno.DESENVOLVIMENTO)),
+				Arguments.of(TipoRegiao.LITORAL, List.of(TipoTerreno.SALINAS, TipoTerreno.ENXOFRE, TipoTerreno.MILITAR)),
+				Arguments.of(TipoRegiao.MONTANHA, List.of(TipoTerreno.ROCHA, TipoTerreno.FERRO, TipoTerreno.CARVAO)));
 	}
 
 	@ParameterizedTest
 	@MethodSource("tabela")
-	void tipoTemOsTresBonusDaTabelaEmOrdem(TipoRegiao tipo, List<BonusRegiao> esperado) {
-		assertThat(tipo.bonus()).containsExactlyElementsOf(esperado);
-		assertThat(tipo.bonus()).doesNotHaveDuplicates().hasSize(3);
+	void tipoTemOsTresBonusDaTabelaEmOrdem(TipoRegiao tipo, List<TipoTerreno> esperado) {
+		assertThat(tipo.terrenos()).containsExactlyElementsOf(esperado);
+		assertThat(tipo.terrenos()).doesNotHaveDuplicates().hasSize(3);
 	}
 
 	@Test
@@ -47,37 +47,21 @@ class TipoRegiaoTest {
 
 	@Test
 	void treze_bonus_cada_um_em_um_ou_dois_tipos() {
-		Map<BonusRegiao, Integer> contagem = new EnumMap<>(BonusRegiao.class);
+		Map<TipoTerreno, Integer> contagem = new EnumMap<>(TipoTerreno.class);
 		for (TipoRegiao tipo : TipoRegiao.atuais()) {
-			for (BonusRegiao b : tipo.bonus()) {
+			for (TipoTerreno b : tipo.terrenos()) {
 				contagem.merge(b, 1, Integer::sum);
 			}
 		}
-		assertThat(BonusRegiao.values()).hasSize(13);
-		assertThat(contagem.keySet()).isEqualTo(EnumSet.allOf(BonusRegiao.class));
+		assertThat(TipoTerreno.values()).hasSize(13);
+		assertThat(contagem.keySet()).isEqualTo(EnumSet.allOf(TipoTerreno.class));
 		assertThat(contagem.values()).allMatch(n -> n >= 1 && n <= 2);
 	}
 
 	@Test
 	void ordemEnomesDosBonus() {
-		assertThat(Arrays.stream(BonusRegiao.values()).map(BonusRegiao::getNomeExibicao)).containsExactly(
+		assertThat(Arrays.stream(TipoTerreno.values()).map(TipoTerreno::getNomeExibicao)).containsExactly(
 				"Floresta", "Barreiro", "Plantações", "Criações", "Rocha", "Ferro", "Carvão", "Salinas",
 				"Enxofre", "Militar", "Indústria", "Comércio", "Desenvolvimento");
-	}
-
-	@Test
-	void faixasInclusivas() {
-		assertThat(FaixaBonusRegiao.de(1).getMin()).isEqualTo(35);
-		assertThat(FaixaBonusRegiao.de(1).getMax()).isEqualTo(50);
-		assertThat(FaixaBonusRegiao.de(2).getMin()).isEqualTo(16);
-		assertThat(FaixaBonusRegiao.de(2).getMax()).isEqualTo(34);
-		assertThat(FaixaBonusRegiao.de(3).getMin()).isEqualTo(5);
-		assertThat(FaixaBonusRegiao.de(3).getMax()).isEqualTo(15);
-	}
-
-	@Test
-	void posicaoForaDe1a3Falha() {
-		assertThatThrownBy(() -> FaixaBonusRegiao.de(0)).isInstanceOf(IllegalArgumentException.class);
-		assertThatThrownBy(() -> FaixaBonusRegiao.de(4)).isInstanceOf(IllegalArgumentException.class);
 	}
 }

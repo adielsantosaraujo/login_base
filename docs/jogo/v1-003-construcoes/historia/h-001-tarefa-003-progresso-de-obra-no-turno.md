@@ -21,7 +21,8 @@ Implementar etapa 5 ("Obras") do pipeline de resolução de turno que processa t
   - Executa para cada obra EM_OBRA da vila.
   - Por obra, coleta Construtores alocados (até máximo do nível).
   - Calcula `Σ (eficiência × multiplicador de profissão)`: Construtor ×1,0, Carregador ×0,5.
-  - Acumula PO_atual += PO_ganho_turno.
+  - Aplica fator Desenvolvimento = 1 + (média do bonus_total das âncoras das Casas em ladrilho Desenvolvimento) ÷ 100.
+  - Acumula PO_atual += PO_ganho_turno × fator Desenvolvimento.
   - Se PO_atual ≥ PO_total: muda estado para ATIVA, reseta PO_atual = 0, registra evento.
 
 - **Cálculo de eficiência**: delega para serviço `EficienciaService.calcularEficiencia(cidadao, profissao, vila)` que aplica todas as modificações (seção 5.3).
@@ -45,6 +46,7 @@ Não se aplica.
 
 - `testObrasProgresso_2ConstrutoresEficiencia1` → Casa 4 PO, 2 turnos até conclusão.
 - `testObrasProgresso_ComCarregadores` → 1 Construtor + 1 Carregador → 1,5 PO/turno.
+- `testObrasProgresso_ComFatorDesenvolvimento` → Casa N1, 1 Construtor 1,0, média De 12 → 1,12 PO/turno.
 - `testObrasMultiplas` → 2 obras simultâneas são ambas processadas.
 - `testObrasConclusa_MudaEstadoParaATIVA` → após conclusão, estado = ATIVA.
 

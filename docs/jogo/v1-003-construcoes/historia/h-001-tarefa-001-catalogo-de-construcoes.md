@@ -24,8 +24,8 @@ Centralizar dados de todos os prédios (custos, PO, vagas, região, profissão) 
 
 - **Enum `ConstrucaoCatalogo`** em `/src/main/java/com/example/loginbase/jogo/construcao/ConstrucaoCatalogo.java`:
   - Tipos: CASA, ARMAZEM, SERRARIA, OLARIA, FUNDIÇÃO, TECELAGEM, CURTUME, COZINHA, FERRARIA, ALFAIATARIA, CARPINTARIA, MERCADO, ESTALAGEM, QUARTEL, FAZENDA_PLANTIO, FAZENDA_CRIACAO, ACAMPAMENTO_LENHADORES, PEDREIRA, BARREIRO, MINA_FERRO, MINA_CARVAO, SALINA, MINA_ENXOFRE, CABANA_CACA.
-  - Campos: nome, bonusRegiao (BonusRegiao, nulo = urbano), profissaoPrincipal (enum ou null), custoN1 (Map<TipoRecurso, quantidade>), poN1, vagasN1.
-  - Método `regioesPermitidas()` derivado de `TipoRegiao.bonus()`.
+  - Campos: nome, terreno (TipoTerreno, nulo = sem bônus), profissaoPrincipal (enum ou null), custoN1 (Map<TipoRecurso, quantidade>), poN1, vagasN1.
+  - Método `regioesPermitidas()` derivado de `TipoRegiao.terrenos()`, com exceção explícita: Quartel = {URBANA, LITORAL}; prédios sem terreno e Casa/Mercado/Estalagem/fábricas ficam na URBANA.
   - Método `getCusto(Nivel)` retorna custo multiplicado por 2,5 ou 5.
   - Método `getPO(Nivel)` retorna PO multiplicado.
   - Método `getVagas(Nivel)` retorna vagas multiplicadas (tabela seção 4.3).
@@ -50,7 +50,7 @@ Não se aplica.
 - `testCustoN3_Casa` → 100 Madeira, 50 Pedra, 50 Argila (5×).
 - `testPO_Serraria` → N1: 6, N2: 15, N3: 30.
 - `testVagas_ArmazemN1` → 1 (Carregador), com mínimo.
-- `testRegiaoPermitida_QuartelEmCampo` → erro (Quartel é Urbana).
+- `testRegiaoPermitida_QuartelEmFloresta` → erro; `testRegiaoPermitida_QuartelEmLitoral` → ok; `testRegiaoPermitida_QuartelEmUrbana` → ok.
 
 ## Definição de pronto
 

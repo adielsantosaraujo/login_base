@@ -4,7 +4,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { useAnexacao } from '../composables/useAnexacao'
 import type { RegiaoResumo } from '../composables/useMapa'
-import { COR_BONUS, COR_TIPO, ROTULO_BONUS, ROTULO_TIPO, bonusOrdenados } from '../domain/regioes'
+import { COR_TIPO, ROTULO_TIPO } from '../domain/regioes'
+import { COR_TERRENO, ROTULO_TERRENO, ordenarTerrenos } from '../domain/terrenos'
 
 const props = defineProps<{ visivel: boolean; indice: number | null; regiao?: RegiaoResumo | null }>()
 const emit = defineEmits<{
@@ -50,10 +51,10 @@ async function confirmar() {
     <div v-else-if="custo" class="anexacao" data-testid="dialogo-anexacao">
       <div v-if="regiao && regiao.tipo" class="regiao-info" data-testid="regiao-info">
         <span class="tipo" data-testid="regiao-tipo" :style="{ color: COR_TIPO[regiao.tipo] }">{{ ROTULO_TIPO[regiao.tipo] }}</span>
-        <ul class="bonus" data-testid="regiao-bonus">
-          <li v-for="b in bonusOrdenados(regiao.bonus)" :key="b.bonus" :data-testid="`bonus-${b.bonus}`">
-            <span class="ponto" :style="{ background: COR_BONUS[b.bonus] }" aria-hidden="true"></span>
-            {{ ROTULO_BONUS[b.bonus] }} +{{ b.valor }}%
+        <ul class="terrenos" data-testid="regiao-terrenos">
+          <li v-for="t in ordenarTerrenos(regiao.terrenos ?? [])" :key="t.terreno" :data-testid="`terreno-${t.terreno}`">
+            <span class="ponto" :style="{ background: COR_TERRENO[t.terreno] }" aria-hidden="true"></span>
+            {{ ROTULO_TERRENO[t.terreno] }} {{ t.percentual }}%
           </li>
         </ul>
       </div>
@@ -96,7 +97,7 @@ async function confirmar() {
 .adjacente { color: var(--vl-accent); margin: 0; }
 .regiao-info { display: flex; flex-direction: column; gap: 0.25rem; }
 .tipo { font-weight: 700; }
-.bonus { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+.terrenos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
 .ponto { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-right: 0.25rem; }
 .custos { width: 100%; border-collapse: collapse; text-align: left; }
 .custos th, .custos td { padding: 0.25rem 0.5rem; }

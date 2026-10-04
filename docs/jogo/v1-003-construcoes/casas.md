@@ -4,7 +4,7 @@
 
 ## Resumo
 
-Casas são a habitação da vila, determinando quantos cidadãos podem viver nela e quantos núcleos familiares cabem. A vila começa com 4 casas N1 na primeira região Urbana escolhida, fornecendo 4 casas iniciais. Cada nível de casa oferece mais núcleos e vagas.
+Casas são a habitação da vila, determinando quantos cidadãos podem viver nela e quantos núcleos familiares cabem. A vila começa com 4 casas N1 na primeira região Urbana escolhida, fornecendo 4 casas iniciais. Cada nível de casa oferece mais núcleos e vagas. Casas com âncora em ladrilho Desenvolvimento entram na média do bônus Desenvolvimento da vila.
 
 ## Regras
 
@@ -13,7 +13,11 @@ Casas são a habitação da vila, determinando quantos cidadãos podem viver nel
 - **R3**: Cada Casa tem vagas (pessoas): N1 = 4, N2 = 10, N3 = 24 (seção 4.7) [proposta] [req].
 - **R4**: Casal novo exige núcleo livre em alguma casa (seção 4.7) [req].
 - **R5**: Reprodução exige vaga livre na casa do casal (seção 4.7) [req].
-- **R6**: As 4 casas N1 iniciais já vêm construídas na 1ª região Urbana escolhida, nos ladrilhos (0,0), (2,0), (4,0), (6,0) (seção 4.7) [proposta].
+- **R6**: As 4 casas N1 iniciais já vêm construídas na 1ª região Urbana escolhida, nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura (y = 0..9, x = 0..9) (seção 4.7) [req].
+
+## Bônus — Desenvolvimento
+
+Casas recebem bônus pelo terreno Desenvolvimento. O fator Desenvolvimento da vila (PO das obras) = 1 + (média do bonus_total das âncoras das Casas que estão em ladrilho Desenvolvimento) ÷ 100. Casas em ladrilho Indústria ou Comércio não entram na média; se nenhuma estiver em De, fator = 1,0.
 
 ## Números e tabelas
 
@@ -34,7 +38,7 @@ Casas são a habitação da vila, determinando quantos cidadãos podem viver nel
 ## Exemplos
 
 **Exemplo 1: Casas iniciais**
-Vila criada com 3 regiões: uma Urbana, uma de outro tipo, uma terceira. As 4 casas N1 são colocadas na primeira região Urbana escolhida nos ladrilhos (0,0), (2,0), (4,0), (6,0), totalizando 4 núcleos e 16 vagas para os 16 cidadãos iniciais (4 famílias × 4 membros).
+Vila criada com 3 regiões: uma Urbana, uma de outro tipo, uma terceira. As 4 casas N1 são colocadas na primeira região Urbana escolhida nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura (y = 0..9, x = 0..9), totalizando 4 núcleos e 16 vagas para os 16 cidadãos iniciais (4 famílias × 4 membros). Todas as 4 casas entram na média de Desenvolvimento.
 
 **Exemplo 2: Expansão de casa**
 Jogador escolhe expandir Casa N1 para N2 no ladrilho (0,0), marcando área 2x2 com (0,0), (1,0), (0,1), (1,1) livres. Custo: 50 Madeira, 25 Pedra, 25 Argila. Com 2 Construtores de eficiência 1,0: 10 PO / 2 PO/turno = 5 turnos.

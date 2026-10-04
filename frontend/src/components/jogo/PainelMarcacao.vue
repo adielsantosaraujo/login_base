@@ -4,13 +4,14 @@ import Button from 'primevue/button'
 import Message from 'primevue/message'
 import GradeRegiao from '../GradeRegiao.vue'
 import type { Ladrilho } from '../../composables/useMapa'
-import { ROTULOS_CONSTRUCAO, ROTULOS_JAZIDA, rotulo } from '../../composables/useMapa'
+import { ROTULOS_CONSTRUCAO, rotulo } from '../../composables/useMapa'
+import { ROTULO_TERRENO, SIGLA_TERRENO } from '../../domain/terrenos'
 import { useMarcacoes } from '../../composables/useMarcacoes'
 
 const props = defineProps<{ construcaoId: number }>()
 const emit = defineEmits<{ (e: 'fechar'): void; (e: 'atualizado'): void }>()
 
-const { predio, marcacoes, ladrilhos, carregando, salvando, erro, maximo, usado, jazida, candidatos, carregar, marcar, desmarcar } =
+const { predio, marcacoes, ladrilhos, carregando, salvando, erro, maximo, usado, terreno, candidatos, carregar, marcar, desmarcar } =
   useMarcacoes()
 
 onMounted(() => carregar(props.construcaoId))
@@ -34,8 +35,8 @@ async function aoClicar(p: { x: number; y: number; ladrilho: Ladrilho | null }) 
     <p v-if="carregando" data-testid="marcacao-carregando">Carregando...</p>
     <template v-else-if="predio">
       <p data-testid="marcacao-contador">{{ usado }}/{{ maximo }} marcados</p>
-      <p v-if="jazida" class="dica" data-testid="marcacao-dica">
-        Jazida: {{ rotulo(ROTULOS_JAZIDA, jazida) }} - {{ candidatos.length }} ladrilho(s) disponível(is). Clique para marcar ou desmarcar.
+      <p v-if="terreno" class="dica" data-testid="marcacao-dica">
+        Terreno: {{ ROTULO_TERRENO[terreno] }} ({{ SIGLA_TERRENO[terreno] }}) - {{ candidatos.length }} ladrilho(s) disponível(is). Clique para marcar ou desmarcar.
       </p>
       <GradeRegiao :ladrilhos="ladrilhos" :destaques="destaques" :selecionaveis="true" @clique-ladrilho="aoClicar" />
     </template>

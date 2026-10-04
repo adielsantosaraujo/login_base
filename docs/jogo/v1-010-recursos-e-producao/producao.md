@@ -13,8 +13,8 @@ A produção é o motor econômico. Prédios rurais e de coleta produzem recurso
 - R3: Se faltar insumo em fábrica, executa os ciclos possíveis (fração).
 - R4: Mudança de cultura/rebanho em Fazendas leva 1 turno sem produção.
 - R5: Eficiência é capped em 3,0; trabalhadores produtivos = `min(alocados, floor(marcados ÷ 2))` em coleta.
-- R6: Prédios de coleta devem ter ladrilhos marcados compatíveis.
-- R7: Bônus de região da vila: cada ponto de bônus = +1% na produção ligada. Fator = `1 + bônus ÷ 100`, aplicado depois da eficiência e do nível, com arredondamento em 2 casas decimais.
+- R6: Prédios de coleta devem ter ladrilhos marcados do terreno do prédio.
+- R7: Bônus do terreno: Cada prédio tem uma âncora (ladrilho designado). Se o terreno da âncora corresponder ao terreno do prédio, o bônus é o `bonus_total` da âncora (0–200); caso contrário, bônus = 0. Comércio (Mercado + Estalagem), Desenvolvimento (Casas) e Militar (Quartéis) usam a **média** dos `bonus_total` das âncoras dos prédios daquele grupo que estão no terreno certo; se nenhum estiver, a média é 0. Entram na média os prédios em estado Ativa ou Em aprimoramento; obras ainda não concluídas não entram. A média é arredondada em 2 casas. Fator = `1 + bônus ÷ 100` (coleta) ou `1 + média ÷ 100` (comércio/desenvolvimento/militar), aplicado depois da eficiência e do nível. Comércio multiplica só o ouro do imposto e renda da Estalagem (não altera o preço de venda e de compra do Mercado).
 
 ## Números e tabelas
 
@@ -53,23 +53,23 @@ A produção é o motor econômico. Prédios rurais e de coleta produzem recurso
 | N2 | ×1,2 |
 | N3 | ×1,5 |
 
-**Tabela 4.6 — Bônus de região da vila — efeito na produção (R7)**
+**Tabela 4.6 — Tipos de terreno — efeito na produção (R7)**
 
-| Bônus | Prédio/Recurso afetado | Efeito | Código do serviço |
-|---|---|---|---|
-| FLORESTA | Acampamento de lenhadores, Cabana de caça | Produção de Madeira, Carne, Couro | `ProducaoService.processarProducaoColataRural` |
-| BARREIRO | Barreiro | Produção de Argila | `ProducaoService.processarProducaoColataRural` |
-| PLANTAÇÕES | Fazenda de plantio | Produção de Grãos ou Fibra | `ProducaoService.processarProducaoColataRural` |
-| CRIAÇÕES | Fazenda de criação | Produção de Carne, Couro, Lã | `ProducaoService.processarProducaoColataRural` |
-| ROCHA | Pedreira | Produção de Pedra | `ProducaoService.processarProducaoColataRural` |
-| FERRO | Mina de ferro | Produção de Minério de ferro | `ProducaoService.processarProducaoColataRural` |
-| CARVÃO | Mina de carvão | Produção de Carvão | `ProducaoService.processarProducaoColataRural` |
-| SALINAS | Salina | Produção de Sal | `ProducaoService.processarProducaoColataRural` |
-| ENXOFRE | Mina de enxofre | Produção de Enxofre | `ProducaoService.processarProducaoColataRural` |
-| INDÚSTRIA | Fábricas (Serraria, Olaria, Fundição, Tecelagem, Curtume, Cozinha) | Ciclos disponíveis | `ProducaoService.processarProducaoFabricas` |
-| COMÉRCIO | Imposto, Estalagem | Ouro | `OuroService` |
-| DESENVOLVIMENTO | Obras e upgrades | Pontos de Obra (PO) | `ObraService` |
-| MILITAR | Quartel | XP de treinamento | `TreinamentoQuartelService` |
+| Terreno | Prédio correspondente | Categoria | Efeito | Código do serviço |
+|---|---|---|---|---|
+| FLORESTA | Acampamento de lenhadores, Cabana de caça | Por prédio (âncora) | Produção de Madeira, Carne, Couro | `ProducaoService.processarProducaoColataRural` |
+| BARREIRO | Barreiro | Por prédio (âncora) | Produção de Argila | `ProducaoService.processarProducaoColataRural` |
+| PLANTAÇÕES | Fazenda de plantio | Por prédio (âncora) | Produção de Grãos ou Fibra | `ProducaoService.processarProducaoColataRural` |
+| CRIAÇÕES | Fazenda de criação | Por prédio (âncora) | Produção de Carne, Couro, Lã | `ProducaoService.processarProducaoColataRural` |
+| ROCHA | Pedreira | Por prédio (âncora) | Produção de Pedra | `ProducaoService.processarProducaoColataRural` |
+| FERRO | Mina de ferro | Por prédio (âncora) | Produção de Minério de ferro | `ProducaoService.processarProducaoColataRural` |
+| CARVÃO | Mina de carvão | Por prédio (âncora) | Produção de Carvão | `ProducaoService.processarProducaoColataRural` |
+| SALINAS | Salina | Por prédio (âncora) | Produção de Sal | `ProducaoService.processarProducaoColataRural` |
+| ENXOFRE | Mina de enxofre | Por prédio (âncora) | Produção de Enxofre | `ProducaoService.processarProducaoColataRural` |
+| INDÚSTRIA | Fábricas (Serraria, Olaria, Fundição, Tecelagem, Curtume, Cozinha) | Por prédio (âncora) | Ciclos disponíveis | `ProducaoService.processarProducaoFabricas` |
+| COMÉRCIO | Mercado, Estalagem | Grupo (média) | Média das âncoras: Ouro (imposto, Estalagem) | `OuroService` |
+| DESENVOLVIMENTO | Casas | Grupo (média) | Média das âncoras: Pontos de Obra (PO) | `ObraService` |
+| MILITAR | Quartel | Grupo (média) | Média das âncoras: XP de treinamento | `TreinamentoQuartelService` |
 
 ## Exemplos
 
@@ -84,7 +84,7 @@ A produção é o motor econômico. Prédios rurais e de coleta produzem recurso
 - Eficiência média: 1,2
 - Produção base: 2 Madeira → 1 Tábua
 - Ciclos por turno: 3 × 1,2 × 1,2 = 4,32 ciclos
-- Tábuas produzidas: **4 Tábuas** (+ 0,32 carvão restante no próximo turno)
+- Tábuas produzidas: **4 Tábuas** (+ 0,32 ciclo restante no próximo turno)
 - Madeira consumida: 4 × 2 = 8 Madeira
 
 **Exemplo 3: Fundição N1 (Ferro)**
@@ -94,24 +94,33 @@ A produção é o motor econômico. Prédios rurais e de coleta produzem recurso
 - Ferro produzido: **2 Ferro**
 - Consumo: 4 Minério de ferro + 2 Carvão
 
-**Exemplo 4: Bônus Floresta na coleta (Acampamento de lenhadores N1)**
+**Exemplo 4: Bônus de terreno na coleta (Acampamento de lenhadores N1)**
 - 2 trabalhadores de eficiência 1,0 cada
 - Produção base: 5 Madeira
-- Vila tem Floresta 42 → fator = 1 + 42 ÷ 100 = 1,42
-- Produção: (2 × 1,0 × 5) × 1,42 = 10 × 1,42 = **14,20 Madeira**
-- Comparação: sem bônus (Floresta 0) = 10 Madeira
+- Acampamento tem âncora no terreno Floresta
+- Âncora tem bonus_base 30 + bonus_adjacente (2 vizinhos Floresta × 25) = 30 + 50 = 80 → bonus_total = 80
+- Fator = 1 + 80 ÷ 100 = 1,80
+- Produção: (2 × 1,0 × 5) × 1,80 = 10 × 1,80 = **18,00 Madeira**
+- Comparação: se a âncora fosse em outro terreno (fator 1,0) = 10 Madeira
 
 **Exemplo 5: Bônus Indústria nas fábricas (Serraria N1)**
 - 1 Madeireiro de eficiência 1,0
-- Ciclos base: 3
-- Vila tem Indústria 30 → fator = 1 + 30 ÷ 100 = 1,30
-- Ciclos disponíveis: (1 × 1,0 × 3) × 1,30 = 3 × 1,30 = **3,90 ciclos**
+- Serraria N1 com âncora em ladrilho Indústria, bonus_total 50
+- Fator = 1 + 50 ÷ 100 = 1,50
+- Ciclos base: 1 × 1,0 × 3 = 3 ciclos
+- Ciclos disponíveis: 3 × 1,50 = **4,50 ciclos**
+- Consumo: 4,5 ciclos × 2 Madeira = 9 Madeira consumida
+- Produção: **4,5 Tábuas** (seguindo R3, fração para próximo turno)
 
 **Exemplo 6: Bônus Militar no treino (Quartel N1)**
 - 1 guerreiro aquartelado
 - XP base do Quartel N1: 0,5 por turno
-- Vila tem Militar 20 → fator = 1 + 20 ÷ 100 = 1,20
-- XP no turno: 0,5 × 1,20 = **0,60 XP**
+- Vila tem 2 Quartéis no terreno Militar:
+  - Quartel 1 (âncora): bonus_total = 45
+  - Quartel 2 (âncora): bonus_total = 35
+  - Média = (45 + 35) ÷ 2 = 40 (Quartéis na Urbana não entram na média)
+- Fator = 1 + 40 ÷ 100 = 1,40
+- XP no turno: 0,5 × 1,40 = **0,70 XP**
 
 ## Interações com outros domínios
 

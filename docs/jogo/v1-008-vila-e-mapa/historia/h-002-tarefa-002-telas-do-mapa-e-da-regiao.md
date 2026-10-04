@@ -5,12 +5,12 @@
 
 ## Objetivo
 
-Implementar componentes Vue + PrimeVue para grade 4×4 (mapa da vila com tipo e bônus) e grade 10×10 (detalhes de uma região), com navegação entre eles.
+Implementar componentes Vue + PrimeVue para grade 4×4 (mapa da vila com tipo e composição de terrenos) e grade 10×10 (detalhes de uma região), com navegação entre eles.
 
 ## Contexto necessário
 
 - [design.md — D11. Mapa, resumo e anexação](/openspec/changes/redesenho-criacao-vila-populacao/design.md#d11-mapa-resumo-e-anexação)
-  > Mapa mostra tipo e 3 bônus de todas as 16 regiões; ladrilhos gerados se ausentes (tipo ≠ Urbana); cores do tema v2.
+  > Mapa mostra tipo e composição dos 3 terrenos de todas as 16 regiões; ladrilhos com terreno/bônus e construções (todos os tipos); cores do tema v2.
 
 - [../regioes.md](../regioes.md) — grade 4×4 e adjacência (1.1, 1.2)
   > Regiões 1-16, índice = linha × 4 + coluna + 1.
@@ -21,31 +21,31 @@ Implementar componentes Vue + PrimeVue para grade 4×4 (mapa da vila com tipo e 
 - [/frontend/src/views/Mapa.vue](/frontend/src/views/Mapa.vue) (novo)
   - Título: "Mapa da vila"
   - Grid 4×4 com células iteradas de 1-16
-  - Cada célula: número, tipo, 3 bônus, cor/ícone por tipo (Floresta verde, Planície bege, Urbana amarela, Litoral azul, Montanha cinza)
+  - Cada célula: número, tipo, composição dos 3 terrenos (%), cor/ícone por tipo (Floresta verde, Planície bege, Urbana amarela, Litoral azul, Montanha cinza)
   - Click: abre drawer/modal com grade 10×10 de região
   - Display masmorra: ícone + nível se ativa, sobreposto
-  - Display bônus da vila: totais de cada bônus em lugar visível
 
 - [/frontend/src/components/GradeRegiao.vue](/frontend/src/components/GradeRegiao.vue) (novo)
   - Grid 10×10 de ladrilhos
-  - Cada ladrilho: ícone de jazida (Floresta, Rocha, etc.) ou construção se houver
-  - Tooltip ao hover: detalhes (construção, recurso, etc.)
-  - Exibe tipo e bônus da região
+  - Cada ladrilho: exibe endereço "(A,1)" acima da sigla de 2 letras do terreno (ex.: "(A,1)" acima de "Fl" para Floresta; x=coluna A–J, y=linha 1–10)
+  - Cor do terreno (token `--vl-terreno-xx`) ou construção se houver
+  - Tooltip ao hover: endereço, terreno (sigla + nome), bonus_base, bonus_adjacente, bonus_total, construção (se houver)
+  - Exibe tipo e 3 percentuais de terreno da região no cabeçalho
   - Interação: clicar ladrilho abre detalhes (não nesta tarefa, fora de escopo)
 
 - [/frontend/src/composables/useMapa.ts](/frontend/src/composables/useMapa.ts) (novo)
-  - Funções: `useMapaVila()` — fetch GET /api/jogo/vila/mapa com tipo, bônus, bonusRegiao
+  - Funções: `useMapaVila()` — fetch GET /api/jogo/vila/mapa com tipo, terrenos e percentuais
   - Funções: `useRegiaoDetalhes(indice)` — fetch GET /api/jogo/regioes/{indice}
-  - Reatividade: `regioes`, `regionSelecionada`, `bonusRegiao`
+  - Reatividade: `regioes`, `regionSelecionada`
 
 **Rota (nova):**
 - `/jogo/mapa` — Mapa.vue (da nova change, aplicando tema v2)
 
 **Estilos/Assets:**
 - Ícones de tipos de região (Floresta, Planície, Urbana, Litoral, Montanha)
-- Ícones de jazidas (Floresta, Rocha, Barreiro, etc.)
+- Cores e siglas dos 13 terrenos (tabela de regioes.md): tokens `--vl-terreno-*` (fl, ba, pl, cr, ro, fe, ca, sa, en, mi, in, co, de)
 - Ícones de prédios (Casa, Armazém, etc.) — será expandido em tarefas posteriores
-- Cores: tokens `--vl-tipo-*`, `--vl-bonus-*` do tema v2
+- Cores: tokens `--vl-tipo-*` do tema v2
 
 ## Backend
 
@@ -59,11 +59,11 @@ Não se aplica (tarefa 002).
 
 ## Testes
 
-- **Teste funcional**: renderizar Mapa.vue, verificar 4×4 grid com 16 células, todas com tipo, bônus e cores do tema.
-- **Teste funcional**: clicar em região 6 (possuída, Urbana) → drawer abre, mostra 10×10 ladrilhos, 4 casas em (0,0), (2,0), (4,0), (6,0), tipo e bônus visíveis.
-- **Teste funcional**: clicar em região 2 (não possuída, Montanha) → drawer abre, mostra ladrilhos gerados, tipo e bônus sorteados, opção para anexar.
-- **Teste E2E**: Mapa → clicar região 6 → expandir → voltar → Mapa ainda visível.
-- **Teste de dados**: GET /api/jogo/vila/mapa retorna 3 regiões possuídas + bonusRegiao → Mapa mostra 16 células com tipos, bônus de todas, totais na vila.
+- **Teste funcional**: renderizar Mapa.vue, verificar 4×4 grid com 16 células, todas com tipo, composição dos 3 terrenos (%) e cores do tema.
+- **Teste funcional**: clicar em região 6 (possuída, Urbana) → drawer abre, mostra 10×10 ladrilhos com endereços "(A,1)" acima da sigla do terreno (ex.: "(A,1)" acima de "De" para Desenvolvimento), 4 casas nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura e todas em terreno Desenvolvimento, tipo e percentuais visíveis; tooltip ao hover mostra endereço, terreno, bonus_base, bonus_adjacente, bonus_total.
+- **Teste funcional**: clicar em região 2 (não possuída, Montanha) → drawer abre, mostra ladrilhos gerados com endereços e siglas de terreno (ex.: "(B,2)" acima de "Fe" para Ferro), tipo e percentuais sorteados, opção para anexar.
+- **Teste E2E**: Mapa → clicar região 6 → expandir (verificar endereços dos ladrilhos) → voltar → Mapa ainda visível.
+- **Teste de dados**: GET /api/jogo/vila/mapa retorna 3 regiões possuídas com terrenos → Mapa mostra 16 células com tipos, percentuais de todas.
 
 ## Definição de pronto
 

@@ -8,21 +8,21 @@ describe('RegiaoFoco', () => {
     expect(w.text()).toContain('Passe o mouse numa região')
   })
 
-  it('mostra título e bônus da região', () => {
+  it('mostra título e composição da região', () => {
     const w = mount(RegiaoFoco, {
       props: {
         regiao: {
           indice: 6,
           tipo: 'URBANA',
-          bonus: [
-            { bonus: 'INDUSTRIA', posicao: 2, valor: 30 },
-            { bonus: 'COMERCIO', posicao: 1, valor: 47 },
+          terrenos: [
+            { terreno: 'COMERCIO', posicao: 2, percentual: 30 },
+            { terreno: 'INDUSTRIA', posicao: 1, percentual: 45 },
           ],
         },
       },
     })
     expect(w.get('[data-testid="foco-titulo"]').text()).toBe('Região 06 · Urbana')
     expect(w.text()).toContain('Comércio')
-    expect(w.text()).toContain('47')
+    expect(w.get('[data-testid="terreno-INDUSTRIA"]').text()).toContain('45%')
   })
 })

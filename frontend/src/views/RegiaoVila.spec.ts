@@ -12,7 +12,7 @@ const getMock = vi.mocked(get)
 const postMock = vi.mocked(post)
 
 const catalogo = [
-  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA'], bonusRegiao: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
+  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA'], terreno: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
 ]
 
 function montar() {
@@ -29,7 +29,7 @@ describe('RegiaoVila', () => {
       if (url === '/api/jogo/regioes/6') {
         return {
           regiao: { id: 6, indice: 6, tipo: 'URBANA', possuida: true },
-          ladrilhos: [{ x: 0, y: 0, jazida: null, construcao: { id: 3, tipo: 'CASA', nivel: 'N1', tamanho: 2, estado: 'EM_OBRA', poAtual: 2, poTotal: 5 } }],
+          ladrilhos: [{ x: 0, y: 0, terreno: 'DESENVOLVIMENTO', bonusBase: 10, bonusAdjacente: 0, bonusTotal: 10, construcao: { id: 3, tipo: 'CASA', nivel: 'N1', tamanho: 2, estado: 'EM_OBRA', poAtual: 2, poTotal: 5 } }],
         }
       }
       if (url === '/api/jogo/construcoes/catalogo') return catalogo

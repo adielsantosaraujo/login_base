@@ -29,15 +29,12 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.Jazida;
-import com.example.loginbase.jogo.modelo.LadrilhoJazida;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.Ladrilho;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurno;
@@ -52,7 +49,7 @@ class ProducaoServiceIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired FamiliaRepository familiaRepository;
 	@Autowired CidadaoRepository cidadaoRepository;
 	@Autowired CidadaoProfissaoRepository cidadaoProfissaoRepository;
@@ -60,7 +57,6 @@ class ProducaoServiceIntegrationTest {
 	@Autowired ConstrucaoMarcacaoRepository marcacaoRepository;
 	@Autowired EstoqueService estoqueService;
 	@Autowired ProducaoService servico;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired EtapaProducao etapa;
 	@Autowired EventoTurnoRepository eventoRepository;
 
@@ -89,10 +85,10 @@ class ProducaoServiceIntegrationTest {
 		}
 		regiaoRepository.flush();
 		for (int x = 0; x < 10; x++) {
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 0, Jazida.FLORESTA));
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 1, Jazida.ROCHA));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 0, TipoTerreno.FLORESTA, 0, 0));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 1, TipoTerreno.ROCHA, 0, 0));
 		}
-		ladrilhoJazidaRepository.flush();
+		ladrilhoRepository.flush();
 		familia = familiaRepository.saveAndFlush(new Familia(vila.getId(), "Silva", null));
 		estoqueService.inicializar(vila, java.util.Map.of());
 	}
@@ -128,6 +124,10 @@ class ProducaoServiceIntegrationTest {
 		marcacaoRepository.flush();
 	}
 
+	private void ancora(TipoTerreno terreno, int bonus) {
+		ladrilhoRepository.saveAndFlush(new Ladrilho(regiao.getId(), 5, 5, terreno, bonus, 0));
+	}
+
 	private BigDecimal qtd(Recurso r) {
 		return estoqueService.quantidade(vila, r);
 	}
@@ -139,14 +139,42 @@ class ProducaoServiceIntegrationTest {
 
 	@Test
 	void acampamentoComBonusFloresta() {
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(regiao.getId(), BonusRegiao.FLORESTA, 1, 42));
+		ancora(TipoTerreno.FLORESTA, 80);
 		Construcao c = predio(TipoConstrucao.ACAMPAMENTO_LENHADORES, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
 		trabalhador(c, Profissao.MADEIREIRO);
 		trabalhador(c, Profissao.MADEIREIRO);
 		marcar(c, 4, 0);
 		servico.processarProducaoColataRural(vila, 1);
-		assertThat(qtd(Recurso.MADEIRA)).isEqualByComparingTo("14.2");
-		assertThat(eventos().get(0).getDados()).containsEntry("bonusRegiao", 42);
+		assertThat(qtd(Recurso.MADEIRA)).isEqualByComparingTo("18.00");
+		assertThat(eventos().get(0).getDados()).containsEntry("bonusTerreno", 80);
+	}
+
+	@Test
+	void acampamentoComAncoraDeOutroTerrenoNaoRecebeBonus() {
+		ancora(TipoTerreno.BARREIRO, 80);
+		Construcao c = predio(TipoConstrucao.ACAMPAMENTO_LENHADORES, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
+		trabalhador(c, Profissao.MADEIREIRO);
+		trabalhador(c, Profissao.MADEIREIRO);
+		marcar(c, 4, 0);
+		servico.processarProducaoColataRural(vila, 1);
+		assertThat(qtd(Recurso.MADEIRA)).isEqualByComparingTo("10.00");
+		assertThat(eventos().get(0).getDados()).doesNotContainKey("bonusTerreno");
+	}
+
+	@Test
+	void barreiroComAncoraBarreiroEMarcacoesNoTerreno() {
+		ancora(TipoTerreno.BARREIRO, 80);
+		for (int x = 0; x < 4; x++) {
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 2, TipoTerreno.BARREIRO, 0, 0));
+		}
+		ladrilhoRepository.flush();
+		Construcao c = predio(TipoConstrucao.BARREIRO, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
+		trabalhador(c, Profissao.MINEIRO);
+		trabalhador(c, Profissao.MINEIRO);
+		marcar(c, 4, 2);
+		servico.processarProducaoColataRural(vila, 1);
+		assertThat(qtd(Recurso.ARGILA)).isEqualByComparingTo("14.40");
+		assertThat(eventos().get(0).getDados()).containsEntry("bonusTerreno", 80);
 	}
 
 	@Test
@@ -214,7 +242,7 @@ class ProducaoServiceIntegrationTest {
 	}
 
 	@Test
-	void marcacaoComJazidaErradaNaoConta() {
+	void marcacaoEmTerrenoErradoNaoConta() {
 		Construcao c = predio(TipoConstrucao.ACAMPAMENTO_LENHADORES, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
 		trabalhador(c, Profissao.MADEIREIRO);
 		marcar(c, 4, 1); // linha y=1 é Rocha

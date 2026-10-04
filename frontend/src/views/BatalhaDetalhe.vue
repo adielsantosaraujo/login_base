@@ -73,7 +73,7 @@ watch(id, (v) => b.buscar(v))
 
 <style scoped>
 .lados { display: flex; gap: 2rem; flex-wrap: wrap; }
-.vitoria { color: var(--vl-bonus-floresta); }
+.vitoria { color: var(--vl-terreno-fl); }
 .derrota, .erro { color: var(--vl-error); }
 h2, h3 { font-family: var(--vl-font-display); }
 </style>

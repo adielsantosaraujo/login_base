@@ -51,7 +51,7 @@ Cidadãos vivem em famílias (núcleos) dentro de casas. Uma família tem um sob
 | N2 | 2 | 10 |
 | N3 | 4 | 24 |
 
-**Nota**: As 4 casas N1 iniciais já vêm construídas na 1ª região Urbana escolhida, nos ladrilhos (0,0), (2,0), (4,0), (6,0) (seção 4.7).
+**Nota**: As 4 casas N1 iniciais já vêm construídas na 1ª região Urbana escolhida, nos 4 primeiros ladrilhos Desenvolvimento em ordem de varredura (y = 0..9, x = 0..9) (seção 4.7).
 
 ### Imigração pela Estalagem (seção 4.10)
 

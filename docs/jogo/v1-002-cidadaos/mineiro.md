@@ -55,13 +55,13 @@ Mineiro trabalha em Pedreiras, Barreiros, Minas (Ferro, Carvão, Enxofre) e Sali
 
 ## Marcação de ladrilhos
 
-Os prédios de coleta precisam de ladrilhos marcados compatíveis com a jazida (seção 4.6):
-- Pedreira → Rocha.
-- Barreiro → Barreiro.
-- Mina de ferro → Veio de ferro.
-- Mina de carvão → Veio de carvão.
-- Salina → Salina.
-- Mina de enxofre → Enxofre.
+Os prédios de coleta precisam de ladrilhos marcados compatíveis com o terreno do prédio (seção 4.6):
+- Pedreira → Rocha
+- Barreiro → Barreiro
+- Mina de ferro → Ferro
+- Mina de carvão → Carvão
+- Salina → Salinas
+- Mina de enxofre → Enxofre
 
 Máximo de ladrilhos marcados por nível: N1 4, N2 10, N3 20 (seção 4.6).
 

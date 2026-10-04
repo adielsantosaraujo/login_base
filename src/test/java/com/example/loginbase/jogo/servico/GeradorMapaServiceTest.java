@@ -13,9 +13,9 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
-import com.example.loginbase.jogo.servico.GeradorMapaService.BonusGerado;
+import com.example.loginbase.jogo.servico.GeradorMapaService.TerrenoGerado;
 import com.example.loginbase.jogo.servico.GeradorMapaService.RegiaoGerada;
 
 class GeradorMapaServiceTest {
@@ -49,43 +49,54 @@ class GeradorMapaServiceTest {
 	}
 
 	@Test
-	void bonusDistintosDoTipoEFaixasPorPosicao() {
-		int[][] faixas = { { 35, 50 }, { 16, 34 }, { 5, 15 } };
-		Set<Integer> vistos = new HashSet<>();
+	void terrenosDistintosDoTipoEPercentuaisNosLimitesDoD2() {
+		Set<Integer> vistosB1 = new HashSet<>();
+		Set<Integer> vistosB2 = new HashSet<>();
+		Set<Integer> vistosB3 = new HashSet<>();
 		for (long s = 0; s < SEMENTES; s++) {
 			for (RegiaoGerada r : service.gerar(s)) {
-				assertEquals(3, r.bonus().size(), "R13 semente " + s);
-				Set<BonusRegiao> distintos = new HashSet<>();
+				assertEquals(3, r.terrenos().size(), "R13 semente " + s);
+				Set<TipoTerreno> distintos = new HashSet<>();
+				int soma = 0;
 				for (int p = 0; p < 3; p++) {
-					BonusGerado b = r.bonus().get(p);
-					assertEquals(p + 1, b.posicao(), "ordem por posição");
-					assertTrue(r.tipo().bonus().contains(b.bonus()), "R13 bônus do tipo");
-					distintos.add(b.bonus());
-					assertTrue(b.valor() >= faixas[p][0] && b.valor() <= faixas[p][1],
-							"R14/R15 semente " + s + " pos " + (p + 1) + " valor " + b.valor());
-					vistos.add(b.valor());
+					TerrenoGerado t = r.terrenos().get(p);
+					assertEquals(p + 1, t.posicao(), "ordem por posição");
+					assertTrue(r.tipo().terrenos().contains(t.terreno()), "R13 terreno do tipo");
+					distintos.add(t.terreno());
+					soma += t.percentual();
 				}
+				int b1 = r.terrenos().get(0).percentual();
+				int b2 = r.terrenos().get(1).percentual();
+				int b3 = r.terrenos().get(2).percentual();
+				assertEquals(100, soma, "soma semente " + s);
+				assertTrue(b1 >= 20 && b1 <= 60, "b1 semente " + s + " = " + b1);
+				assertTrue(b2 >= 20 && b2 <= 90 - b1, "b2 semente " + s + " = " + b2);
+				assertTrue(b3 >= 10 && b3 <= 60, "b3 semente " + s + " = " + b3);
 				assertEquals(3, distintos.size(), "R13 distintos");
+				vistosB1.add(b1);
+				vistosB2.add(b2);
+				vistosB3.add(b3);
 			}
 		}
-		for (int limite : new int[] { 35, 50, 16, 34, 5, 15 }) {
-			assertTrue(vistos.contains(limite), "limite alcançável " + limite);
-		}
+		assertTrue(vistosB1.contains(20) || vistosB1.contains(21), "b1 perto do mínimo");
+		assertTrue(vistosB1.stream().anyMatch(v -> v >= 59), "b1 perto do máximo");
+		assertTrue(vistosB2.stream().anyMatch(v -> v <= 21), "b2 perto do mínimo");
+		assertTrue(vistosB3.stream().anyMatch(v -> v <= 11), "b3 perto do mínimo");
 	}
 
 	@Test
-	void todoBonusApareceEmTodasAsPosicoes() {
-		Map<TipoRegiao, Map<BonusRegiao, Set<Integer>>> vistos = new EnumMap<>(TipoRegiao.class);
+	void todoTerrenoApareceEmTodasAsPosicoes() {
+		Map<TipoRegiao, Map<TipoTerreno, Set<Integer>>> vistos = new EnumMap<>(TipoRegiao.class);
 		for (long s = 0; s < SEMENTES; s++) {
 			for (RegiaoGerada r : service.gerar(s)) {
-				Map<BonusRegiao, Set<Integer>> porBonus = vistos.computeIfAbsent(r.tipo(), t -> new EnumMap<>(BonusRegiao.class));
-				for (BonusGerado b : r.bonus()) {
-					porBonus.computeIfAbsent(b.bonus(), x -> new HashSet<>()).add(b.posicao());
+				Map<TipoTerreno, Set<Integer>> porTerreno = vistos.computeIfAbsent(r.tipo(), t -> new EnumMap<>(TipoTerreno.class));
+				for (TerrenoGerado t : r.terrenos()) {
+					porTerreno.computeIfAbsent(t.terreno(), x -> new HashSet<>()).add(t.posicao());
 				}
 			}
 		}
 		for (TipoRegiao t : TipoRegiao.atuais()) {
-			for (BonusRegiao b : t.bonus()) {
+			for (TipoTerreno b : t.terrenos()) {
 				assertEquals(Set.of(1, 2, 3), vistos.get(t).get(b), "R16 " + t + " " + b);
 			}
 		}
@@ -138,45 +149,5 @@ class GeradorMapaServiceTest {
 		assertFalse(service.conectadas(List.of(1, 3, 6)));
 		assertTrue(service.conectadas(List.of(6, 7, 10)));
 		assertFalse(service.conectadas(List.of(1, 6, 11)));
-	}
-
-	@Test
-	void somarBonusReproduzExemplo2() {
-		List<RegiaoGerada> mapa = new ArrayList<>();
-		for (int i = 1; i <= 16; i++) {
-			mapa.add(new RegiaoGerada(i, TipoRegiao.FLORESTA, List.of(
-					new BonusGerado(BonusRegiao.FLORESTA, 1, 35),
-					new BonusGerado(BonusRegiao.BARREIRO, 2, 16),
-					new BonusGerado(BonusRegiao.PLANTACOES, 3, 5))));
-		}
-		mapa.set(5, new RegiaoGerada(6, TipoRegiao.URBANA, List.of(
-				new BonusGerado(BonusRegiao.COMERCIO, 1, 47),
-				new BonusGerado(BonusRegiao.INDUSTRIA, 2, 30),
-				new BonusGerado(BonusRegiao.DESENVOLVIMENTO, 3, 12))));
-		mapa.set(6, new RegiaoGerada(7, TipoRegiao.LITORAL, List.of(
-				new BonusGerado(BonusRegiao.SALINAS, 1, 38),
-				new BonusGerado(BonusRegiao.MILITAR, 2, 20),
-				new BonusGerado(BonusRegiao.ENXOFRE, 3, 6))));
-		mapa.set(9, new RegiaoGerada(10, TipoRegiao.PLANICIE, List.of(
-				new BonusGerado(BonusRegiao.CRIACOES, 1, 41),
-				new BonusGerado(BonusRegiao.FLORESTA, 2, 25),
-				new BonusGerado(BonusRegiao.PLANTACOES, 3, 14))));
-
-		Map<BonusRegiao, Integer> total = service.somarBonus(mapa, List.of(6, 7, 10));
-
-		assertEquals(13, total.size());
-		assertEquals(47, total.get(BonusRegiao.COMERCIO));
-		assertEquals(41, total.get(BonusRegiao.CRIACOES));
-		assertEquals(38, total.get(BonusRegiao.SALINAS));
-		assertEquals(30, total.get(BonusRegiao.INDUSTRIA));
-		assertEquals(25, total.get(BonusRegiao.FLORESTA));
-		assertEquals(20, total.get(BonusRegiao.MILITAR));
-		assertEquals(14, total.get(BonusRegiao.PLANTACOES));
-		assertEquals(12, total.get(BonusRegiao.DESENVOLVIMENTO));
-		assertEquals(6, total.get(BonusRegiao.ENXOFRE));
-		assertEquals(0, total.get(BonusRegiao.ROCHA));
-		assertEquals(0, total.get(BonusRegiao.FERRO));
-		assertEquals(0, total.get(BonusRegiao.CARVAO));
-		assertEquals(0, total.get(BonusRegiao.BARREIRO));
 	}
 }

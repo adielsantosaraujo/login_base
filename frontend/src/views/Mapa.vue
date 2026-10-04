@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import GradeRegiao from '../components/GradeRegiao.vue'
@@ -7,9 +7,10 @@ import DialogoAnexacao from '../components/DialogoAnexacao.vue'
 import MasmorraIndicador from '../components/jogo/MasmorraIndicador.vue'
 import { ehAnexavel } from '../composables/useAnexacao'
 import { ROTULOS_TIPO, rotulo, useMapaVila, useRegiaoDetalhes } from '../composables/useMapa'
-import { BONUS, COR_BONUS, COR_TIPO, ROTULO_BONUS, bonusOrdenados, type BonusRegiao, type TipoRegiao } from '../domain/regioes'
+import { COR_TIPO, type TipoRegiao } from '../domain/regioes'
+import { COR_TERRENO, ROTULO_TERRENO, SIGLA_TERRENO, composicaoTexto, ordenarTerrenos } from '../domain/terrenos'
 
-const { mapa, regioes, carregando, erro, carregar } = useMapaVila()
+const { regioes, carregando, erro, carregar } = useMapaVila()
 const detalhe = useRegiaoDetalhes()
 const router = useRouter()
 
@@ -28,11 +29,6 @@ function classe(tipo: string | null, possuida: boolean): string[] {
 function corTipo(tipo: TipoRegiao | null): string | undefined {
   return tipo ? COR_TIPO[tipo] : undefined
 }
-
-const bonusVila = computed(() => {
-  const total = mapa.value?.vila.bonusRegiao ?? {}
-  return BONUS.filter((b) => (total[b] ?? 0) > 0).map((b) => ({ bonus: b as BonusRegiao, valor: total[b] as number }))
-})
 
 const dialogoVisivel = ref(false)
 const indiceAnexar = ref<number | null>(null)
@@ -72,17 +68,6 @@ async function aoAnexar(indice: number) {
 
     <p v-if="mensagem" role="status" class="sucesso" data-testid="mensagem-anexacao">{{ mensagem }}</p>
 
-    <section v-if="mapa" class="bonus-vila" data-testid="bonus-vila" aria-label="Bônus total da vila">
-      <h2>Bônus da vila</h2>
-      <ul v-if="bonusVila.length > 0" class="lista-bonus">
-        <li v-for="b in bonusVila" :key="b.bonus" class="chip-bonus" :data-testid="`bonus-vila-${b.bonus}`">
-          <span class="ponto" :style="{ background: COR_BONUS[b.bonus] }" aria-hidden="true"></span>
-          {{ ROTULO_BONUS[b.bonus] }} +{{ b.valor }}%
-        </li>
-      </ul>
-      <p v-else class="vazio">Sem bônus de região.</p>
-    </section>
-
     <div class="mapa-conteudo">
       <div class="grade-mapa" data-testid="grade-mapa">
         <button
@@ -93,15 +78,15 @@ async function aoAnexar(indice: number) {
           :class="[...classe(r.tipo, r.possuida), { 'com-masmorra': r.masmorraAtiva, anexavel: anexavel(r.indice), selecionada: detalhe.regiaoSelecionada.value?.regiao.indice === r.indice }]"
           :style="{ '--cor-tipo': corTipo(r.tipo) }"
           :data-testid="`regiao-${r.indice}`"
-          :aria-label="`Região ${r.indice}${r.possuida ? ' - ' + rotulo(ROTULOS_TIPO, r.tipo) : ' - não possuída' + (r.tipo ? ' - ' + rotulo(ROTULOS_TIPO, r.tipo) : '')}`"
+          :aria-label="`Região ${r.indice}${r.possuida ? ' - ' + rotulo(ROTULOS_TIPO, r.tipo) : ' - não possuída' + (r.tipo ? ' - ' + rotulo(ROTULOS_TIPO, r.tipo) : '')}${r.terrenos?.length ? ' - ' + composicaoTexto(r.terrenos) : ''}`"
           @click="abrir(r.indice)"
         >
           <span class="numero">{{ r.indice }}</span>
           <span class="tipo" data-testid="tipo-regiao">{{ r.tipo ? rotulo(ROTULOS_TIPO, r.tipo) : 'Vazio' }}</span>
-          <ul class="bonus-celula" :data-testid="`bonus-regiao-${r.indice}`">
-            <li v-for="b in bonusOrdenados(r.bonus ?? [])" :key="b.bonus">
-              <span class="ponto" :style="{ background: COR_BONUS[b.bonus] }" aria-hidden="true"></span>
-              {{ ROTULO_BONUS[b.bonus] }} {{ b.valor }}%
+          <ul class="terrenos-celula" :data-testid="`terrenos-regiao-${r.indice}`">
+            <li v-for="t in ordenarTerrenos(r.terrenos ?? [])" :key="t.terreno">
+              <span class="ponto" :style="{ background: COR_TERRENO[t.terreno] }" aria-hidden="true"></span>
+              {{ SIGLA_TERRENO[t.terreno] }} {{ t.percentual }}%
             </li>
           </ul>
           <MasmorraIndicador v-if="r.masmorraAtiva && r.nivelMasmorra != null" :nivel="r.nivelMasmorra" />
@@ -132,10 +117,10 @@ async function aoAnexar(indice: number) {
         <p v-if="detalhe.erro.value" role="alert" class="erro">{{ detalhe.erro.value }}</p>
         <p v-else-if="detalhe.carregando.value">Carregando...</p>
         <template v-else-if="detalhe.regiaoSelecionada.value">
-          <ul v-if="detalhe.regiaoSelecionada.value.regiao.bonus?.length" class="lista-bonus" data-testid="bonus-detalhe">
-            <li v-for="b in bonusOrdenados(detalhe.regiaoSelecionada.value.regiao.bonus)" :key="b.bonus" class="chip-bonus">
-              <span class="ponto" :style="{ background: COR_BONUS[b.bonus] }" aria-hidden="true"></span>
-              {{ ROTULO_BONUS[b.bonus] }} {{ b.valor }}%
+          <ul v-if="detalhe.regiaoSelecionada.value.regiao.terrenos?.length" class="lista-terrenos" data-testid="terrenos-detalhe">
+            <li v-for="t in ordenarTerrenos(detalhe.regiaoSelecionada.value.regiao.terrenos)" :key="t.terreno" class="chip-terreno">
+              <span class="ponto" :style="{ background: COR_TERRENO[t.terreno] }" aria-hidden="true"></span>
+              {{ ROTULO_TERRENO[t.terreno] }} {{ t.percentual }}%
             </li>
           </ul>
           <p
@@ -157,9 +142,8 @@ async function aoAnexar(indice: number) {
 </template>
 
 <style scoped>
-.bonus-vila { margin-bottom: 1rem; }
-.lista-bonus { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0.5rem 0; padding: 0; }
-.chip-bonus {
+.lista-terrenos { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0.5rem 0; padding: 0; }
+.chip-terreno {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -202,8 +186,8 @@ async function aoAnexar(indice: number) {
 .sucesso { color: var(--vl-accent); }
 .numero { font-size: 1.25rem; font-weight: 700; font-family: var(--vl-font-display); }
 .tipo { font-size: 0.75rem; }
-.bonus-celula { list-style: none; margin: 0; padding: 0; font-size: 0.65rem; text-align: left; }
-.bonus-celula li { display: flex; align-items: center; gap: 0.25rem; }
+.terrenos-celula { list-style: none; margin: 0; padding: 0; font-size: 0.65rem; text-align: left; }
+.terrenos-celula li { display: flex; align-items: center; gap: 0.25rem; }
 .painel-regiao { flex: 1; min-width: 280px; }
 .painel-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .erro { color: var(--vl-error); }

@@ -6,5 +6,5 @@ import com.example.loginbase.jogo.modelo.TipoRegiao;
 
 public record RegiaoResumoDTO(int indice, TipoRegiao tipo, boolean possuida, boolean masmorraAtiva,
 		Integer nivelMasmorra, Long masmorraId,
-		List<RegiaoBonusDTO> bonus) {
+		List<RegiaoTerrenoDTO> terrenos) {
 }

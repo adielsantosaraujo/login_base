@@ -11,7 +11,7 @@ import com.example.loginbase.jogo.recurso.Recurso;
 public record AnexacaoDTO(RegiaoAnexadaDTO regiao, Map<Recurso, BigDecimal> estoque, CustoAnexacaoDTO custo) {
 
 	public record RegiaoAnexadaDTO(int indice, TipoRegiao tipo, boolean possuida,
-			List<RegiaoBonusDTO> bonus) {
+			List<RegiaoTerrenoDTO> terrenos) {
 	}
 
 }

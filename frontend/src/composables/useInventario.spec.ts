@@ -64,10 +64,10 @@ describe('useInventario', () => {
       }
       return {
         regiao: {}, ladrilhos: [
-          { x: 0, y: 0, jazida: null, construcao: { id: 10, tipo: 'FERRARIA', nivel: 'N1', estado: 'ATIVA' } },
-          { x: 1, y: 0, jazida: null, construcao: { id: 10, tipo: 'FERRARIA', nivel: 'N1', estado: 'ATIVA' } },
-          { x: 2, y: 0, jazida: null, construcao: { id: 11, tipo: 'FERRARIA', nivel: 'N1', estado: 'EM_OBRA' } },
-          { x: 3, y: 0, jazida: null, construcao: { id: 12, tipo: 'CARPINTARIA', nivel: 'N3', estado: 'ATIVA' } },
+          { x: 0, y: 0, construcao: { id: 10, tipo: 'FERRARIA', nivel: 'N1', estado: 'ATIVA' } },
+          { x: 1, y: 0, construcao: { id: 10, tipo: 'FERRARIA', nivel: 'N1', estado: 'ATIVA' } },
+          { x: 2, y: 0, construcao: { id: 11, tipo: 'FERRARIA', nivel: 'N1', estado: 'EM_OBRA' } },
+          { x: 3, y: 0, construcao: { id: 12, tipo: 'CARPINTARIA', nivel: 'N3', estado: 'ATIVA' } },
         ],
       }
     })

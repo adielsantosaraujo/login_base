@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.jogo.dto.PreviaMapaDTO;
-import com.example.loginbase.jogo.dto.RegiaoBonusDTO;
+import com.example.loginbase.jogo.dto.RegiaoTerrenoDTO;
 import com.example.loginbase.jogo.dto.RegiaoPreviaDTO;
 import com.example.loginbase.jogo.excecao.PreviaExpiradaException;
 import com.example.loginbase.jogo.excecao.PreviaNaoEncontradaException;
@@ -81,8 +81,8 @@ public class VilaPreviaService {
 
 	private PreviaMapaDTO montar(VilaPrevia previa) {
 		List<RegiaoPreviaDTO> regioes = gerador.gerar(previa.getSemente()).stream()
-				.map(r -> new RegiaoPreviaDTO(r.indice(), r.tipo(), r.bonus().stream()
-						.map(b -> new RegiaoBonusDTO(b.bonus(), b.posicao(), b.valor())).toList()))
+				.map(r -> new RegiaoPreviaDTO(r.indice(), r.tipo(), r.terrenos().stream()
+						.map(t -> new RegiaoTerrenoDTO(t.terreno(), t.posicao(), t.percentual())).toList()))
 				.toList();
 		return new PreviaMapaDTO(previa.getPreviaId(), previa.getRodada(), regioes);
 	}

@@ -23,12 +23,13 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.RegiaoTerreno;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.RegiaoTerrenoRepository;
+import com.example.loginbase.jogo.servico.TerrenoRegiaoService;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 
@@ -42,7 +43,8 @@ class MapaControladorIntegrationTest {
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired RegiaoTerrenoRepository regiaoTerrenoRepository;
+	@Autowired TerrenoRegiaoService terrenoRegiaoService;
 	@Autowired com.example.loginbase.jogo.masmorra.MasmorraRepository masmorraRepository;
 
 	private Usuario novoUsuario() {
@@ -74,9 +76,19 @@ class MapaControladorIntegrationTest {
 				r.setTipo(TipoRegiao.LITORAL);
 			}
 			r = regiaoRepository.save(r);
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.SALINAS, 1, 40));
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.ENXOFRE, 2, 20));
-			regiaoBonusRepository.save(new RegiaoBonus(r.getId(), BonusRegiao.MILITAR, 3, 10));
+			if (i == 6) {
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.INDUSTRIA, 1, 45));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.COMERCIO, 2, 30));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.DESENVOLVIMENTO, 3, 25));
+			}
+			else {
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.SALINAS, 1, 40));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.ENXOFRE, 2, 35));
+				regiaoTerrenoRepository.save(new RegiaoTerreno(r.getId(), TipoTerreno.MILITAR, 3, 25));
+			}
+			if (r.isPossuida()) {
+				terrenoRegiaoService.gerarLadrilhosSeAusentes(vila.getSemente(), r);
+			}
 		}
 		regiaoRepository.flush();
 		return vila;
@@ -127,14 +139,12 @@ class MapaControladorIntegrationTest {
 				.andExpect(jsonPath("$.regioes[9].tipo").value("FLORESTA"))
 				.andExpect(jsonPath("$.regioes[0].tipo").value("LITORAL"))
 				.andExpect(jsonPath("$.regioes[0].possuida").value(false))
-				.andExpect(jsonPath("$.regioes[0].bonus", hasSize(3)))
-				.andExpect(jsonPath("$.regioes[0].bonus[0].bonus").value("SALINAS"))
-				.andExpect(jsonPath("$.regioes[0].bonus[0].valor").value(40))
+				.andExpect(jsonPath("$.regioes[0].terrenos", hasSize(3)))
+				.andExpect(jsonPath("$.regioes[0].terrenos[0].terreno").value("SALINAS"))
+				.andExpect(jsonPath("$.regioes[0].terrenos[0].percentual").value(40))
+				.andExpect(jsonPath("$.regioes[5].terrenos[0].terreno").value("INDUSTRIA"))
 				.andExpect(jsonPath("$.regioes[1].tipo").value(nullValue()))
-				.andExpect(jsonPath("$.regioes[1].bonus", hasSize(3)))
-				.andExpect(jsonPath("$.vila.bonusRegiao.length()").value(13))
-				.andExpect(jsonPath("$.vila.bonusRegiao.SALINAS").value(120))
-				.andExpect(jsonPath("$.vila.bonusRegiao.FERRO").value(0))
+				.andExpect(jsonPath("$.regioes[1].terrenos", hasSize(3)))
 				.andExpect(jsonPath("$.regioes[5].masmorraAtiva").value(false));
 	}
 
@@ -173,23 +183,36 @@ class MapaControladorIntegrationTest {
 	}
 
 	@Test
-	void regiaoDeColetaTemJazidas() throws Exception {
+	void regiaoPossuidaTemLadrilhosComBonusETerrenosNosPercentuais() throws Exception {
 		Usuario u = novoUsuario();
 		vilaCom(u);
-		mvc.perform(get("/api/jogo/regioes/7").with(user(u.getEmail()).roles("USER")))
+		String corpo = mvc.perform(get("/api/jogo/regioes/7").with(user(u.getEmail()).roles("USER")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.ladrilhos", hasSize(100)))
 				.andExpect(jsonPath("$.regiao.tipo").value("MONTANHA"))
-				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
-				.andExpect(jsonPath("$.ladrilhos[?(@.jazida != null)]", hasSize(100)));
+				.andExpect(jsonPath("$.regiao.terrenos", hasSize(3)))
+				.andExpect(jsonPath("$.ladrilhos", hasSize(100)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'SALINAS')]", hasSize(40)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'ENXOFRE')]", hasSize(35)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'MILITAR')]", hasSize(25)))
+				.andReturn().getResponse().getContentAsString();
+		var raiz = new tools.jackson.databind.ObjectMapper().readTree(corpo);
+		for (var l : raiz.get("ladrilhos")) {
+			org.assertj.core.api.Assertions.assertThat(l.get("bonusTotal").asInt())
+					.isEqualTo(l.get("bonusBase").asInt() + l.get("bonusAdjacente").asInt());
+		}
 	}
 
 	@Test
-	void regiaoUrbanaNaoGeraJazidas() throws Exception {
+	void regiaoUrbanaInicialTemLadrilhosECasasNosLadrilhosDe() throws Exception {
 		Usuario u = novoUsuario();
-		vilaCom(u);
+		Vila vila = vilaCom(u);
+		casa(vila, 6, 0, 0);
 		mvc.perform(get("/api/jogo/regioes/6").with(user(u.getEmail()).roles("USER")))
-				.andExpect(jsonPath("$.ladrilhos[?(@.jazida != null)]", hasSize(0)));
+				.andExpect(jsonPath("$.ladrilhos", hasSize(100)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'INDUSTRIA')]", hasSize(45)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'COMERCIO')]", hasSize(30)))
+				.andExpect(jsonPath("$.ladrilhos[?(@.terreno == 'DESENVOLVIMENTO')]", hasSize(25)))
+				.andExpect(jsonPath("$.ladrilhos[0].construcao.tipo").value("CASA"));
 	}
 
 	@Test
@@ -200,7 +223,7 @@ class MapaControladorIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.regiao.possuida").value(false))
 				.andExpect(jsonPath("$.regiao.tipo").value("LITORAL"))
-				.andExpect(jsonPath("$.regiao.bonus", hasSize(3)))
+				.andExpect(jsonPath("$.regiao.terrenos", hasSize(3)))
 				.andExpect(jsonPath("$.ladrilhos", hasSize(0)));
 	}
 

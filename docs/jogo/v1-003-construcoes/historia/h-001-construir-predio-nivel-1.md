@@ -18,9 +18,9 @@ Como jogador, quero construir um prédio (Casa, Fazenda, Fábrica, etc.) em nív
 
 ### CA1 — Rejeição por tipo de região errado
 
-- **Dado** jogador em região Floresta com autorização para construir Quartel (tipo Urbana)
+- **Dado** jogador em região Floresta com autorização para construir Quartel (Urbana ou Litoral)
 - **Quando** submete ordem de construção do Quartel
-- **Então** API retorna erro 400 com mensagem "Quartel só pode ser construído em região Urbana"
+- **Então** API retorna erro 400 com mensagem "Quartel só pode ser construído em região Urbana ou Litoral"
 
 ### CA2 — Rejeição por ladrilho ocupado
 
@@ -46,11 +46,17 @@ Como jogador, quero construir um prédio (Casa, Fazenda, Fábrica, etc.) em nív
 - **Quando** tenta construir Casa N1 (20 Madeira necessária)
 - **Então** API retorna erro 400 "Recursos insuficientes"
 
-### CA6 — Prédio em região sem bônus associado
+### CA6 — Prédio em região sem terreno associado
 
-- **Dado** região Floresta (tipo Floresta, sem bônus de Minério)
-- **Quando** tenta construir Mina de ferro N1 (requer bônus de Minério)
+- **Dado** região Floresta (tipo Floresta, não possui terreno Ferro)
+- **Quando** tenta construir Mina de ferro N1 (requer terreno Ferro)
 - **Então** rejeitado: "Mina de ferro só pode ser construído em região Montanha"
+
+### CA7 — Quartel no Litoral é aceito
+
+- **Dado** jogador em região Litoral vazia em (0, 0)
+- **Quando** submete ordem de construção de Quartel N1
+- **Então** recursos debitados; Quartel criado com estado EM_OBRA
 
 ## Tarefas
 

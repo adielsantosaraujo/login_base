@@ -131,6 +131,13 @@ Não se aplica. Visualização de XP fica para tarefa futura.
   - Turno 2 (+1 XP) → XP 9, PE 8.
   - Turno 3 (+1 XP) → XP 10 → PE 9, XP 0.
 
+- Teste com bônus Militar:
+  - Quartel N1 com âncora em ladrilho Militar, bonus_total 40.
+  - Média Militar = 40 (único Quartel em ladrilho Militar).
+  - Fator = 1 + 40 ÷ 100 = 1,40.
+  - XP base N1: 0,5 × 1,40 = 0,70 XP por turno.
+  - Guerreiro com XP 9 após turno: 9 + 0,70 = 9,70 XP (PE sem mudança).
+
 - Teste de estado:
   - Tropa EM_VIAGEM_IDA → membros não ganham XP.
   - Tropa AQUARTELADA → membros ganham XP.

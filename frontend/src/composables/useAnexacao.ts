@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { get, post } from '../api/http'
 import type { Estoque } from './useEstoque'
+import type { TerrenoDaRegiao } from '../domain/terrenos'
 import type { TipoRegiao } from './useMapa'
 
 export interface CustoAnexacao {
@@ -10,7 +11,7 @@ export interface CustoAnexacao {
 }
 
 export interface ResultadoAnexacao {
-  regiao: { indice: number; tipo: TipoRegiao; possuida: boolean }
+  regiao: { indice: number; tipo: TipoRegiao; possuida: boolean; terrenos: TerrenoDaRegiao[] }
   estoque: Record<string, number>
   custo: CustoAnexacao
 }

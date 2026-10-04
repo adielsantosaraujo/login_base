@@ -23,12 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
-import com.example.loginbase.jogo.modelo.Jazida;
-import com.example.loginbase.jogo.modelo.LadrilhoJazida;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.Regiao;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 
@@ -41,7 +41,7 @@ class MarcacaoIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired VerificadorOcupacaoLadrilhos verificador;
 
@@ -68,13 +68,13 @@ class MarcacaoIntegrationTest {
 		regiaoRepository.flush();
 		// Floresta em linha y=0 (x 0..9) e em y=1 (x 0..5); rocha em (5,5).
 		for (int x = 0; x < 10; x++) {
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 0, Jazida.FLORESTA));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 0, TipoTerreno.FLORESTA, 0, 0));
 		}
 		for (int x = 0; x < 6; x++) {
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 1, Jazida.FLORESTA));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 1, TipoTerreno.FLORESTA, 0, 0));
 		}
-		ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), 5, 5, Jazida.ROCHA));
-		ladrilhoJazidaRepository.flush();
+		ladrilhoRepository.save(new Ladrilho(regiao.getId(), 5, 5, TipoTerreno.ROCHA, 0, 0));
+		ladrilhoRepository.flush();
 		lenhador = construir(TipoConstrucao.ACAMPAMENTO_LENHADORES, 3, 3);
 	}
 
@@ -117,7 +117,7 @@ class MarcacaoIntegrationTest {
 	}
 
 	@Test
-	void marcarJazidaCompativelConectada() throws Exception {
+	void marcarTerrenoCompativelConectado() throws Exception {
 		Construcao c = lenhadorPerto();
 		marcar(usuario, c.getId(), 0, 1).andExpect(status().isCreated())
 				.andExpect(jsonPath("$.x").value(0)).andExpect(jsonPath("$.y").value(1));
@@ -128,12 +128,23 @@ class MarcacaoIntegrationTest {
 	}
 
 	@Test
-	void rejeitaJazidaErrada() throws Exception {
+	void rejeitaTerrenoErrado() throws Exception {
 		Construcao c = lenhadorPerto();
-		ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), 1, 2, Jazida.ROCHA));
+		ladrilhoRepository.save(new Ladrilho(regiao.getId(), 1, 2, TipoTerreno.ROCHA, 0, 0));
 		marcar(usuario, c.getId(), 1, 2).andExpect(status().isBadRequest());
-		// ladrilho sem jazida
+		// ladrilho de terreno incompatível
 		marcar(usuario, c.getId(), 0, 3).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void pedreiraEmFerroRejeitadaEmRochaAceita() throws Exception {
+		Construcao p = construir(TipoConstrucao.PEDREIRA, 7, 5);
+		ladrilhoRepository.save(new Ladrilho(regiao.getId(), 7, 4, TipoTerreno.FERRO, 0, 0));
+		ladrilhoRepository.save(new Ladrilho(regiao.getId(), 6, 5, TipoTerreno.ROCHA, 0, 0));
+		ladrilhoRepository.flush();
+		marcar(usuario, p.getId(), 7, 4).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.erro").value("Ladrilho sem o terreno do prédio (Rocha)"));
+		marcar(usuario, p.getId(), 6, 5).andExpect(status().isCreated());
 	}
 
 	@Test

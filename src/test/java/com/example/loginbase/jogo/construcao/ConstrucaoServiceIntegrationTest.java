@@ -36,7 +36,7 @@ class ConstrucaoServiceIntegrationTest {
 	@Autowired EstoqueService estoqueService;
 	@Autowired VerificadorOcupacaoLadrilhos verificador;
 
-	/** Regiões 1 (URBANA) e 2 (PLANICIE) possuídas; as demais não. */
+	/** Regiões 1 (URBANA), 2 (PLANICIE) e 3 (LITORAL) possuídas; as demais não. */
 	private Vila vila(String madeira, String pedra, String argila) {
 		Usuario u = new Usuario();
 		u.setNome("Jogador");
@@ -46,9 +46,9 @@ class ConstrucaoServiceIntegrationTest {
 		Vila vila = vilaRepository.saveAndFlush(new Vila(u.getId(), "Vila", 42L, 1));
 		for (int i = 1; i <= 16; i++) {
 			Regiao r = new Regiao(vila.getId(), i);
-			if (i <= 2) {
+			if (i <= 3) {
 				r.setPossuida(true);
-				r.setTipo(i == 1 ? TipoRegiao.URBANA : TipoRegiao.PLANICIE);
+				r.setTipo(i == 1 ? TipoRegiao.URBANA : i == 2 ? TipoRegiao.PLANICIE : TipoRegiao.LITORAL);
 			}
 			regiaoRepository.save(r);
 		}
@@ -80,6 +80,24 @@ class ConstrucaoServiceIntegrationTest {
 		Vila vila = vila("100", "100", "100");
 		assertThatThrownBy(() -> service.criar(vila, TipoConstrucao.QUARTEL, 2, 0, 0))
 				.isInstanceOf(JogoException.class).hasMessageContaining("região");
+	}
+
+	@Test
+	void quartelNoLitoralCriado() {
+		Vila vila = vila("100", "100", "100");
+		estoqueService.creditar(vila, Recurso.TABUA, new BigDecimal("100"));
+		estoqueService.creditar(vila, Recurso.FERRO, new BigDecimal("100"));
+		Construcao c = service.criar(vila, TipoConstrucao.QUARTEL, 3, 0, 0);
+		assertThat(c.getEstado()).isEqualTo(EstadoConstrucao.EM_OBRA);
+		assertThat(c.getRegiaoIndice()).isEqualTo(3);
+	}
+
+	@Test
+	void quartelNaPlanicieRejeitadoComMensagemExata() {
+		Vila vila = vila("100", "100", "100");
+		assertThatThrownBy(() -> service.criar(vila, TipoConstrucao.QUARTEL, 2, 0, 0))
+				.isInstanceOf(JogoException.class)
+				.hasMessage("Quartel só pode ser construído em região Urbana ou Litoral");
 	}
 
 	@Test

@@ -17,9 +17,9 @@ import com.example.loginbase.jogo.construcao.Construcao;
 import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.servico.BonusRegiaoService;
+import com.example.loginbase.jogo.servico.BonusTerrenoService;
+import com.example.loginbase.jogo.servico.GrupoBonusVila;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -34,6 +34,7 @@ public class OuroService {
 	public static final int IDADE_IMPOSTO_ANOS = 18;
 	static final BigDecimal IMPOSTO_POR_ADULTO = new BigDecimal("0.5");
 	static final BigDecimal OURO_POR_REFEICAO = BigDecimal.valueOf(4);
+	private static final BigDecimal CEM = BigDecimal.valueOf(100);
 	static final int REFEICOES_POR_EFICIENCIA = 5;
 
 	private final CidadaoRepository cidadaoRepository;
@@ -41,48 +42,47 @@ public class OuroService {
 	private final ConsultaTrabalhadores consultaTrabalhadores;
 	private final EstoqueService estoqueService;
 	private final RegistroEventoTurnoService registro;
-	private final BonusRegiaoService bonusRegiaoService;
+	private final BonusTerrenoService bonusTerrenoService;
 
 	public OuroService(CidadaoRepository cidadaoRepository, ConstrucaoRepository construcaoRepository,
 			ConsultaTrabalhadores consultaTrabalhadores, EstoqueService estoqueService,
-			RegistroEventoTurnoService registro, BonusRegiaoService bonusRegiaoService) {
+			RegistroEventoTurnoService registro, BonusTerrenoService bonusTerrenoService) {
 		this.cidadaoRepository = cidadaoRepository;
 		this.construcaoRepository = construcaoRepository;
 		this.consultaTrabalhadores = consultaTrabalhadores;
 		this.estoqueService = estoqueService;
 		this.registro = registro;
-		this.bonusRegiaoService = bonusRegiaoService;
+		this.bonusTerrenoService = bonusTerrenoService;
 	}
 
 	@Transactional
 	public void processarOuroPassivo(Vila vila, int turno) {
-		cobrarImposto(vila, turno);
-		receitaEstalagens(vila, turno);
+		BigDecimal media = bonusTerrenoService.media(vila.getId(), GrupoBonusVila.COMERCIO);
+		BigDecimal fator = BigDecimal.ONE.add(media.divide(CEM, 4, RoundingMode.HALF_UP));
+		cobrarImposto(vila, turno, media, fator);
+		receitaEstalagens(vila, turno, media, fator);
 	}
 
-	private void cobrarImposto(Vila vila, int turno) {
+	private void cobrarImposto(Vila vila, int turno, BigDecimal media, BigDecimal fator) {
 		long adultos = cidadaoRepository.findByVilaIdAndVivoTrue(vila.getId()).stream()
 				.filter(c -> c.getIdadeAnos() >= IDADE_IMPOSTO_ANOS).count();
-		int bonus = bonusRegiaoService.bonus(vila.getId(), BonusRegiao.COMERCIO);
-		BigDecimal ouro = IMPOSTO_POR_ADULTO.multiply(BigDecimal.valueOf(adultos))
-				.multiply(bonusRegiaoService.fator(vila.getId(), BonusRegiao.COMERCIO)).setScale(2, RoundingMode.HALF_UP);
+		BigDecimal ouro = IMPOSTO_POR_ADULTO.multiply(BigDecimal.valueOf(adultos)).multiply(fator)
+				.setScale(2, RoundingMode.HALF_UP);
 		if (ouro.signum() > 0) {
 			estoqueService.creditar(vila, Recurso.OURO, ouro);
 		}
 		Map<String, Object> dados = new LinkedHashMap<>();
 		dados.put("adultos", adultos);
 		dados.put("ouro", ouro);
-		if (bonus > 0) {
-			dados.put("bonusRegiao", bonus);
+		if (media.signum() > 0) {
+			dados.put("bonusTerreno", media.setScale(2, RoundingMode.HALF_UP));
 		}
 		registro.registrar(vila, turno, TipoEventoTurno.IMPOSTO_COBRADO,
 				"Imposto: " + ouro.setScale(2, RoundingMode.HALF_UP).toPlainString() + " Ouro de " + adultos
 						+ " adulto(s).", dados);
 	}
 
-	private void receitaEstalagens(Vila vila, int turno) {
-		int bonus = bonusRegiaoService.bonus(vila.getId(), BonusRegiao.COMERCIO);
-		BigDecimal fator = bonusRegiaoService.fator(vila.getId(), BonusRegiao.COMERCIO);
+	private void receitaEstalagens(Vila vila, int turno, BigDecimal media, BigDecimal fator) {
 		List<Construcao> estalagens = construcaoRepository.findByVilaIdAndEstado(vila.getId(), EstadoConstrucao.ATIVA)
 				.stream().filter(c -> c.getTipo() == TipoConstrucao.ESTALAGEM)
 				.sorted(java.util.Comparator.comparing(Construcao::getId)).toList();
@@ -109,8 +109,8 @@ public class OuroService {
 			dados.put("capacidade", capacidade);
 			dados.put("refeicoesServidas", servidas);
 			dados.put("ouro", ouro);
-			if (bonus > 0) {
-				dados.put("bonusRegiao", bonus);
+			if (media.signum() > 0) {
+				dados.put("bonusTerreno", media.setScale(2, RoundingMode.HALF_UP));
 			}
 			registro.registrar(vila, turno, TipoEventoTurno.ESTALAGEM_RECEITA,
 					"Estalagem serviu " + servidas + " refeição(ões) e gerou "

@@ -1,23 +1,24 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import SelecaoPainel from './SelecaoPainel.vue'
-import { totaisBonus, type RegiaoPrevia } from '../../domain/regioes'
+import type { RegiaoPrevia } from '../../domain/regioes'
+import { totaisLadrilhos } from '../../domain/terrenos'
 
 const regioes: RegiaoPrevia[] = [
-  { indice: 6, tipo: 'URBANA', bonus: [
-    { bonus: 'COMERCIO', posicao: 1, valor: 47 },
-    { bonus: 'INDUSTRIA', posicao: 2, valor: 30 },
-    { bonus: 'DESENVOLVIMENTO', posicao: 3, valor: 12 },
+  { indice: 6, tipo: 'URBANA', terrenos: [
+    { terreno: 'INDUSTRIA', posicao: 1, percentual: 45 },
+    { terreno: 'COMERCIO', posicao: 2, percentual: 30 },
+    { terreno: 'DESENVOLVIMENTO', posicao: 3, percentual: 25 },
   ] },
-  { indice: 7, tipo: 'LITORAL', bonus: [
-    { bonus: 'SALINAS', posicao: 1, valor: 38 },
-    { bonus: 'MILITAR', posicao: 2, valor: 20 },
-    { bonus: 'ENXOFRE', posicao: 3, valor: 6 },
+  { indice: 7, tipo: 'LITORAL', terrenos: [
+    { terreno: 'SALINAS', posicao: 1, percentual: 40 },
+    { terreno: 'MILITAR', posicao: 2, percentual: 35 },
+    { terreno: 'ENXOFRE', posicao: 3, percentual: 25 },
   ] },
-  { indice: 10, tipo: 'PLANICIE', bonus: [
-    { bonus: 'CRIACOES', posicao: 1, valor: 41 },
-    { bonus: 'FLORESTA', posicao: 2, valor: 25 },
-    { bonus: 'PLANTACOES', posicao: 3, valor: 14 },
+  { indice: 10, tipo: 'PLANICIE', terrenos: [
+    { terreno: 'CRIACOES', posicao: 1, percentual: 40 },
+    { terreno: 'FLORESTA', posicao: 2, percentual: 35 },
+    { terreno: 'PLANTACOES', posicao: 3, percentual: 25 },
   ] },
 ]
 
@@ -26,7 +27,7 @@ function montar(selecionadas: number[], extra: Record<string, unknown> = {}) {
     props: {
       selecionadas,
       regioes,
-      totais: totaisBonus(selecionadas, regioes),
+      totais: totaisLadrilhos(selecionadas, regioes),
       conectado: true,
       valida: selecionadas.length === 3,
       enviando: false,
@@ -46,14 +47,20 @@ describe('SelecaoPainel', () => {
     expect(slots[1].text()).toContain('VAZIO')
   })
 
-  it('soma os bônus e esmaece os zerados', () => {
+  it('lista ladrilhos por terreno em ordem decrescente, só com total > 0', () => {
     const w = montar([6, 7, 10])
-    expect(w.get('[data-testid="bonus-COMERCIO"]').text()).toContain('47')
-    expect(w.get('[data-testid="bonus-CRIACOES"]').text()).toContain('41')
-    expect(w.get('[data-testid="bonus-ROCHA"]').classes()).toContain('esmaecido')
-    expect(w.get('[data-testid="bonus-COMERCIO"]').classes()).not.toContain('esmaecido')
-    const nomes = w.findAll('[data-testid^="bonus-"] .bl-nome').map((n) => n.text())
-    expect(nomes.slice(0, 3)).toEqual(['Comércio', 'Criações', 'Salinas'])
+    expect(w.get('[data-testid="terreno-INDUSTRIA"]').text()).toContain('45')
+    expect(w.get('[data-testid="terreno-CRIACOES"]').text()).toContain('40')
+    expect(w.find('[data-testid="terreno-ROCHA"]').exists()).toBe(false)
+    expect(w.find('[data-testid="ladrilhos-vazio"]').exists()).toBe(false)
+    const nomes = w.findAll('[data-testid^="terreno-"] .lt-nome').map((n) => n.text())
+    expect(nomes.slice(0, 3)).toEqual(['In Indústria', 'Cr Criações', 'Sa Salinas'])
+  })
+
+  it('sem seleção mostra a mensagem de painel vazio', () => {
+    const w = montar([])
+    expect(w.get('[data-testid="ladrilhos-vazio"]').text()).toBe('Selecione regiões para ver os ladrilhos')
+    expect(w.find('[data-testid^="terreno-"]').exists()).toBe(false)
   })
 
   it('checklist reflete a seleção sem Urbana', () => {

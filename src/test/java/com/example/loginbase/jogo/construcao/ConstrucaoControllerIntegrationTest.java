@@ -23,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.Regiao;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
@@ -40,6 +42,7 @@ class ConstrucaoControllerIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
+	@Autowired com.example.loginbase.jogo.repositorio.LadrilhoRepository ladrilhoRepository;
 	@Autowired EstoqueService estoqueService;
 
 	private Usuario usuarioComVila(String madeira) {
@@ -55,7 +58,10 @@ class ConstrucaoControllerIntegrationTest {
 				r.setPossuida(true);
 				r.setTipo(i == 1 ? TipoRegiao.URBANA : i == 2 ? TipoRegiao.FLORESTA : TipoRegiao.MONTANHA);
 			}
-			regiaoRepository.save(r);
+			r = regiaoRepository.save(r);
+			if (i == 1) {
+				ladrilhoRepository.save(new Ladrilho(r.getId(), 2, 3, TipoTerreno.DESENVOLVIMENTO, 0, 0));
+			}
 		}
 		regiaoRepository.flush();
 		estoqueService.inicializar(vila, Map.of(Recurso.MADEIRA, new BigDecimal(madeira),
@@ -129,10 +135,10 @@ class ConstrucaoControllerIntegrationTest {
 				.andExpect(jsonPath("$", hasSize(TipoConstrucao.values().length)))
 				.andExpect(jsonPath("$[?(@.tipo=='CASA')].custoN1.MADEIRA").value(20))
 				.andExpect(jsonPath("$[?(@.tipo=='CASA')].regioes[*]").value(org.hamcrest.Matchers.contains("URBANA")))
-				.andExpect(jsonPath("$[?(@.tipo=='CASA')].bonusRegiao").value(org.hamcrest.Matchers.contains((Object) null)))
+				.andExpect(jsonPath("$[?(@.tipo=='CASA')].terreno").value(org.hamcrest.Matchers.contains("DESENVOLVIMENTO")))
 				.andExpect(jsonPath("$[?(@.tipo=='FAZENDA_PLANTIO')].regioes[*]")
 						.value(org.hamcrest.Matchers.contains("FLORESTA", "PLANICIE")))
-				.andExpect(jsonPath("$[?(@.tipo=='FAZENDA_PLANTIO')].bonusRegiao").value(org.hamcrest.Matchers.contains("PLANTACOES")));
+				.andExpect(jsonPath("$[?(@.tipo=='FAZENDA_PLANTIO')].terreno").value(org.hamcrest.Matchers.contains("PLANTACOES")));
 	}
 
 }

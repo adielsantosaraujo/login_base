@@ -4,7 +4,7 @@
 
 ## Objetivo
 
-Implementar tela de construção exibindo a grade 10x10 da região (ladrilhos com jazidas/prédios/marcações), painel de seleção de prédio com custos, validações visuais e botão de confirmação.
+Implementar tela de construção exibindo a grade 10x10 da região (ladrilhos com tipos de terreno/prédios/marcações), painel de seleção de prédio com custos, validações visuais e botão de confirmação.
 
 ## Contexto necessário
 
@@ -23,7 +23,8 @@ Não se aplica.
 
 - **Componente `GradeRegiao.vue`**:
   - Grid 10x10 com células clicáveis.
-  - Cada célula mostra: jazida (ícone), prédio (ícone + nível), ou vazio.
+  - Cada célula mostra: endereço (A,1) acima da sigla de 2 letras do terreno, com a cor do terreno; prédio (ícone + nível), ou vazio.
+  - Tooltip com endereço, terreno, bonus_base, bonus_adjacente, bonus_total.
   - Célula N1 ocupa 1 quadrado; N2 ocupa 2×2; N3 ocupa 3×3 (visual).
   - Click em célula vazia → abre `SeletorConstrucao.vue`.
 
@@ -32,6 +33,7 @@ Não se aplica.
   - Cada item: nome, custos (ícones Madeira/Pedra/...), PO, vagas.
   - Aba para filtrar: Todos, Floresta, Planície, Urbana, Litoral, Montanha.
   - Click em prédio → exibe preview e botão "Construir".
+  - Indicar se o ladrilho escolhido dá bônus ao prédio (o terreno bate).
 
 - **Validações visuais**:
   - Prédio não permitido nesta região → desabilitado (ícone X).

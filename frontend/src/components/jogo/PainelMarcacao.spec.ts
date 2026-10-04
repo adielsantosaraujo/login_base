@@ -31,9 +31,9 @@ describe('PainelMarcacao', () => {
         return {
           regiao: { id: 3, indice: 3, tipo: 'MONTANHA', possuida: true },
           ladrilhos: [
-            { x: 2, y: 0, jazida: 'ROCHA', construcao: null },
-            { x: 3, y: 0, jazida: 'ROCHA', construcao: null },
-            { x: 0, y: 2, jazida: 'ROCHA', construcao: null },
+            { x: 2, y: 0, terreno: 'ROCHA', bonusBase: 0, bonusAdjacente: 0, bonusTotal: 0, construcao: null },
+            { x: 3, y: 0, terreno: 'ROCHA', bonusBase: 0, bonusAdjacente: 0, bonusTotal: 0, construcao: null },
+            { x: 0, y: 2, terreno: 'ROCHA', bonusBase: 0, bonusAdjacente: 0, bonusTotal: 0, construcao: null },
           ],
         }
       throw new Error('url inesperada ' + url)

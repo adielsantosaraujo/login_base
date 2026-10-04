@@ -26,12 +26,12 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
@@ -50,7 +50,7 @@ class OuroServiceIntegrationTest {
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired EstoqueService estoqueService;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired OuroService servico;
 	@Autowired EtapaOuroPassivo etapa;
 	@Autowired EventoTurnoRepository eventoRepository;
@@ -203,28 +203,65 @@ class OuroServiceIntegrationTest {
 		assertThat(eventos(TipoEventoTurno.ESTALAGEM_RECEITA)).isZero();
 	}
 
-	private void comercio(int valor) {
-		Regiao r = new Regiao(vila.getId(), 6);
-		r.setTipo(TipoRegiao.URBANA);
-		r.setPossuida(true);
-		r = regiaoRepository.saveAndFlush(r);
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.COMERCIO, 1, valor));
+	private Regiao regiaoComercio;
+
+	/** Cria um prédio de Comércio com âncora em ladrilho Comércio de bônus total dado. */
+	private Construcao predioComAncora(TipoConstrucao tipo, int total, TipoTerreno terreno) {
+		if (regiaoComercio == null) {
+			Regiao r = new Regiao(vila.getId(), 6);
+			r.setTipo(TipoRegiao.URBANA);
+			r.setPossuida(true);
+			regiaoComercio = regiaoRepository.saveAndFlush(r);
+		}
+		int x = seq++;
+		ladrilhoRepository.saveAndFlush(new Ladrilho(regiaoComercio.getId(), x, 0, terreno, total, 0));
+		Construcao c = new Construcao();
+		c.setVilaId(vila.getId());
+		c.setTipo(tipo);
+		c.setNivel(NivelConstrucao.N1);
+		c.setRegiaoIndice(6);
+		c.setX(x);
+		c.setY(0);
+		c.setTamanho(1);
+		c.setEstado(EstadoConstrucao.ATIVA);
+		c.setPoTotal(4);
+		c.setPoAtual(4);
+		return construcaoRepository.saveAndFlush(c);
 	}
 
 	@Test
-	void impostoComBonusComercio() {
+	void impostoComMediaMercadoEEstalagem() {
 		preparar("0");
-		comercio(47);
+		predioComAncora(TipoConstrucao.MERCADO, 45, TipoTerreno.COMERCIO);
+		predioComAncora(TipoConstrucao.ESTALAGEM, 55, TipoTerreno.COMERCIO); // média 50
 		for (int i = 0; i < 16; i++) cidadao(30);
 		servico.processarOuroPassivo(vila, 1);
-		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("11.76");
+		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("12.00");
+	}
+
+	@Test
+	void mercadoForaDoTerrenoNaoEntraNaMedia() {
+		preparar("0");
+		predioComAncora(TipoConstrucao.MERCADO, 45, TipoTerreno.PLANTACOES);
+		predioComAncora(TipoConstrucao.ESTALAGEM, 55, TipoTerreno.COMERCIO); // média 55
+		for (int i = 0; i < 16; i++) cidadao(30);
+		servico.processarOuroPassivo(vila, 1);
+		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("12.40"); // 8 x 1,55
+	}
+
+	@Test
+	void semPrediosNaoHaBonus() {
+		preparar("0");
+		for (int i = 0; i < 16; i++) cidadao(30);
+		servico.processarOuroPassivo(vila, 1);
+		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("8");
 	}
 
 	@Test
 	void estalagemComBonusComercioMantemRefeicoesServidas() {
 		preparar("5");
-		comercio(50);
-		cozinheiro(estalagem(NivelConstrucao.N1), 5); // 5 refeições x 4 x 1,5 = 30 + imposto 0,5 x 1,5 = 0,75
+		Construcao e = predioComAncora(TipoConstrucao.ESTALAGEM, 50, TipoTerreno.COMERCIO);
+		cozinheiro(e, 5); // 5 refeições x 4 x 1,5 = 30 + imposto 0,5 x 1,5 = 0,75
 		servico.processarOuroPassivo(vila, 1);
 		assertThat(qtd(Recurso.REFEICAO)).isEqualByComparingTo("0");
 		assertThat(qtd(Recurso.OURO)).isEqualByComparingTo("30.75");

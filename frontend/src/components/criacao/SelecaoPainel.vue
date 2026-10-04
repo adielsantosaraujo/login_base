@@ -2,22 +2,21 @@
 import { computed } from 'vue'
 import BotaoCta from '../vilarejo/BotaoCta.vue'
 import ChecklistItem from '../vilarejo/ChecklistItem.vue'
-import BonusLista from './BonusLista.vue'
+import ListaTerrenos from './ListaTerrenos.vue'
 import RegiaoFoco from './RegiaoFoco.vue'
 import {
-  BONUS,
   ROTULO_TIPO,
   TAMANHO_SELECAO,
   COR_TIPO,
   temUrbana,
-  type BonusRegiao,
   type RegiaoPrevia,
 } from '../../domain/regioes'
+import { TERRENOS, type TipoTerreno } from '../../domain/terrenos'
 
 const props = defineProps<{
   selecionadas: number[]
   regioes: RegiaoPrevia[]
-  totais: Record<BonusRegiao, number>
+  totais: Record<TipoTerreno, number>
   conectado: boolean
   valida: boolean
   enviando: boolean
@@ -32,7 +31,12 @@ const slots = computed(() =>
     return regiao ?? null
   }),
 )
-const itens = computed(() => BONUS.map((b) => ({ bonus: b, valor: props.totais[b] ?? 0 })).sort((a, b) => b.valor - a.valor))
+const itens = computed(() =>
+  TERRENOS.map((t) => ({ terreno: t, valor: props.totais[t] ?? 0 }))
+    .filter((i) => i.valor > 0)
+    .sort((a, b) => b.valor - a.valor),
+)
+const maximo = computed(() => Math.max(100, ...itens.value.map((i) => i.valor)))
 const regiaoFoco = computed(() => props.regioes.find((r) => r.indice === props.emFoco) ?? null)
 const completa = computed(() => props.selecionadas.length === TAMANHO_SELECAO)
 const urbana = computed(() => temUrbana(props.selecionadas, props.regioes))
@@ -64,9 +68,10 @@ const urbana = computed(() => temUrbana(props.selecionadas, props.regioes))
       <ChecklistItem :estado="urbana ? 'ok' : 'pendente'" texto="Ao menos 1 Urbana" />
     </ul>
 
-    <section aria-label="Bônus de região">
-      <h3 class="sp-subtitulo">Bônus de região <small>soma das regiões</small></h3>
-      <BonusLista :itens="itens" :maximo="150" espessura="normal" />
+    <section aria-label="Ladrilhos por terreno">
+      <h3 class="sp-subtitulo">Ladrilhos por terreno <small>soma das regiões escolhidas</small></h3>
+      <ListaTerrenos v-if="itens.length > 0" :itens="itens" :maximo="maximo" espessura="normal" />
+      <p v-else class="sp-vazio" data-testid="ladrilhos-vazio">Selecione regiões para ver os ladrilhos</p>
     </section>
 
     <BotaoCta
@@ -154,6 +159,11 @@ const urbana = computed(() => temUrbana(props.selecionadas, props.regioes))
 .sp-subtitulo {
   margin: 0 0 10px;
   font-size: 13px;
+}
+.sp-vazio {
+  margin: 0;
+  font-size: 13px;
+  color: var(--vl-text-3);
 }
 .sp-subtitulo small {
   color: var(--vl-text-3);

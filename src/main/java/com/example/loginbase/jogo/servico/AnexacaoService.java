@@ -24,7 +24,6 @@ import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
 import com.example.loginbase.jogo.repositorio.JogoTurnoRepository;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
@@ -41,26 +40,22 @@ public class AnexacaoService {
 	private static final int K_MINIMO = 3;
 
 	private final RegiaoRepository regiaoRepository;
-	private final LadrilhoJazidaRepository ladrilhoJazidaRepository;
-	private final GeradorJazidaService geradorJazida;
 	private final ConsultaMasmorras consultaMasmorras;
 	private final EstoqueService estoqueService;
 	private final RegistroEventoTurnoService registroEventoTurno;
 	private final JogoTurnoRepository turnoRepository;
-	private final BonusRegiaoService bonusRegiaoService;
+	private final TerrenoRegiaoService terrenoRegiaoService;
 
-	public AnexacaoService(RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository,
-			GeradorJazidaService geradorJazida, ConsultaMasmorras consultaMasmorras, EstoqueService estoqueService,
+	public AnexacaoService(RegiaoRepository regiaoRepository,
+			ConsultaMasmorras consultaMasmorras, EstoqueService estoqueService,
 			RegistroEventoTurnoService registroEventoTurno, JogoTurnoRepository turnoRepository,
-			BonusRegiaoService bonusRegiaoService) {
+			TerrenoRegiaoService terrenoRegiaoService) {
 		this.regiaoRepository = regiaoRepository;
-		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
-		this.geradorJazida = geradorJazida;
 		this.consultaMasmorras = consultaMasmorras;
 		this.estoqueService = estoqueService;
 		this.registroEventoTurno = registroEventoTurno;
 		this.turnoRepository = turnoRepository;
-		this.bonusRegiaoService = bonusRegiaoService;
+		this.terrenoRegiaoService = terrenoRegiaoService;
 	}
 
 	/** Custo para o k informado (k &lt; 3 é tratado como 3); arredondamento meio para cima. */
@@ -117,10 +112,7 @@ public class AnexacaoService {
 		regiao.setPossuida(true);
 		regiao = regiaoRepository.saveAndFlush(regiao);
 
-		if (tipo != TipoRegiao.URBANA && ladrilhoJazidaRepository.findAllByRegiaoId(regiao.getId()).isEmpty()) {
-			ladrilhoJazidaRepository
-					.saveAll(geradorJazida.gerarLadrilhos(vila.getSemente(), indiceRegiao, regiao.getId()));
-		}
+		terrenoRegiaoService.gerarLadrilhosSeAusentes(vila.getSemente(), regiao);
 
 		int turno = turnoRepository.maiorNumero();
 		registroEventoTurno.registrar(vila, turno, TipoEventoTurno.REGIAO_ANEXADA,
@@ -129,7 +121,7 @@ public class AnexacaoService {
 						"pedra", custo.pedra()));
 
 		return new AnexacaoDTO(new RegiaoAnexadaDTO(indiceRegiao, tipo, true,
-				bonusRegiaoService.bonusDasRegioes(List.of(regiao.getId())).getOrDefault(regiao.getId(), List.of())), estoqueService.listar(vila), custo);
+				terrenoRegiaoService.terrenosDaRegiao(regiao.getId())), estoqueService.listar(vila), custo);
 	}
 
 	private int contarPossuidas(Vila vila) {

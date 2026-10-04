@@ -11,6 +11,8 @@ Implementar a produção de fábricas (Serraria, Olaria, Fundição, Tecelagem, 
 
 - [../producao.md#números-e-tabelas](../producao.md#números-e-tabelas) — tabela de receitas e ciclos
   > Ex.: Serraria (2 Madeira → 1 Tábua, 3 ciclos/turno); Cozinha (2 Grãos + 1 Carne → 5 Refeição, 2 ciclos/turno).
+  > **Ciclos executados por fábrica:** Σ(eficiência × ciclos_base × mult. nível) × fator de indústria.
+  > **Fator de indústria:** 1 + (bonus_total da âncora ÷ 100) se a âncora estiver em ladrilho Indústria; senão 1,0.
 
 - Seção 2.2 da bíblia — passo 1, ordem: Serraria → Olaria → Fundição → Tecelagem → Curtume → Cozinha.
 
@@ -35,7 +37,8 @@ Implementar a produção de fábricas (Serraria, Olaria, Fundição, Tecelagem, 
   - `CatalogoFabricas` com: tipo → (profissão, insumo[], produto[], ciclos_base)
 
 - **Testes**
-  - `testSerrariaN1()`: 1 Madeireiro eficiência 1,0, 6 Madeira → 3 ciclos × 1 = 3 Tábuas produzidas, 6 Madeira consumidas
+  - `testSerrariaN1()`: 1 Madeireiro eficiência 1,0, 6 Madeira → 3 ciclos × 1,0 (fator) = 3 Tábuas, 6 Madeira consumidas
+  - `testSerrariaN1ComFatorIndustria()`: Serraria âncora em Indústria, bonus_total 50, 1 Madeireiro eficiência 1,0 → 3 × (1 + 50÷100) = 3 × 1,5 = **4,5 ciclos** (arredondados para 4 ciclos completos, ou mantém 4,5 se aceitar ciclos fracionários), 9 Madeira consumidas para 4,5 Tábuas
   - `testOlariaSemInsumo()`: Olaria com 1 Argila (precisa 2 por ciclo) → 0 ciclos, 1 Argila permanece
   - `testFundaoN2Aco()`: Fundição N2 com 4 Ferro + Carvão/Enxofre suficientes → 2 ciclos de Aço se configurado
   - `testCozinhaMultiplosCiclos()`: Cozinha com 10 Grãos + 5 Carne → 2 × 5 Refeição = 10 Refeição

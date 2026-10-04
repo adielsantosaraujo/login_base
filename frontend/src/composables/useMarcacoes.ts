@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { del, get, post } from '../api/http'
+import type { TipoTerreno } from '../domain/terrenos'
 import type { Ladrilho, RegiaoDetalhe } from './useMapa'
 
 export interface Marcacao {
@@ -20,15 +21,15 @@ export interface PredioMarcacao {
   estado: string
 }
 
-/** Jazida exigida por cada prédio de coleta. */
-export const JAZIDA_POR_TIPO: Record<string, string> = {
+/** Terreno exigido por cada prédio de coleta. */
+export const TERRENO_POR_TIPO: Record<string, TipoTerreno> = {
   ACAMPAMENTO_LENHADORES: 'FLORESTA',
   CABANA_CACA: 'FLORESTA',
   PEDREIRA: 'ROCHA',
   BARREIRO: 'BARREIRO',
-  MINA_FERRO: 'VEIO_DE_FERRO',
-  MINA_CARVAO: 'VEIO_DE_CARVAO',
-  SALINA: 'SALINA',
+  MINA_FERRO: 'FERRO',
+  MINA_CARVAO: 'CARVAO',
+  SALINA: 'SALINAS',
   MINA_ENXOFRE: 'ENXOFRE',
 }
 
@@ -48,17 +49,17 @@ export function useMarcacoes() {
 
   const maximo = computed(() => limiteMarcacoes(predio.value?.nivel))
   const usado = computed(() => marcacoes.value.length)
-  const jazida = computed(() => (predio.value ? (JAZIDA_POR_TIPO[predio.value.tipo] ?? null) : null))
+  const terreno = computed(() => (predio.value ? (TERRENO_POR_TIPO[predio.value.tipo] ?? null) : null))
 
   function ocupadoPorPredio(x: number, y: number): boolean {
     const p = predio.value
     return !!p && x >= p.x && x < p.x + p.tamanho && y >= p.y && y < p.y + p.tamanho
   }
 
-  /** Ladrilhos com a jazida do prédio, livres e ortogonalmente adjacentes ao prédio/marcados. */
+  /** Ladrilhos com o terreno do prédio, livres e ortogonalmente adjacentes ao prédio/marcados. */
   const candidatos = computed(() => {
     const p = predio.value
-    if (!p || !jazida.value) return []
+    if (!p || !terreno.value) return []
     const conectados = new Set<string>()
     for (let dx = 0; dx < p.tamanho; dx++)
       for (let dy = 0; dy < p.tamanho; dy++) conectados.add(chave(p.x + dx, p.y + dy))
@@ -67,7 +68,7 @@ export function useMarcacoes() {
     return ladrilhos.value
       .filter(
         (l) =>
-          l.jazida === jazida.value &&
+          l.terreno === terreno.value &&
           !l.construcao &&
           !marcados.has(chave(l.x, l.y)) &&
           !ocupadoPorPredio(l.x, l.y) &&
@@ -126,5 +127,5 @@ export function useMarcacoes() {
     }
   }
 
-  return { predio, marcacoes, ladrilhos, carregando, salvando, erro, maximo, usado, jazida, candidatos, carregar, marcar, desmarcar }
+  return { predio, marcacoes, ladrilhos, carregando, salvando, erro, maximo, usado, terreno, candidatos, carregar, marcar, desmarcar }
 }

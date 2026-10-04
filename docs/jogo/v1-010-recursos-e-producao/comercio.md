@@ -14,12 +14,13 @@ O Mercado permite compra e venda de recursos com um mercador NPC. A Estalagem ge
 - R3: Preço de venda = preço base × `min(1,0; 0,5 + 0,02 × PE Comerciante do melhor comerciante)`.
 - R4: Preço de compra = preço base × `max(1,0; 1,5 − 0,02 × PE Comerciante do melhor comerciante)`.
 - R5: Ordens são executadas imediatamente, consumindo o volume do turno corrente.
+- R5b: Bônus Comércio — O Mercado contribui com a sua âncora (bonus_total) para o cálculo do fator de bônus Comércio da vila (fator = 1 + média dos bonus_total das âncoras dos Mercados e Estalagens em ladrilho Comércio ÷ 100), **mas o bônus NÃO afeta o volume ou preço de venda/compra do próprio Mercado**. O fator Comércio multiplica apenas o ouro passivo (Imposto e renda da Estalagem) [req].
 
 ### Estalagem [proposta — seção 4.10 da bíblia]
 - R6: Vagas: Cozinheiros ou Comerciantes (2/5/10).
-- R7: Serve Refeições a viajantes: por turno consome até `5 × Σ eficiência × mult. nível` Refeições e gera **4 Ouro por Refeição** servida, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + bônus ÷ 100), arredondado em 2 casas decimais.
+- R7: Serve Refeições a viajantes: por turno consome até `5 × Σ eficiência × mult. nível` Refeições e gera **4 Ouro por Refeição** servida, multiplicado pelo fator de bônus Comércio da vila (fator = 1 + média dos bonus_total das âncoras dos Mercados e Estalagens em ladrilho Comércio ÷ 100), arredondado em 2 casas decimais.
 - R8: Imigração: a cada turno, chance de `2% × nível` (N1 2%, N2 4%, N3 6%) de chegar um viajante adulto (18–30 anos, 20 pontos de característica e 10 de profissão distribuídos aleatoriamente), se existir núcleo livre em alguma casa; ele vira um núcleo próprio (solteiro).
-- R9: Arredondamento da Estalagem: a capacidade de Refeições por turno é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas. Ex.: capacidade 14,4 → 14 Refeições servidas; com bônus Comércio 47, cada Refeição gera 4 × 1,47 = 5,88 Ouro → 14 × 5,88 = 82,32 Ouro.
+- R9: Arredondamento da Estalagem: a capacidade de Refeições por turno é arredondada para baixo (`floor`) antes de servir; só Refeições inteiras são servidas. Ex.: capacidade 14,4 → 14 Refeições servidas; com Estalagem no terreno Comércio com bonus_total 47, cada Refeição gera 4 × 1,47 = 5,88 Ouro → 14 × 5,88 = 82,32 Ouro.
 
 ## Números e tabelas
 
@@ -91,10 +92,11 @@ Imigrante: adulto (18–30 anos), 20 pontos de característica + 10 de profissã
 
 **Exemplo 4: Estalagem com bônus Comércio**
 - Mesma Estalagem N2 com 14 Refeições servidas
-- Vila tem Comércio 47 → fator = 1 + 47 ÷ 100 = 1,47
+- Média Comércio da vila = 47 (ex.: só esta Estalagem está em ladrilho Comércio, bonus_total 47)
+- Fator = 1 + 47 ÷ 100 = 1,47
 - Ouro por Refeição: 4 × 1,47 = 5,88 Ouro
 - Ouro total no turno: 14 × 5,88 = **82,32 Ouro**
-- Comparação: sem bônus = 56 Ouro
+- Comparação: se nenhum Mercado ou Estalagem estivesse em ladrilho Comércio (fator 1,0) = 56 Ouro
 
 ## Interações com outros domínios
 

@@ -5,12 +5,12 @@
 
 ## Objetivo
 
-Implementar a tela de criação de vila (Vue 3 + PrimeVue, alta fidelidade) conforme handoff. Exibir prévia do mapa (tipos e bônus de cada região), permitir seleção de 3 regiões conexas (≥1 Urbana), validar em tempo real e submeter POST `/vila`.
+Implementar a tela de criação de vila (Vue 3 + PrimeVue, alta fidelidade) conforme handoff. Exibir prévia do mapa (tipos e composição de terrenos de cada região), permitir seleção de 3 regiões conexas (≥1 Urbana), validar em tempo real e submeter POST `/vila`.
 
 ## Contexto necessário
 
 - [/docs/designe/handoff/telas/tela-01-criar-vila.md](/docs/designe/handoff/telas/tela-01-criar-vila.md) — layout completo (seções Mapa, Painel, Card, Estado)
-  > Mapa 4×4, grade com gap 10px, tiles 150px mín, bônus com barras (largura = valor ÷ 50), checklist, botão "Gerar novo mapa", painel "Sua seleção", bônus de região (barras 6px), CTA "Criar vila".
+  > Mapa 4×4, grade com gap 10px, tiles 150px mín, composição de terrenos com barras (largura = percentual ÷ 60, máximo 60%), checklist, botão "Gerar novo mapa", painel "Sua seleção", terrenos de região (barras 6px), CTA "Criar vila".
 
 - [/docs/designe/handoff/api/contratos-api.md](/docs/designe/handoff/api/contratos-api.md) — §1–§3
   > `POST /previa`, `GET /previa`, `POST /vila`; respostas e erros.
@@ -30,7 +30,7 @@ Implementar a tela de criação de vila (Vue 3 + PrimeVue, alta fidelidade) conf
     - `erro: string | null`: mensagem de erro.
   - **Derivados (via `useCriacaoVila`):**
     - `conectado`: estado autenticado.
-    - `totaisBonus`: soma dos 13 bônus das selecionadas.
+    - `totaisLadrilhos`: total de ladrilhos por terreno nas regiões selecionadas.
     - `dicaSelecao`: dica conforme estado (nenhuma, parcial, válida, sem urbana, desconectadas).
     - `valida`: 3 regiões, conectadas, ≥1 Urbana.
     - `emFoco`: região destacada em RegiaoFoco.
@@ -46,35 +46,36 @@ Implementar a tela de criação de vila (Vue 3 + PrimeVue, alta fidelidade) conf
 - [/frontend/src/components/criacao/MapaPrevia.vue](/frontend/src/components/criacao/MapaPrevia.vue) — grade 4×4 com tiles de regiões.
   - Props: `regioes`, `selecionadas`, `podeSelecionar`.
   - Emits: `alternar` (toggle seleção), `foco` (mouseover), `desfoco` (mouseleave).
-  - Exibe cada região com número 01–16, tipo, 3 bônus com barras.
+  - Exibe cada região com número 01–16, tipo, 3 terrenos com percentuais (barras).
   - Estados: normal, hover, selecionado (borda accent + selo), indisponível (opacidade .4).
 
 - [/frontend/src/components/criacao/RegiaoTile.vue](/frontend/src/components/criacao/RegiaoTile.vue) — tile individual.
   - Props: `regiao`, `ordem` (0-15), `disponivel`.
   - Emits: `click`, `mouseenter`, `mouseleave`.
-  - Conteúdo: número formatado (01–16), ícone de tipo, 3 bônus com barras.
+  - Conteúdo: número formatado (01–16), ícone de tipo, 3 terrenos com percentuais (barras, largura = percentual ÷ 60).
 
 - [/frontend/src/components/criacao/RegiaoFoco.vue](/frontend/src/components/criacao/RegiaoFoco.vue) — destaque de região em foco.
   - Props: `regiao`, `hover`.
   - Exibe info expandida de região selecionada ou em hover.
 
 - [/frontend/src/components/criacao/SelecaoPainel.vue](/frontend/src/components/criacao/SelecaoPainel.vue) — painel lateral.
-  - Props: `selecionadas`, `regioes`, `totaisBonus`, `dicaSelecao`, `valida`.
-  - 3 slots de seleção, dica dinâmica, bônus com barras.
+  - Props: `selecionadas`, `regioes`, `totaisLadrilhos`, `dicaSelecao`, `valida`.
+  - 3 slots de seleção, dica dinâmica, terrenos com percentuais (3 valores de percentuais por região selecionada; ex.: "Floresta 40% · Plantações 35% · Barreiro 25%").
+  - Exibe composição % de tipos de terreno por região (distribuição em ladrilhos) e total de ladrilhos por tipo de terreno.
   - Botão "Limpar" (reseta seleção).
   - Botão CTA "Criar vila" (habilitado se `valida`) ou mensagem de validação.
   - Emits: `criar`, `limpar`.
 
-- [/frontend/src/components/criacao/BonusLista.vue](/frontend/src/components/criacao/BonusLista.vue) — lista de bônus com barras.
-  - Props: `itens` (List<{bonus, valor}>), `maximo` (largura da barra), `espessura`.
-  - Renderiza barra proporcional e rótulo.
+- [/frontend/src/components/criacao/ComposicaoTerrenos.vue](/frontend/src/components/criacao/ComposicaoTerrenos.vue) — lista de terrenos com percentuais.
+  - Props: `itens` (List<{terreno, percentual}>), `maximo` (largura da barra = 60), `espessura`.
+  - Renderiza barra proporcional (largura = percentual ÷ 60) e rótulo (ex.: "Floresta 40%").
 
 - [/frontend/src/components/vilarejo/AvisoToast.vue](/frontend/src/components/vilarejo/AvisoToast.vue) — toast de notificações.
   - Exibe sucesso, erro, aviso durante operações assíncronas.
 
 **Serviço/Composable (novo):**
 - [/frontend/src/composables/useVila.ts](/frontend/src/composables/useVila.ts) — gerencia estado e API da vila.
-  - `useCriacaoVila()`: retorna `{ previa, selecionadas, hover, gerando, enviando, erro, conectado, totaisBonus, dicaSelecao, valida, emFoco, podeSelecionar, carregarPrevia, alternar, gerar, criar, setHover, limparHover }`.
+  - `useCriacaoVila()`: retorna `{ previa, selecionadas, hover, gerando, enviando, erro, conectado, totaisLadrilhos, dicaSelecao, valida, emFoco, podeSelecionar, carregarPrevia, alternar, gerar, criar, setHover, limparHover }`.
   - `async carregarPrevia()`: GET `/previa`; se 404, POST `/previa` e repete GET.
   - `async gerar()`: POST `/previa`, limpa seleção.
   - `async criar(previaId, indices)`: POST `/vila`.
@@ -85,8 +86,8 @@ Implementar a tela de criação de vila (Vue 3 + PrimeVue, alta fidelidade) conf
   - `podeSelecionar(indice, selecionadas, regiao)`: valida vizinhança e limite.
   - `temUrbana(indices, previa)`: ≥1 Urbana na seleção.
   - `selecaoValida(indices, previa)`: 3 regiões, ≥1 Urbana.
-  - `totaisBonus(indices, previa)`: mapa de bônus + somas.
-  - `bonusOrdenados(mapa)`: lista dos 13 bônus em ordem.
+  - `totalLadrilhosPorTerreno(indices, previa)`: total de ladrilhos por tipo de terreno (para o painel).
+  - `terrenosOrdenados(mapa)`: lista dos 13 terrenos em ordem.
   - `dicaSelecao(selecionadas, previa, valida)`: mensagem de estado.
 
 **Rota (nova/atualizar):**
@@ -115,8 +116,8 @@ Não se aplica (tudo em tarefa 003).
 - [/frontend/src/components/criacao/RegiaoFoco.spec.ts](/frontend/src/components/criacao/RegiaoFoco.spec.ts) (teste)
 - [/frontend/src/components/criacao/SelecaoPainel.vue](/frontend/src/components/criacao/SelecaoPainel.vue) (novo)
 - [/frontend/src/components/criacao/SelecaoPainel.spec.ts](/frontend/src/components/criacao/SelecaoPainel.spec.ts) (teste)
-- [/frontend/src/components/criacao/BonusLista.vue](/frontend/src/components/criacao/BonusLista.vue) (novo)
-- [/frontend/src/components/criacao/BonusLista.spec.ts](/frontend/src/components/criacao/BonusLista.spec.ts) (teste)
+- [/frontend/src/components/criacao/ComposicaoTerrenos.vue](/frontend/src/components/criacao/ComposicaoTerrenos.vue) (novo)
+- [/frontend/src/components/criacao/ComposicaoTerrenos.spec.ts](/frontend/src/components/criacao/ComposicaoTerrenos.spec.ts) (teste)
 - [/frontend/src/components/vilarejo/AvisoToast.vue](/frontend/src/components/vilarejo/AvisoToast.vue) (novo)
 - [/frontend/src/components/vilarejo/AvisoToast.spec.ts](/frontend/src/components/vilarejo/AvisoToast.spec.ts) (teste)
 - [/frontend/src/composables/useVila.ts](/frontend/src/composables/useVila.ts) (novo)
@@ -133,7 +134,7 @@ Não se aplica (tudo em tarefa 003).
 - **Vizinhança:** região 6 selecionada, clicar 1 (não vizinha) → não entra; clicar 7 (vizinha) → entra.
 - **Conexidade:** selecionar 1, 5, 9 (linha diagonal, desconectadas) → checklist "Vizinhas entre si" = false.
 - **Urbana:** regiões sem Urbana → checklist "Ao menos 1 Urbana" = false; botão desabilitado.
-- **Bônus:** selecionar 6, 7, 10 → `totaisBonus` soma valores; barras renderizam.
+- **Percentuais:** selecionar 6, 7, 10 → `totaisLadrilhos` soma os ladrilhos de cada terreno das regiões; barras renderizam; composição % de terrenos e total de ladrilhos por tipo exibidos.
 - **Gerar novo mapa:** POST `/previa` → `rodada` incrementa; `selecionadas` limpa.
 - **Criar vila válida:** POST `/vila` → 201 → navega `/jogo/distribuir-populacao`.
 - **Erro prévia expirada:** POST com `previaId` antigo → 409 → toast com mensagem; GET `/previa` recarrega.

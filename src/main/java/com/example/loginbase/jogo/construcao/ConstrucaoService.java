@@ -19,7 +19,7 @@ import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.recurso.EstoqueService;
 import com.example.loginbase.jogo.recurso.Recurso;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
-import com.example.loginbase.jogo.servico.GeradorJazidaService;
+import com.example.loginbase.jogo.servico.GeradorLadrilhoService;
 
 /** Criação (início de obra) de construções N1 e consulta. */
 @Service
@@ -61,7 +61,7 @@ public class ConstrucaoService {
 		}
 		NivelConstrucao nivel = NivelConstrucao.N1;
 		int tamanho = ConstrucaoCatalogo.tamanho(nivel);
-		int lado = GeradorJazidaService.LADO;
+		int lado = GeradorLadrilhoService.LADO;
 		if (x < 0 || y < 0 || x + tamanho > lado || y + tamanho > lado) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "Posição fora da região");
 		}
@@ -108,7 +108,7 @@ public class ConstrucaoService {
 		int x = novaX == null ? c.getX() : novaX;
 		int y = novaY == null ? c.getY() : novaY;
 		int tamanho = ConstrucaoCatalogo.tamanho(proximo);
-		int lado = GeradorJazidaService.LADO;
+		int lado = GeradorLadrilhoService.LADO;
 		if (x < 0 || y < 0 || x + tamanho > lado || y + tamanho > lado) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "Posição fora da região");
 		}
@@ -160,7 +160,7 @@ public class ConstrucaoService {
 			Map<String, Integer> custo = new java.util.LinkedHashMap<>();
 			e.custoN1().forEach((r, q) -> custo.put(r.name(), q));
 			return new CatalogoConstrucaoDTO(e.tipo(), e.nome(), ConstrucaoCatalogo.regioesPermitidas(e.tipo()),
-					e.bonusRegiao(), custo,
+					e.terreno(), custo,
 					ConstrucaoCatalogo.tamanho(NivelConstrucao.N1), e.poN1(), e.profissoes());
 		}).toList();
 	}

@@ -12,7 +12,15 @@ Existem duas tipos de Fazenda: **Fazenda de plantio** (Agricultor) e **Fazenda d
 - **R2**: Fazenda de plantio produz 6 Grãos **ou** 4 Fibra por trabalhador/turno (eficiência 1,0, N1); cultura escolhida pelo jogador; troca leva 1 turno sem produção (seção 4.5) [proposta].
 - **R3**: Fazenda de criação produz (Gado) 3 Carne + 1 Couro **ou** (Ovelhas) 2 Lã + 1 Carne; rebanho escolhido (seção 4.5) [proposta].
 - **R4**: Fazenda de plantio ocupa 1x1 (N1), 2x2 (N2), 3x3 (N3) ladrilhos em região Floresta ou Planície; Fazenda de criação ocupa os mesmos tamanhos apenas em região Planície (seção 1.4) [req].
-- **R5**: Produção = `Σ (eficiência do trabalhador) × base × multiplicador do nível` (seção 4.3) [proposta].
+- **R5**: Produção = `Σ (eficiência do trabalhador) × base × multiplicador do nível × (1 + bônus ÷ 100)` (seção 4.3) [proposta].
+
+## Bônus por terreno [proposta]
+
+Cada fazenda recebe bônus apenas quando construída em ladrilho do terreno correspondente:
+- Fazenda de plantio: bônus se terreno = **Plantações**
+- Fazenda de criação: bônus se terreno = **Criações**
+
+O bônus é o `bonus_total` do ladrilho-âncora (onde o prédio está colocado). Se o terreno não bater, o bônus é 0. O bônus afeta a produção: fator = 1 + bonus_total ÷ 100.
 
 ## Números e tabelas
 

@@ -81,6 +81,7 @@ Não se aplica (frontend em tarefa h-001-tarefa-004).
 
 - `testCriarCasaN1_Sucesso` → 20 Mad/10 Ped/10 Arg debitados, Construcao criada com EM_OBRA.
 - `testCriarQuartelEmRegiaoFloresta_Erro` → rejeitado.
+- `testCriarQuartelEmLitoral_Sucesso` → Quartel criado com EM_OBRA em região Litoral.
 - `testCriarEmLadrilhoOcupado_Erro` → rejeitado.
 - `testCriarSemRecursosInsuficientes_Erro` → rejeitado.
 - `testCriarEmRegiaoNaoPossuida_Erro` → rejeitado.

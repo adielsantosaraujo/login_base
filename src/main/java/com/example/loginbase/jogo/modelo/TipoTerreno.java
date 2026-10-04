@@ -1,9 +1,9 @@
 package com.example.loginbase.jogo.modelo;
 
 /**
- * Bônus que uma região pode conceder à vila.
+ * Tipo de terreno de um ladrilho (13 tipos). Cada tipo de região tem 3 tipos de terreno.
  */
-public enum BonusRegiao {
+public enum TipoTerreno {
 	FLORESTA("Floresta"),
 	BARREIRO("Barreiro"),
 	PLANTACOES("Plantações"),
@@ -20,7 +20,7 @@ public enum BonusRegiao {
 
 	private final String nomeExibicao;
 
-	BonusRegiao(String nomeExibicao) {
+	TipoTerreno(String nomeExibicao) {
 		this.nomeExibicao = nomeExibicao;
 	}
 

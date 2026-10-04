@@ -13,7 +13,7 @@ const postMock = vi.mocked(post)
 let estoqueOuro = 500
 
 const TIPOS_MOCK = ['FLORESTA', 'PLANICIE', 'URBANA', 'LITORAL', 'MONTANHA']
-const BONUS_MOCK: Record<string, string[]> = {
+const TERRENOS_MOCK: Record<string, string[]> = {
   FLORESTA: ['FLORESTA', 'BARREIRO', 'PLANTACOES'],
   PLANICIE: ['PLANTACOES', 'CRIACOES', 'FLORESTA'],
   URBANA: ['INDUSTRIA', 'COMERCIO', 'DESENVOLVIMENTO'],
@@ -25,7 +25,7 @@ const tipoDe = (n: number) => (n === 6 ? 'URBANA' : n === 7 ? 'FLORESTA' : TIPOS
 const regioes = Array.from({ length: 16 }, (_, i) => ({
   indice: i + 1,
   tipo: tipoDe(i + 1),
-  bonus: BONUS_MOCK[tipoDe(i + 1)].map((b, k) => ({ bonus: b, posicao: k + 1, valor: [40, 20, 10][k] })),
+  terrenos: TERRENOS_MOCK[tipoDe(i + 1)].map((t, k) => ({ terreno: t, posicao: k + 1, percentual: [40, 35, 25][k] })),
   possuida: i + 1 === 6 || i + 1 === 7,
   masmorraAtiva: i + 1 === 3,
   nivelMasmorra: i + 1 === 3 ? 2 : null,
@@ -45,12 +45,12 @@ describe('Mapa', () => {
     postMock.mockReset()
     estoqueOuro = 500
     getMock.mockImplementation(async (url: string) => {
-      if (url === '/api/jogo/vila/mapa') return { vila: { id: 1, nome: 'V', bonusRegiao: { FLORESTA: 50, COMERCIO: 20 } }, regioes }
+      if (url === '/api/jogo/vila/mapa') return { vila: { id: 1, nome: 'V' }, regioes }
       if (url === '/api/jogo/regioes/6') {
         return {
-          regiao: { id: 6, indice: 6, tipo: 'URBANA', possuida: true, bonus: regioes[5].bonus },
+          regiao: { id: 6, indice: 6, tipo: 'URBANA', possuida: true, terrenos: regioes[5].terrenos },
           ladrilhos: [0, 2, 4, 6].map((x) => ({
-            x, y: 0, jazida: null, construcao: { id: x, tipo: 'CASA', nivel: 'N1', tamanho: 2 },
+            x, y: 0, construcao: { id: x, tipo: 'CASA', nivel: 'N1', tamanho: 2 },
           })),
         }
       }
@@ -81,14 +81,17 @@ describe('Mapa', () => {
     expect(w.find('[data-testid="regiao-3"]').classes()).toContain('com-masmorra')
   })
 
-  it('exibe tipo v2 e os 3 bônus de cada região, inclusive não possuída', async () => {
+  it('exibe tipo v2 e os 3 terrenos de cada região, inclusive não possuída', async () => {
     const w = montar()
     await flushPromises()
     const r6 = w.find('[data-testid="regiao-6"]')
     expect(r6.classes()).toContain('tipo-urbana')
     expect(r6.text()).toContain('Urbana')
     expect(r6.findAll('li')).toHaveLength(3)
-    expect(r6.text()).toContain('Indústria 40%')
+    expect(r6.text()).toContain('In 40%')
+    expect(r6.text()).toContain('Co 35%')
+    expect(r6.text()).toContain('De 25%')
+    expect(r6.attributes('aria-label')).toContain('Indústria 40%')
     const r1 = w.find('[data-testid="regiao-1"]')
     expect(r1.classes()).toContain('nao-possuida')
     expect(r1.classes()).toContain('tipo-planicie')
@@ -96,13 +99,22 @@ describe('Mapa', () => {
     expect(r1.attributes('style')).toContain('var(--vl-tipo-planicie)')
   })
 
-  it('mostra o bônus total da vila', async () => {
+  it('não mostra o painel Bônus total da vila e lista terrenos na célula', async () => {
     const w = montar()
     await flushPromises()
-    const painel = w.find('[data-testid="bonus-vila"]')
-    expect(painel.text()).toContain('Floresta +50%')
-    expect(painel.text()).toContain('Comércio +20%')
-    expect(painel.text()).not.toContain('Ferro')
+    expect(w.find('[data-testid="bonus-vila"]').exists()).toBe(false)
+    expect(w.find('[data-testid="terrenos-regiao-6"]').findAll('li')).toHaveLength(3)
+  })
+
+  it('detalhe da região mostra chips de terrenos com percentual', async () => {
+    const w = montar()
+    await flushPromises()
+    await w.find('[data-testid="regiao-6"]').trigger('click')
+    await flushPromises()
+    const d = w.find('[data-testid="terrenos-detalhe"]')
+    expect(d.text()).toContain('Indústria 40%')
+    expect(d.text()).toContain('Comércio 35%')
+    expect(d.text()).toContain('Desenvolvimento 25%')
   })
 
   it('abre a região possuída com 100 ladrilhos e volta', async () => {

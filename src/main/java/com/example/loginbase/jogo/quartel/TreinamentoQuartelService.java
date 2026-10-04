@@ -17,9 +17,9 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.servico.BonusRegiaoService;
+import com.example.loginbase.jogo.servico.BonusTerrenoService;
+import com.example.loginbase.jogo.servico.GrupoBonusVila;
 import com.example.loginbase.jogo.turno.RegistroEventoTurnoService;
 import com.example.loginbase.jogo.turno.TipoEventoTurno;
 
@@ -35,7 +35,7 @@ public class TreinamentoQuartelService {
 	private final CidadaoRepository cidadaoRepository;
 	private final ProgressaoGuerreiroService progressao;
 	private final RegistroEventoTurnoService eventos;
-	private final BonusRegiaoService bonusRegiaoService;
+	private final BonusTerrenoService bonusTerrenoService;
 
 	/** XP por membro por turno: N1 0,5 / N2 1,0 / N3 1,5. */
 	public static BigDecimal xpPorTurno(NivelConstrucao nivel) {
@@ -48,7 +48,7 @@ public class TreinamentoQuartelService {
 
 	@Transactional
 	public void processar(Vila vila, int turno) {
-		BigDecimal fator = bonusRegiaoService.fator(vila.getId(), BonusRegiao.MILITAR);
+		BigDecimal fator = bonusTerrenoService.fator(vila.getId(), GrupoBonusVila.MILITAR);
 		for (Tropa tropa : tropaRepository.findByVilaId(vila.getId())) {
 			if (tropa.getEstado() != EstadoTropa.AQUARTELADA) {
 				continue;

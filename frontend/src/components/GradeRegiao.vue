@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import {
   ROTULOS_CONSTRUCAO,
   ROTULOS_ESTADO,
-  ROTULOS_JAZIDA,
   rotulo,
   type Ladrilho,
 } from '../composables/useMapa'
+import { COR_TERRENO, ROTULO_TERRENO, SIGLA_TERRENO, enderecoLadrilho } from '../domain/terrenos'
 
 const props = defineProps<{
   ladrilhos: Ladrilho[]
@@ -39,28 +39,31 @@ const celulas = computed(() => {
 })
 
 function descricao(x: number, y: number, l: Ladrilho | null): string {
-  const partes = [`(${x}, ${y})`]
+  const partes = [enderecoLadrilho(x, y)]
   if (l?.construcao) {
     const c = l.construcao
     partes.push(`${rotulo(ROTULOS_CONSTRUCAO, c.tipo)} ${c.nivel.replace('N', 'nível ')}`)
     if (c.estado) partes.push(rotulo(ROTULOS_ESTADO, c.estado))
     if (c.estado === 'EM_OBRA' && c.poTotal) partes.push(`PO ${c.poAtual ?? 0}/${c.poTotal}`)
   }
-  if (l?.jazida) partes.push(`Jazida: ${rotulo(ROTULOS_JAZIDA, l.jazida)}`)
+  if (l) {
+    partes.push(`${ROTULO_TERRENO[l.terreno]} (${SIGLA_TERRENO[l.terreno]})`)
+    partes.push(`base ${l.bonusBase}`, `adjacente +${l.bonusAdjacente}`, `total ${l.bonusTotal}`)
+  }
   if (partes.length === 1) partes.push('Vazio')
   return partes.join(' - ')
 }
 
 function classe(l: Ladrilho | null): string[] {
-  if (l?.construcao) return ['ladrilho', 'ladrilho-construcao']
-  if (l?.jazida) return ['ladrilho', `ladrilho-jazida-${l.jazida.toLowerCase().replace(/_/g, '-')}`]
-  return ['ladrilho']
+  return l?.construcao ? ['ladrilho', 'ladrilho-construcao'] : ['ladrilho']
 }
 
-function simbolo(l: Ladrilho | null): string {
-  if (l?.construcao) return rotulo(ROTULOS_CONSTRUCAO, l.construcao.tipo).charAt(0)
-  if (l?.jazida) return rotulo(ROTULOS_JAZIDA, l.jazida).charAt(0)
-  return ''
+function estilo(l: Ladrilho | null): Record<string, string> | undefined {
+  return l ? { background: COR_TERRENO[l.terreno] } : undefined
+}
+
+function inicialPredio(l: Ladrilho | null): string {
+  return l?.construcao ? rotulo(ROTULOS_CONSTRUCAO, l.construcao.tipo).charAt(0) : ''
 }
 </script>
 
@@ -70,6 +73,7 @@ function simbolo(l: Ladrilho | null): string {
       v-for="c in celulas"
       :key="`${c.x}-${c.y}`"
       :class="[...classe(c.ladrilho), { destaque: destacado(c.x, c.y), selecionavel: selecionaveis && !c.ladrilho?.construcao }]"
+      :style="estilo(c.ladrilho)"
       :title="descricao(c.x, c.y, c.ladrilho)"
       :aria-label="descricao(c.x, c.y, c.ladrilho)"
       data-testid="ladrilho"
@@ -77,7 +81,9 @@ function simbolo(l: Ladrilho | null): string {
       :data-x="c.x"
       :data-y="c.y"
     >
-      {{ simbolo(c.ladrilho) }}
+      <span class="lad-endereco">{{ enderecoLadrilho(c.x, c.y) }}</span>
+      <span v-if="c.ladrilho" class="lad-sigla">{{ SIGLA_TERRENO[c.ladrilho.terreno] }}</span>
+      <span v-if="c.ladrilho?.construcao" class="lad-predio">{{ inicialPredio(c.ladrilho) }}</span>
     </div>
   </div>
 </template>
@@ -87,13 +93,15 @@ function simbolo(l: Ladrilho | null): string {
   display: grid;
   grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 2px;
-  max-width: 480px;
+  max-width: 560px;
 }
 .ladrilho {
   aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
   font-size: 0.75rem;
   font-weight: 600;
   font-family: var(--vl-font-mono);
@@ -103,13 +111,8 @@ function simbolo(l: Ladrilho | null): string {
 }
 .ladrilho.selecionavel { cursor: pointer; }
 .ladrilho.destaque { outline: 3px solid var(--vl-accent); outline-offset: -3px; }
-.ladrilho-construcao { cursor: pointer; background: var(--vl-bonus-industria); }
-.ladrilho-jazida-floresta { background: var(--vl-jazida-floresta); }
-.ladrilho-jazida-rocha { background: var(--vl-jazida-rocha); }
-.ladrilho-jazida-barreiro { background: var(--vl-jazida-barreiro); }
-.ladrilho-jazida-veio-de-ferro { background: var(--vl-jazida-veio-de-ferro); }
-.ladrilho-jazida-veio-de-carvao { background: var(--vl-jazida-veio-de-carvao); }
-.ladrilho-jazida-salina { background: var(--vl-jazida-salina); }
-.ladrilho-jazida-enxofre { background: var(--vl-jazida-enxofre); }
-.ladrilho-jazida-campo { background: var(--vl-jazida-campo); }
+.ladrilho-construcao { cursor: pointer; box-shadow: inset 0 0 0 2px var(--vl-accent); }
+.lad-endereco { font-size: 0.55rem; font-weight: 400; line-height: 1; }
+.lad-sigla { line-height: 1.2; }
+.lad-predio { position: absolute; top: 1px; right: 3px; font-size: 0.6rem; line-height: 1; }
 </style>

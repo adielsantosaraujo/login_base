@@ -39,7 +39,7 @@ onMounted(() => b.listar())
 
 <style scoped>
 .tabela { overflow-x: auto; }
-.vitoria { color: var(--vl-bonus-floresta); }
+.vitoria { color: var(--vl-terreno-fl); }
 .derrota { color: var(--vl-error); }
 .erro { color: var(--vl-error); }
 h2, h3 { font-family: var(--vl-font-display); }

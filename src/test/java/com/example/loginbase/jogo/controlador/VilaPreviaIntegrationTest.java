@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.acesso.Usuario;
 import com.example.loginbase.acesso.UsuarioRepository;
-import com.example.loginbase.jogo.modelo.FaixaBonusRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import tools.jackson.databind.JsonNode;
@@ -85,7 +84,7 @@ class VilaPreviaIntegrationTest {
 	}
 
 	@Test
-	void dezesseisRegioesComTresBonusEmFaixasValidas() throws Exception {
+	void dezesseisRegioesComTresTerrenosSomando100() throws Exception {
 		Usuario u = novoUsuario();
 		JsonNode p = json.readTree(postar(u));
 		JsonNode regioes = p.get("regioes");
@@ -94,16 +93,17 @@ class VilaPreviaIntegrationTest {
 			JsonNode r = regioes.get(i);
 			assertEquals(i + 1, r.get("indice").asInt());
 			assertTrue(r.get("tipo").isTextual());
-			JsonNode bonus = r.get("bonus");
-			assertEquals(3, bonus.size());
+			assertTrue(r.path("bonus").isMissingNode());
+			JsonNode terrenos = r.get("terrenos");
+			assertEquals(3, terrenos.size());
+			int soma = 0;
 			for (int k = 0; k < 3; k++) {
-				JsonNode b = bonus.get(k);
-				FaixaBonusRegiao faixa = FaixaBonusRegiao.de(b.get("posicao").asInt());
-				assertEquals(k + 1, b.get("posicao").asInt());
-				int valor = b.get("valor").asInt();
-				assertTrue(valor >= faixa.getMin() && valor <= faixa.getMax());
-				assertTrue(b.get("bonus").isTextual());
+				JsonNode t = terrenos.get(k);
+				assertEquals(k + 1, t.get("posicao").asInt());
+				assertTrue(t.get("terreno").isTextual());
+				soma += t.get("percentual").asInt();
 			}
+			assertEquals(100, soma);
 		}
 	}
 

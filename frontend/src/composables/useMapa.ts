@@ -1,13 +1,14 @@
 import { ref } from 'vue'
 import { get } from '../api/http'
-import { ROTULO_TIPO, type BonusDaRegiao, type BonusRegiao, type TipoRegiao } from '../domain/regioes'
+import { ROTULO_TIPO, type TipoRegiao } from '../domain/regioes'
+import type { TerrenoDaRegiao, TipoTerreno } from '../domain/terrenos'
 
 export type { TipoRegiao }
 
 export interface RegiaoResumo {
   indice: number
   tipo: TipoRegiao | null
-  bonus: BonusDaRegiao[]
+  terrenos: TerrenoDaRegiao[]
   possuida: boolean
   masmorraAtiva: boolean
   nivelMasmorra: number | null
@@ -15,7 +16,7 @@ export interface RegiaoResumo {
 }
 
 export interface MapaVila {
-  vila: { id: number; nome: string; bonusRegiao: Partial<Record<BonusRegiao, number>> }
+  vila: { id: number; nome: string }
   regioes: RegiaoResumo[]
 }
 
@@ -32,24 +33,16 @@ export interface Construcao {
 export interface Ladrilho {
   x: number
   y: number
-  jazida: string | null
+  terreno: TipoTerreno
+  bonusBase: number
+  bonusAdjacente: number
+  bonusTotal: number
   construcao: Construcao | null
 }
 
 export interface RegiaoDetalhe {
-  regiao: { id: number | null; indice: number; tipo: TipoRegiao | null; possuida: boolean; bonus?: BonusDaRegiao[] }
+  regiao: { id: number | null; indice: number; tipo: TipoRegiao | null; possuida: boolean; terrenos?: TerrenoDaRegiao[] }
   ladrilhos: Ladrilho[]
-}
-
-export const ROTULOS_JAZIDA: Record<string, string> = {
-  FLORESTA: 'Floresta',
-  ROCHA: 'Rocha',
-  BARREIRO: 'Barreiro',
-  VEIO_DE_FERRO: 'Veio de ferro',
-  VEIO_DE_CARVAO: 'Veio de carvão',
-  SALINA: 'Salina',
-  ENXOFRE: 'Enxofre',
-  CAMPO: 'Campo',
 }
 
 export const ROTULOS_CONSTRUCAO: Record<string, string> = {

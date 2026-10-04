@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import BonusLista from './BonusLista.vue'
-import { ROTULO_TIPO, bonusOrdenados, type RegiaoPrevia } from '../../domain/regioes'
+import ListaTerrenos from './ListaTerrenos.vue'
+import { ROTULO_TIPO, type RegiaoPrevia } from '../../domain/regioes'
+import { ordenarTerrenos } from '../../domain/terrenos'
 
 const props = defineProps<{ regiao: RegiaoPrevia | null }>()
 const titulo = computed(() =>
   props.regiao
     ? `Região ${String(props.regiao.indice).padStart(2, '0')} · ${ROTULO_TIPO[props.regiao.tipo]}`
     : '',
+)
+const itens = computed(() =>
+  props.regiao
+    ? ordenarTerrenos(props.regiao.terrenos).map((t) => ({ terreno: t.terreno, valor: t.percentual }))
+    : [],
 )
 </script>
 
@@ -16,7 +22,7 @@ const titulo = computed(() =>
     <h3 class="rf-titulo">Em foco</h3>
     <template v-if="regiao">
       <p class="rf-regiao" data-testid="foco-titulo">{{ titulo }}</p>
-      <BonusLista :itens="bonusOrdenados(regiao.bonus)" :maximo="50" />
+      <ListaTerrenos :itens="itens" :maximo="100" sufixo="%" />
     </template>
     <p v-else class="rf-vazio">Passe o mouse numa região</p>
   </section>

@@ -5,8 +5,8 @@ import SeletorConstrucao from './SeletorConstrucao.vue'
 import type { CatalogoConstrucao } from '../../composables/useConstrucoes'
 
 const catalogo: CatalogoConstrucao[] = [
-  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA', 'PLANICIE'], bonusRegiao: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
-  { tipo: 'PEDREIRA', nome: 'Pedreira', regioes: ['MONTANHA'], bonusRegiao: 'ROCHA', custoN1: { MADEIRA: 5 }, tamanho: 2, poN1: 5, profissoes: ['PEDREIRO'] },
+  { tipo: 'CASA', nome: 'Casa', regioes: ['URBANA', 'PLANICIE'], terreno: null, custoN1: { MADEIRA: 10 }, tamanho: 2, poN1: 5, profissoes: [] },
+  { tipo: 'PEDREIRA', nome: 'Pedreira', regioes: ['MONTANHA'], terreno: 'ROCHA', custoN1: { MADEIRA: 5 }, tamanho: 2, poN1: 5, profissoes: ['PEDREIRO'] },
 ]
 
 function montar(props: Record<string, unknown> = {}) {
@@ -21,6 +21,18 @@ describe('SeletorConstrucao', () => {
     const w = montar()
     expect(w.get('[data-testid="item-PEDREIRA"]').attributes('disabled')).toBeDefined()
     expect(w.get('[data-testid="item-CASA"]').attributes('disabled')).toBeUndefined()
+  })
+
+  it('mostra o terreno do prédio escolhido', async () => {
+    const w = montar({ tipoRegiao: 'MONTANHA' })
+    await w.get('[data-testid="item-PEDREIRA"]').trigger('click')
+    expect(w.get('[data-testid="terreno-predio"]').text()).toBe('Terreno: Rocha (Ro)')
+  })
+
+  it('mostra Sem terreno para prédio sem terreno', async () => {
+    const w = montar()
+    await w.get('[data-testid="item-CASA"]').trigger('click')
+    expect(w.get('[data-testid="terreno-predio"]').text()).toBe('Sem terreno (sem bônus)')
   })
 
   it('mostra Todos + 5 abas na ordem do enum', () => {

@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import { permitidoNaRegiao, type CatalogoConstrucao } from '../../composables/useConstrucoes'
 import { ROTULO_TIPO, TIPOS, type TipoRegiao } from '../../domain/regioes'
+import { ROTULO_TERRENO, SIGLA_TERRENO } from '../../domain/terrenos'
 
 const props = defineProps<{
   catalogo: CatalogoConstrucao[]
@@ -85,6 +86,10 @@ function custo(c: CatalogoConstrucao): string {
         </button>
       </li>
     </ul>
+
+    <p v-if="item" data-testid="terreno-predio">
+      {{ item.terreno ? `Terreno: ${ROTULO_TERRENO[item.terreno]} (${SIGLA_TERRENO[item.terreno]})` : 'Sem terreno (sem bônus)' }}
+    </p>
 
     <p v-if="erro" role="alert" class="erro" data-testid="erro-construcao">{{ erro }}</p>
 

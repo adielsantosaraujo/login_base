@@ -18,12 +18,12 @@ import com.example.loginbase.jogo.cidadao.Familia;
 import com.example.loginbase.jogo.cidadao.FamiliaRepository;
 import com.example.loginbase.jogo.cidadao.Profissao;
 import com.example.loginbase.jogo.cidadao.Sexo;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurno;
@@ -44,7 +44,7 @@ class ObraServiceIntegrationTest {
 	@Autowired EventoTurnoRepository eventoRepository;
 	@Autowired EtapaObras etapa;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 
 	private Vila vila;
 	private Familia familia;
@@ -204,31 +204,53 @@ class ObraServiceIntegrationTest {
 		assertThat(cidadaoRepository.findById(construtor.getId()).orElseThrow().getConstrucaoId()).isNull();
 	}
 
-	private void bonusDesenvolvimento(int valor) {
-		Regiao r = new Regiao(vila.getId(), 6);
-		r.setTipo(TipoRegiao.URBANA);
-		r.setPossuida(true);
-		r = regiaoRepository.saveAndFlush(r);
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.DESENVOLVIMENTO, 3, valor));
+	private Regiao regiao1;
+
+	/** Cria Casas com âncoras Ladrilho De (terreno DESENVOLVIMENTO) nos valores dados, no estado informado. */
+	private void casasComAncoras(EstadoConstrucao estado, int... valores) {
+		if (regiao1 == null) {
+			Regiao r = new Regiao(vila.getId(), 1);
+			r.setTipo(TipoRegiao.URBANA);
+			r.setPossuida(true);
+			regiao1 = regiaoRepository.saveAndFlush(r);
+		}
+		for (int v : valores) {
+			Construcao casa = obra(TipoConstrucao.CASA, NivelConstrucao.N1, estado, 4);
+			ladrilhoRepository.saveAndFlush(
+					new Ladrilho(regiao1.getId(), casa.getX(), casa.getY(), TipoTerreno.DESENVOLVIMENTO, v, 0));
+		}
 	}
 
 	private static final String FRACAO = ObraService.CHAVE_FRACAO;
 
 	@Test
-	void desenvolvimento12DaUmVirgula12PoPorTurno() {
+	void mediaDasAncorasDeDesenvolvimentoMultiplicaPoEAcumulaFracao() {
 		novaVila();
-		bonusDesenvolvimento(12);
+		casasComAncoras(EstadoConstrucao.ATIVA, 20, 40, 60, 80);
 		Construcao casa = obra(TipoConstrucao.CASA, NivelConstrucao.N1, EstadoConstrucao.EM_OBRA, 100);
 		aloca(casa, Profissao.CONSTRUTOR);
 		double ef = ganhoEsperado(casa);
 		etapa.executar(vila, 1);
-		double esperado = ef * 1.12;
+		double esperado = ef * 1.5;
 		Construcao c = recarrega(casa);
 		assertThat(c.getPoAtual()).isEqualTo((int) Math.floor(esperado + 1e-9));
-		assertThat(c.getConfiguracao()).contains(FRACAO);
+		if (esperado - Math.floor(esperado + 1e-9) > 1e-9) {
+			assertThat(c.getConfiguracao()).contains(FRACAO);
+		}
 		etapa.executar(vila, 2);
 		etapa.executar(vila, 3);
 		assertThat(recarrega(casa).getPoAtual()).isEqualTo((int) Math.floor(esperado * 3 + 1e-6));
+	}
+
+	@Test
+	void casaEmObraNaoContaNaMedia() {
+		novaVila();
+		casasComAncoras(EstadoConstrucao.EM_OBRA, 80, 80);
+		Construcao casa = obra(TipoConstrucao.CASA, NivelConstrucao.N1, EstadoConstrucao.EM_OBRA, 100);
+		aloca(casa, Profissao.CONSTRUTOR);
+		double ef = ganhoEsperado(casa);
+		etapa.executar(vila, 1);
+		assertThat(recarrega(casa).getPoAtual()).isEqualTo((int) Math.floor(ef + 1e-9));
 	}
 
 	@Test

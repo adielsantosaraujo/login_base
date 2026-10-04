@@ -29,15 +29,12 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.Jazida;
-import com.example.loginbase.jogo.modelo.LadrilhoJazida;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.Ladrilho;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurno;
@@ -52,7 +49,7 @@ class ProducaoFabricasIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired FamiliaRepository familiaRepository;
 	@Autowired CidadaoRepository cidadaoRepository;
 	@Autowired CidadaoProfissaoRepository cidadaoProfissaoRepository;
@@ -60,7 +57,6 @@ class ProducaoFabricasIntegrationTest {
 	@Autowired ConstrucaoMarcacaoRepository marcacaoRepository;
 	@Autowired EstoqueService estoqueService;
 	@Autowired ProducaoService servico;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired EtapaProducao etapa;
 	@Autowired EventoTurnoRepository eventoRepository;
 
@@ -89,10 +85,10 @@ class ProducaoFabricasIntegrationTest {
 		}
 		regiaoRepository.flush();
 		for (int x = 0; x < 10; x++) {
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 0, Jazida.FLORESTA));
-			ladrilhoJazidaRepository.save(new LadrilhoJazida(regiao.getId(), x, 1, Jazida.ROCHA));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 0, TipoTerreno.FLORESTA, 0, 0));
+			ladrilhoRepository.save(new Ladrilho(regiao.getId(), x, 1, TipoTerreno.ROCHA, 0, 0));
 		}
-		ladrilhoJazidaRepository.flush();
+		ladrilhoRepository.flush();
 		familia = familiaRepository.saveAndFlush(new Familia(vila.getId(), "Silva", null));
 		estoqueService.inicializar(vila, java.util.Map.of());
 	}
@@ -136,13 +132,14 @@ class ProducaoFabricasIntegrationTest {
 
 	@Test
 	void serrariaComBonusIndustria() {
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(regiao.getId(), BonusRegiao.INDUSTRIA, 2, 30));
+		ladrilhoRepository.saveAndFlush(new Ladrilho(regiao.getId(), 5, 5, TipoTerreno.INDUSTRIA, 50, 0));
 		Construcao c = predio(TipoConstrucao.SERRARIA, NivelConstrucao.N1, EstadoConstrucao.ATIVA, null);
 		trabalhador(c, Profissao.MADEIREIRO);
-		estoque(Recurso.MADEIRA, "10");
+		estoque(Recurso.MADEIRA, "20");
 		servico.processarProducaoFabricas(vila, 1);
-		assertThat(qtd(Recurso.TABUA)).isEqualByComparingTo("3.9");
-		assertThat(eventos().get(0).getDados()).containsEntry("bonusRegiao", 30);
+		assertThat(qtd(Recurso.TABUA)).isEqualByComparingTo("4.5");
+		assertThat(eventos().get(0).getDados()).containsEntry("bonusTerreno", 50)
+				.containsEntry("ciclos", "4.50");
 	}
 
 	@Test

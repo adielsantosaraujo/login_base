@@ -17,7 +17,7 @@ O jogo avança por turnos globais sincronizados: um turno representa 1 mês de j
 
 ## Ordem de resolução por vila
 
-A resolução segue 13 passos em sequência. **Nota:** Os passos 1 (Produção), 2 (Ouro passivo), 5 (Obras) e 7 (Quartel) aplicam bônus de região da vila (fator = 1 + bônus ÷ 100) conforme definido em [v1-010-recursos-e-producao/producao.md](../v1-010-recursos-e-producao/producao.md) (regra R7).
+A resolução segue 13 passos em sequência. **Nota:** Os passos 1 (Produção), 2 (Ouro passivo), 5 (Obras) e 7 (Quartel) aplicam bônus de terreno conforme definido em [v1-010-recursos-e-producao/producao.md](../v1-010-recursos-e-producao/producao.md) (regra R7): prédios com bônus próprio (coleta, fazendas e fábricas/Indústria) usam o `bonus_total` da sua âncora se o terreno bater; só Comércio, Desenvolvimento e Militar usam a média.
 
 | Passo | Etapa | Doc de domínio |
 |---|---|---|

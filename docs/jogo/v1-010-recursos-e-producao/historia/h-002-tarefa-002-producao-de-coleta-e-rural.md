@@ -10,7 +10,9 @@ Implementar a etapa 1 do turno (passo de produção de coleta e rural) que calcu
 ## Contexto necessário
 
 - [../producao.md#números-e-tabelas](../producao.md#números-e-tabelas) — tabela 4.5, produção base por prédio (ex.: Acampamento 5 Madeira)
-  > Fórmula: produção = Σ eficiência × base × multiplicador do nível.
+  > Fórmula: produção = Σ(eficiência × base × multiplicador do nível) × fator de terreno.
+  > **Fator de terreno:** 1 + (bonus_total da âncora ÷ 100) se a âncora estiver no terreno do prédio; senão 1,0.
+  > **bonus_total = bonus_base** (0–100 por ladrilho) **+ bonus_adjacente** (+25 por vizinho ortogonal do mesmo terreno, máximo 4 vizinhos = +100).
 
 - [../producao.md#regras](../producao.md#regras) — R5: trabalhadores produtivos = `min(alocados, floor(marcados ÷ 2))`
 
@@ -40,8 +42,10 @@ Implementar a etapa 1 do turno (passo de produção de coleta e rural) que calcu
   - `CatalogoPrediosProducao` com: tipo → (recurso, produção_base)
 
 - **Testes**
-  - `testProducaoAcampamentoLenhadores()`: 2 Madeireiros eficiência 1,0, 4 marcados, N1 → 2 × 1,0 × 5 × 1,0 = 10 Madeira
+  - `testProducaoAcampamentoLenhadores()`: 2 Madeireiros eficiência 1,0, 4 marcados, N1 → 2 × 1,0 × 5 × 1,0 (fator terreno) = 10 Madeira
   - `testProducaoFazendaPlantio()`: 1 Agricultor eficiência 1,0, N2 → 1 × 1,0 × 6 × 1,2 = 7,2 Grãos
+  - `testProducaoComFatorTerreno()`: Acampamento âncora em Floresta, bonus_base 30 + 2 vizinhos Floresta (+50) = bonus_total 80, 2 Madeireiros eficiência 1,0, N1 → 2 × 1,0 × 5 × (1 + 80÷100) = 2 × 5 × 1,8 = **18 Madeira**
+  - `testProducaoFatorTerrenoMismatched()`: mesma âncora em Barreiro (não é Floresta) → fator 1,0 → 2 × 1,0 × 5 × 1,0 = **10 Madeira**
   - `testProducaoSemLadrilhosMarcados()`: Acampamento com 0 marcados → 0 produtivos → sem produção
   - `testProducaoMenorQueAlocados()`: 4 Madeireiros, 2 marcados → 2 produtivos (não 4)
   - `testEventoProducao()`: cada prédio com produção gera evento_turno tipo PRODUÇÃO_COLETA

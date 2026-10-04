@@ -1,25 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import BonusLista from './BonusLista.vue'
-import {
-  COR_TIPO,
-  ROTULO_BONUS,
-  ROTULO_TIPO,
-  bonusOrdenados,
-  type RegiaoPrevia,
-} from '../../domain/regioes'
+import ListaTerrenos from './ListaTerrenos.vue'
+import { COR_TIPO, ROTULO_TIPO, type RegiaoPrevia } from '../../domain/regioes'
+import { composicaoTexto, ordenarTerrenos } from '../../domain/terrenos'
 
 const props = defineProps<{ regiao: RegiaoPrevia; ordem: number; disponivel: boolean }>()
 const emit = defineEmits<{ alternar: [indice: number]; foco: [indice: number]; desfoco: [] }>()
 
 const selecionado = computed(() => props.ordem > 0)
 const numero = computed(() => String(props.regiao.indice).padStart(2, '0'))
-const ordenados = computed(() => bonusOrdenados(props.regiao.bonus))
+const itens = computed(() =>
+  ordenarTerrenos(props.regiao.terrenos).map((t) => ({ terreno: t.terreno, valor: t.percentual })),
+)
 const indisponivel = computed(() => !selecionado.value && !props.disponivel)
-const rotuloAria = computed(() => {
-  const bonus = ordenados.value.map((b) => `${ROTULO_BONUS[b.bonus]} ${b.valor}`).join(', ')
-  return `Região ${numero.value} · ${ROTULO_TIPO[props.regiao.tipo]} · ${bonus}`
-})
+const rotuloAria = computed(
+  () => `Região ${numero.value} · ${ROTULO_TIPO[props.regiao.tipo]} · ${composicaoTexto(props.regiao.terrenos)}`,
+)
 
 function aoClicar() {
   if (!indisponivel.value) emit('alternar', props.regiao.indice)
@@ -46,7 +42,7 @@ function aoClicar() {
       <span class="rt-chip" :style="{ background: COR_TIPO[regiao.tipo] }">{{ ROTULO_TIPO[regiao.tipo] }}</span>
     </span>
     <span v-if="selecionado" class="rt-selo" data-testid="selo-ordem" aria-hidden="true">{{ ordem }}</span>
-    <BonusLista :itens="ordenados" :maximo="50" />
+    <ListaTerrenos :itens="itens" :maximo="100" sufixo="%" />
   </button>
 </template>
 

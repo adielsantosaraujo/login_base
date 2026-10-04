@@ -28,12 +28,12 @@ import com.example.loginbase.jogo.construcao.ConstrucaoRepository;
 import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.RegiaoBonusRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
 import com.example.loginbase.jogo.repositorio.VilaRepository;
 import com.example.loginbase.jogo.turno.EventoTurnoRepository;
@@ -54,7 +54,7 @@ class TreinamentoQuartelIntegrationTest {
 	@Autowired TropaRepository tropaRepository;
 	@Autowired EventoTurnoRepository eventoRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired EtapaQuartel etapa;
 	@Autowired List<EtapaTurno> etapas;
 
@@ -127,17 +127,43 @@ class TreinamentoQuartelIntegrationTest {
 				.filter(e -> e.getTipo() == TipoEventoTurno.TREINO_PE_GUERREIRO).count();
 	}
 
-	@Test
-	void militar20DaSessentaCentesimosPorMembro() {
-		novaVila();
-		Regiao r = new Regiao(vila.getId(), 7);
-		r.setTipo(TipoRegiao.LITORAL);
+	private Regiao regiao(int indice, TipoRegiao tipo) {
+		Regiao r = new Regiao(vila.getId(), indice);
+		r.setTipo(tipo);
 		r.setPossuida(true);
-		r = regiaoRepository.saveAndFlush(r);
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.MILITAR, 2, 20));
-		Cidadao a = membro(tropa(quartel(NivelConstrucao.N1, EstadoConstrucao.ATIVA, 1), EstadoTropa.AQUARTELADA), 1, "0");
+		return regiaoRepository.saveAndFlush(r);
+	}
+
+	/** Quartel ativo com instrutor na região, ancorado num ladrilho do terreno informado. */
+	private Construcao quartelAncorado(Regiao r, TipoTerreno terreno, int bonusBase) {
+		Construcao q = quartel(NivelConstrucao.N1, EstadoConstrucao.ATIVA, 1);
+		q.setRegiaoIndice(r.getIndice());
+		q = construcaoRepository.saveAndFlush(q);
+		ladrilhoRepository.saveAndFlush(new Ladrilho(r.getId(), q.getX(), q.getY(), terreno, bonusBase, 0));
+		return q;
+	}
+
+	@Test
+	void mediaMilitarDe40DaSetentaCentesimosPorMembro() {
+		novaVila();
+		Regiao litoral = regiao(7, TipoRegiao.LITORAL);
+		Regiao urbana = regiao(8, TipoRegiao.URBANA);
+		Construcao q1 = quartelAncorado(litoral, TipoTerreno.MILITAR, 45);
+		quartelAncorado(litoral, TipoTerreno.MILITAR, 35);
+		quartelAncorado(urbana, TipoTerreno.INDUSTRIA, 50);
+		Cidadao a = membro(tropa(q1, EstadoTropa.AQUARTELADA), 1, "0");
 		etapa.executar(vila, 1);
-		assertThat(xp(a)).isEqualByComparingTo("0.60");
+		assertThat(xp(a)).isEqualByComparingTo("0.70");
+	}
+
+	@Test
+	void semQuartelEmLadrilhoMilitarXpSemBonus() {
+		novaVila();
+		Regiao urbana = regiao(8, TipoRegiao.URBANA);
+		Construcao q = quartelAncorado(urbana, TipoTerreno.INDUSTRIA, 50);
+		Cidadao a = membro(tropa(q, EstadoTropa.AQUARTELADA), 1, "0");
+		etapa.executar(vila, 1);
+		assertThat(xp(a)).isEqualByComparingTo("0.50");
 	}
 
 	@Test

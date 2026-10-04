@@ -2,24 +2,20 @@ package com.example.loginbase.jogo.servico;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Deque;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
-import com.example.loginbase.jogo.modelo.BonusRegiao;
-import com.example.loginbase.jogo.modelo.FaixaBonusRegiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.GradeRegioes;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 
 /**
- * Gera o mapa 4x4 de regiões (tipos e bônus) de forma determinística a partir de uma semente.
+ * Gera o mapa 4x4 de regiões (tipos e percentuais de terreno) de forma determinística a partir de uma semente.
  * Segue o algoritmo de referência geracao-mapa.js (regras R8 a R16), usando {@link Random}.
  */
 @Service
@@ -29,13 +25,13 @@ public class GeradorMapaService {
 	private static final int MAX_POR_TIPO = 4;
 	private static final int MAX_TIPOS_COM_MAX = 2;
 
-	public record BonusGerado(BonusRegiao bonus, int posicao, int valor) {
+	public record TerrenoGerado(TipoTerreno terreno, int posicao, int percentual) {
 	}
 
-	public record RegiaoGerada(int indice, TipoRegiao tipo, List<BonusGerado> bonus) {
+	public record RegiaoGerada(int indice, TipoRegiao tipo, List<TerrenoGerado> terrenos) {
 	}
 
-	/** Gera as 16 regiões (índices 1 a 16) da semente; o bônus de cada região vem ordenado por posição. */
+	/** Gera as 16 regiões (índices 1 a 16) da semente; os terrenos de cada região vêm ordenados por posição. */
 	public List<RegiaoGerada> gerar(long semente) {
 		Random rng = new Random(semente);
 		List<TipoRegiao> tipos = TipoRegiao.atuais();
@@ -52,14 +48,17 @@ public class GeradorMapaService {
 		List<RegiaoGerada> mapa = new ArrayList<>(GradeRegioes.TOTAL);
 		for (int i = 0; i < layout.size(); i++) {
 			TipoRegiao tipo = layout.get(i);
-			List<BonusRegiao> ordem = new ArrayList<>(tipo.bonus());
+			List<TipoTerreno> ordem = new ArrayList<>(tipo.terrenos());
 			embaralhar(rng, ordem);
-			List<BonusGerado> bonus = new ArrayList<>(ordem.size());
+			int b1 = inteiro(rng, 20, 60);
+			int b2 = inteiro(rng, 20, 90 - b1);
+			int b3 = 100 - b1 - b2;
+			int[] percentuais = { b1, b2, b3 };
+			List<TerrenoGerado> terrenos = new ArrayList<>(ordem.size());
 			for (int pos = 0; pos < ordem.size(); pos++) {
-				FaixaBonusRegiao faixa = FaixaBonusRegiao.de(pos + 1);
-				bonus.add(new BonusGerado(ordem.get(pos), pos + 1, inteiro(rng, faixa.getMin(), faixa.getMax())));
+				terrenos.add(new TerrenoGerado(ordem.get(pos), pos + 1, percentuais[pos]));
 			}
-			mapa.add(new RegiaoGerada(i + 1, tipo, List.copyOf(bonus)));
+			mapa.add(new RegiaoGerada(i + 1, tipo, List.copyOf(terrenos)));
 		}
 		return List.copyOf(mapa);
 	}
@@ -84,20 +83,6 @@ public class GeradorMapaService {
 			}
 		}
 		return pendentes.isEmpty();
-	}
-
-	/** Soma os bônus das regiões indicadas; todos os 13 bônus aparecem (0 quando ausentes). */
-	public Map<BonusRegiao, Integer> somarBonus(List<RegiaoGerada> mapa, Collection<Integer> indices) {
-		Map<BonusRegiao, Integer> total = new EnumMap<>(BonusRegiao.class);
-		for (BonusRegiao b : BonusRegiao.values()) {
-			total.put(b, 0);
-		}
-		for (Integer indice : indices) {
-			for (BonusGerado g : mapa.get(indice - 1).bonus()) {
-				total.merge(g.bonus(), g.valor(), Integer::sum);
-			}
-		}
-		return total;
 	}
 
 	/** Amostragem por rejeição: soma 16 e no máximo 2 tipos com a quantidade máxima. */

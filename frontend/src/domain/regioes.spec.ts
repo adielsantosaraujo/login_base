@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   adjacentes,
-  bonusOrdenados,
   conectado,
   dicaSelecao,
   podeSelecionar,
   selecaoValida,
   temUrbana,
-  totaisBonus,
   type RegiaoPrevia,
 } from './regioes'
 
@@ -15,31 +13,31 @@ const regioes: RegiaoPrevia[] = [
   {
     indice: 6,
     tipo: 'URBANA',
-    bonus: [
-      { bonus: 'INDUSTRIA', posicao: 2, valor: 30 },
-      { bonus: 'COMERCIO', posicao: 1, valor: 47 },
-      { bonus: 'DESENVOLVIMENTO', posicao: 3, valor: 12 },
+    terrenos: [
+      { terreno: 'INDUSTRIA', posicao: 1, percentual: 45 },
+      { terreno: 'COMERCIO', posicao: 2, percentual: 30 },
+      { terreno: 'DESENVOLVIMENTO', posicao: 3, percentual: 25 },
     ],
   },
   {
     indice: 7,
     tipo: 'LITORAL',
-    bonus: [
-      { bonus: 'SALINAS', posicao: 1, valor: 38 },
-      { bonus: 'MILITAR', posicao: 2, valor: 20 },
-      { bonus: 'ENXOFRE', posicao: 3, valor: 6 },
+    terrenos: [
+      { terreno: 'SALINAS', posicao: 1, percentual: 40 },
+      { terreno: 'MILITAR', posicao: 2, percentual: 35 },
+      { terreno: 'ENXOFRE', posicao: 3, percentual: 25 },
     ],
   },
   {
     indice: 10,
     tipo: 'PLANICIE',
-    bonus: [
-      { bonus: 'CRIACOES', posicao: 1, valor: 41 },
-      { bonus: 'FLORESTA', posicao: 2, valor: 25 },
-      { bonus: 'PLANTACOES', posicao: 3, valor: 14 },
+    terrenos: [
+      { terreno: 'CRIACOES', posicao: 1, percentual: 40 },
+      { terreno: 'FLORESTA', posicao: 2, percentual: 35 },
+      { terreno: 'PLANTACOES', posicao: 3, percentual: 25 },
     ],
   },
-  { indice: 11, tipo: 'MONTANHA', bonus: [] },
+  { indice: 11, tipo: 'MONTANHA', terrenos: [] },
 ]
 
 describe('regioes', () => {
@@ -68,25 +66,6 @@ describe('regioes', () => {
     expect(selecaoValida([6, 7, 10], regioes)).toBe(true)
     expect(selecaoValida([6, 7], regioes)).toBe(false)
     expect(selecaoValida([7, 10, 11], regioes)).toBe(false)
-  })
-
-  it('totaisBonus soma e zera ausentes', () => {
-    const t = totaisBonus([6, 7, 10], regioes)
-    expect(t.COMERCIO).toBe(47)
-    expect(t.INDUSTRIA).toBe(30)
-    expect(t.DESENVOLVIMENTO).toBe(12)
-    expect(t.SALINAS).toBe(38)
-    expect(t.MILITAR).toBe(20)
-    expect(t.ENXOFRE).toBe(6)
-    expect(t.CRIACOES).toBe(41)
-    expect(t.FLORESTA).toBe(25)
-    expect(t.PLANTACOES).toBe(14)
-    for (const b of ['BARREIRO', 'ROCHA', 'FERRO', 'CARVAO'] as const) expect(t[b]).toBe(0)
-    expect(Object.keys(t)).toHaveLength(13)
-  })
-
-  it('bonusOrdenados em ordem decrescente', () => {
-    expect(bonusOrdenados(regioes[0].bonus).map((b) => b.valor)).toEqual([47, 30, 12])
   })
 
   it('dicaSelecao cobre os 5 casos', () => {

@@ -5,12 +5,12 @@
 
 ## Objetivo
 
-Implementar diálogo/modal Vue + PrimeVue para anexação de região, mostrando tipo, bônus, custo e validação de adjacência.
+Implementar diálogo/modal Vue + PrimeVue para anexação de região, mostrando tipo, composição de terrenos, custo e validação de adjacência.
 
 ## Contexto necessário
 
 - [design.md — D11. Mapa, resumo e anexação](/openspec/changes/redesenho-criacao-vila-populacao/design.md#d11-mapa-resumo-e-anexação)
-  > Anexação mostra tipo e bônus da região; POST sem corpo; sem escolha de tipo.
+  > Anexação mostra tipo e percentuais de terreno da região; POST sem corpo; sem escolha de tipo.
 
 - [../regioes.md](../regioes.md) — adjacência, custo (1.2, 1.6)
   > Região clicada deve estar adjacente; custo exibido antes de confirmar.
@@ -23,12 +23,12 @@ Implementar diálogo/modal Vue + PrimeVue para anexação de região, mostrando 
   - Exibe:
     - Número da região, posição na grade
     - Tipo sorteado (Floresta, Planície, Urbana, Litoral ou Montanha) com ícone e cor
-    - Bônus da região (3 valores com rótulos)
+    - 3 percentuais de terreno da região (posição, sigla, valor; exemplo: "1º Rocha 44%, 2º Ferro 28%, 3º Carvão 28%")
     - Teste de adjacência: "Região adjacente a [lista de vizinhas possuídas]" (✓ verde) ou "Não adjacente" (✗ vermelho)
     - Custo: Ouro X, Madeira Y, Pedra Z (sombreado se insuficiente)
     - Botões: "Anexar" (desabilitado se não adjacente ou recursos insuficientes), "Cancelar"
   - Chamada: POST /api/jogo/regioes/{indice}/anexar sem corpo ao clicar "Anexar"
-  - Feedback: spinner durante requisição, mensagem de sucesso/erro, atualiza mapa
+  - Feedback: spinner durante requisição, mensagem de sucesso/erro, atualiza mapa (com os ladrilhos da região)
 
 **Integração com Mapa.vue:**
 - Ao clicar em célula vazia (não possuída), abre DialogoAnexacao passando indiceRegiao
@@ -52,10 +52,10 @@ Não se aplica (tarefa 001).
 
 ## Testes
 
-- **Teste funcional**: clicar em região vazia adjacente → diálogo abre, mostra tipo e bônus sorteados, custo correto, botão "Anexar" habilitado.
+- **Teste funcional**: clicar em região vazia adjacente → diálogo abre, mostra tipo sorteado e 3 percentuais de terreno (ex.: "1º Rocha 44%, 2º Ferro 28%, 3º Carvão 28%"), custo correto, botão "Anexar" habilitado.
 - **Teste funcional**: diálogo com recursos insuficientes → botão "Anexar" desabilitado, mensagem apropriada.
-- **Teste funcional**: clicar "Anexar" → POST enviado sem corpo, diálogo fecha, mapa atualiza, região agora possuída com tipo sorteado, bônus somados.
-- **Teste E2E**: Mapa → clicar vazia (Montanha) → diálogo anexação mostra tipo/bônus → "Anexar" → sucesso → mapa atualiza, bônus da vila aumentam.
+- **Teste funcional**: clicar "Anexar" → POST enviado sem corpo, diálogo fecha, mapa atualiza, região agora possuída com tipo sorteado, ladrilhos exibidos.
+- **Teste E2E**: Mapa → clicar vazia (Montanha) → diálogo anexação mostra tipo/percentuais → "Anexar" → sucesso → mapa atualiza, grade 10×10 mostra endereços dos ladrilhos.
 
 ## Definição de pronto
 

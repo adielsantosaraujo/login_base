@@ -22,11 +22,10 @@ import com.example.loginbase.jogo.construcao.EstadoConstrucao;
 import com.example.loginbase.jogo.construcao.NivelConstrucao;
 import com.example.loginbase.jogo.construcao.TipoConstrucao;
 import com.example.loginbase.jogo.excecao.VilaNaoEncontradaException;
-import com.example.loginbase.jogo.modelo.BonusRegiao;
-import com.example.loginbase.jogo.modelo.Jazida;
-import com.example.loginbase.jogo.modelo.LadrilhoJazida;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
+import com.example.loginbase.jogo.modelo.Ladrilho;
+import com.example.loginbase.jogo.modelo.RegiaoTerreno;
 import com.example.loginbase.jogo.modelo.Regiao;
-import com.example.loginbase.jogo.modelo.RegiaoBonus;
 import com.example.loginbase.jogo.modelo.TipoRegiao;
 import com.example.loginbase.jogo.modelo.Vila;
 import com.example.loginbase.jogo.modelo.VilaPrevia;
@@ -41,11 +40,11 @@ class ModeloJogoBaseIntegrationTest {
 	@Autowired UsuarioRepository usuarioRepository;
 	@Autowired VilaRepository vilaRepository;
 	@Autowired RegiaoRepository regiaoRepository;
-	@Autowired LadrilhoJazidaRepository ladrilhoJazidaRepository;
 	@Autowired ConstrucaoRepository construcaoRepository;
 	@Autowired JogoTurnoRepository jogoTurnoRepository;
-	@Autowired RegiaoBonusRepository regiaoBonusRepository;
 	@Autowired VilaPreviaRepository vilaPreviaRepository;
+	@Autowired RegiaoTerrenoRepository regiaoTerrenoRepository;
+	@Autowired LadrilhoRepository ladrilhoRepository;
 	@Autowired VilaAtual vilaAtual;
 	@Autowired EntityManager em;
 
@@ -101,60 +100,123 @@ class ModeloJogoBaseIntegrationTest {
 				.isInstanceOf(DataIntegrityViolationException.class);
 	}
 
-	@Test
-	void ladrilhoJazidaChaveCompostaEPersistencia() {
-		Vila vila = novaVila();
-		Regiao r = new Regiao(vila.getId(), 1);
-		r.setTipo(TipoRegiao.FLORESTA);
-		r.setPossuida(true);
-		r = regiaoRepository.saveAndFlush(r);
-
-		ladrilhoJazidaRepository.saveAndFlush(new LadrilhoJazida(r.getId(), 0, 0, Jazida.FLORESTA));
-		ladrilhoJazidaRepository.saveAndFlush(new LadrilhoJazida(r.getId(), 0, 1, Jazida.ROCHA));
-		em.clear();
-		assertThat(ladrilhoJazidaRepository.findAllByRegiaoId(r.getId())).hasSize(2);
-		assertThat(ladrilhoJazidaRepository.findById(new LadrilhoJazida.Chave(r.getId(), 0, 1)))
-				.get().extracting(LadrilhoJazida::getJazida).isEqualTo(Jazida.ROCHA);
-
-		Long regiaoId = r.getId();
-		assertThatThrownBy(() -> {
-			em.createNativeQuery("insert into ladrilho_jazida (regiao_id, x, y, jazida) values (:r, 0, 0, 'ROCHA')")
-					.setParameter("r", regiaoId).executeUpdate();
-		}).isInstanceOf(Exception.class);
-	}
-
-	@Test
-	void ladrilhoForaDaGradeRejeitado() {
-		Vila vila = novaVila();
-		Regiao r = regiaoRepository.saveAndFlush(new Regiao(vila.getId(), 1));
-		assertThatThrownBy(() -> ladrilhoJazidaRepository.saveAndFlush(new LadrilhoJazida(r.getId(), 10, 0, Jazida.CAMPO)))
-				.isInstanceOf(DataIntegrityViolationException.class);
-	}
-
-	@Test
-	void persisteELeBonusDeRegiaoEConstraints() {
-		Vila vila = novaVila();
-		Regiao r = new Regiao(vila.getId(), 1);
+	private Regiao novaRegiaoPossuida() {
+		Regiao r = new Regiao(novaVila().getId(), 1);
 		r.setTipo(TipoRegiao.MONTANHA);
 		r.setPossuida(true);
-		r = regiaoRepository.saveAndFlush(r);
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.ROCHA, 1, 44));
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.FERRO, 2, 20));
-		regiaoBonusRepository.saveAndFlush(new RegiaoBonus(r.getId(), BonusRegiao.CARVAO, 3, 9));
+		return regiaoRepository.saveAndFlush(r);
+	}
+
+	@Test
+	void persisteELeTerrenosDaRegiaoEmOrdemDePosicao() {
+		Regiao r = novaRegiaoPossuida();
+		regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(r.getId(), TipoTerreno.CARVAO, 3, 15));
+		regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(r.getId(), TipoTerreno.ROCHA, 1, 50));
+		regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(r.getId(), TipoTerreno.FERRO, 2, 35));
 		em.clear();
 
-		var lidos = regiaoBonusRepository.findByRegiaoIdOrderByPosicao(r.getId());
-		assertThat(lidos).extracting(RegiaoBonus::getBonus)
-				.containsExactly(BonusRegiao.ROCHA, BonusRegiao.FERRO, BonusRegiao.CARVAO);
-		assertThat(regiaoBonusRepository.findByRegiaoIdIn(java.util.List.of(r.getId()))).hasSize(3);
-		var somas = regiaoBonusRepository.somarBonusPossuidos(vila.getId());
-		assertThat(somas).hasSize(3);
-		assertThat(somas).filteredOn(t -> t.getBonus() == BonusRegiao.ROCHA).first()
-				.extracting(t -> t.getTotal()).isEqualTo(44L);
+		assertThat(regiaoTerrenoRepository.findByRegiaoIdOrderByPosicao(r.getId()))
+				.extracting(RegiaoTerreno::getTerreno, RegiaoTerreno::getPosicao, RegiaoTerreno::getPercentual)
+				.containsExactly(
+						org.assertj.core.groups.Tuple.tuple(TipoTerreno.ROCHA, 1, 50),
+						org.assertj.core.groups.Tuple.tuple(TipoTerreno.FERRO, 2, 35),
+						org.assertj.core.groups.Tuple.tuple(TipoTerreno.CARVAO, 3, 15));
+		assertThat(regiaoTerrenoRepository.findByRegiaoIdIn(java.util.List.of(r.getId()))).hasSize(3);
+	}
 
-		Long regiaoId = r.getId();
-		assertThatThrownBy(() -> regiaoBonusRepository.saveAndFlush(new RegiaoBonus(regiaoId, BonusRegiao.ENXOFRE, 1, 20)))
+	@Test
+	void terrenoDaRegiaoRejeitaPercentualPosicaoEDuplicata() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.ROCHA, 1, 61)))
 				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void terrenoDaRegiaoRejeitaPosicao3Com9() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.ROCHA, 3, 9)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void terrenoDaRegiaoRejeitaTerrenoOuPosicaoDuplicados() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.ROCHA, 1, 40));
+		assertThatThrownBy(() -> regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.ROCHA, 2, 30)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void terrenoDaRegiaoRejeitaPosicaoDuplicada() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.ROCHA, 1, 40));
+		assertThatThrownBy(() -> regiaoTerrenoRepository.saveAndFlush(new RegiaoTerreno(id, TipoTerreno.FERRO, 1, 30)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void persisteELadrilhosComBonusTotalEConsultas() {
+		Regiao r = novaRegiaoPossuida();
+		ladrilhoRepository.save(new Ladrilho(r.getId(), 1, 0, TipoTerreno.ROCHA, 40, 25));
+		ladrilhoRepository.save(new Ladrilho(r.getId(), 0, 1, TipoTerreno.ROCHA, 30, 0));
+		ladrilhoRepository.save(new Ladrilho(r.getId(), 5, 0, TipoTerreno.FERRO, 10, 100));
+		ladrilhoRepository.save(new Ladrilho(r.getId(), 0, 0, TipoTerreno.ROCHA, 20, 50));
+		ladrilhoRepository.flush();
+		em.clear();
+
+		assertThat(ladrilhoRepository.existsByRegiaoId(r.getId())).isTrue();
+		assertThat(ladrilhoRepository.findByRegiaoIdAndXAndY(r.getId(), 1, 0).orElseThrow().getBonusTotal()).isEqualTo(65);
+		assertThat(ladrilhoRepository.findByRegiaoIdAndXAndY(r.getId(), 9, 9)).isEmpty();
+		assertThat(ladrilhoRepository.findByRegiaoIdOrderByYAscXAsc(r.getId()))
+				.extracting(l -> l.getX() + "," + l.getY()).containsExactly("0,0", "1,0", "5,0", "0,1");
+		assertThat(ladrilhoRepository.findByRegiaoIdAndTerrenoOrderByYAscXAsc(r.getId(), TipoTerreno.ROCHA))
+				.extracting(l -> l.getX() + "," + l.getY()).containsExactly("0,0", "1,0", "0,1");
+	}
+
+	@Test
+	void ladrilhoRejeitaBonusFolgaEPosicaoDuplicada() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> ladrilhoRepository.saveAndFlush(new Ladrilho(id, 0, 0, TipoTerreno.ROCHA, 10, 30)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void ladrilhoRejeitaBonusBase101() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> ladrilhoRepository.saveAndFlush(new Ladrilho(id, 0, 0, TipoTerreno.ROCHA, 101, 0)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void ladrilhoRejeitaXForaDaGrade() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> ladrilhoRepository.saveAndFlush(new Ladrilho(id, 10, 0, TipoTerreno.ROCHA, 10, 0)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void ladrilhoRejeitaPosicaoDuplicada() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		ladrilhoRepository.saveAndFlush(new Ladrilho(id, 2, 3, TipoTerreno.ROCHA, 10, 0));
+		assertThatThrownBy(() -> ladrilhoRepository.saveAndFlush(new Ladrilho(id, 2, 3, TipoTerreno.FERRO, 10, 0)))
+				.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	@Test
+	void terrenoInvalidoViaSqlNativoRejeitado() {
+		Regiao r = novaRegiaoPossuida();
+		Long id = r.getId();
+		assertThatThrownBy(() -> em.createNativeQuery("insert into ladrilho (regiao_id, x, y, terreno, bonus_base, "
+				+ "bonus_adjacente) values (:r, 0, 0, 'LAVA', 10, 0)").setParameter("r", id).executeUpdate())
+				.isInstanceOf(Exception.class);
 	}
 
 	@Test

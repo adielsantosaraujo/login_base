@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.loginbase.jogo.comum.JogoException;
-import com.example.loginbase.jogo.modelo.Jazida;
-import com.example.loginbase.jogo.modelo.LadrilhoJazida;
+import com.example.loginbase.jogo.modelo.Ladrilho;
 import com.example.loginbase.jogo.modelo.Regiao;
+import com.example.loginbase.jogo.modelo.TipoTerreno;
 import com.example.loginbase.jogo.modelo.Vila;
-import com.example.loginbase.jogo.repositorio.LadrilhoJazidaRepository;
+import com.example.loginbase.jogo.repositorio.LadrilhoRepository;
 import com.example.loginbase.jogo.repositorio.RegiaoRepository;
-import com.example.loginbase.jogo.servico.GeradorJazidaService;
+import com.example.loginbase.jogo.servico.GeradorLadrilhoService;
 
 /** Marcação de ladrilhos de coleta de um prédio de coleta. */
 @Service
@@ -28,14 +28,14 @@ public class MarcacaoService {
 	private final ConstrucaoRepository construcaoRepository;
 	private final ConstrucaoMarcacaoRepository marcacaoRepository;
 	private final RegiaoRepository regiaoRepository;
-	private final LadrilhoJazidaRepository ladrilhoJazidaRepository;
+	private final LadrilhoRepository ladrilhoRepository;
 
 	public MarcacaoService(ConstrucaoRepository construcaoRepository, ConstrucaoMarcacaoRepository marcacaoRepository,
-			RegiaoRepository regiaoRepository, LadrilhoJazidaRepository ladrilhoJazidaRepository) {
+			RegiaoRepository regiaoRepository, LadrilhoRepository ladrilhoRepository) {
 		this.construcaoRepository = construcaoRepository;
 		this.marcacaoRepository = marcacaoRepository;
 		this.regiaoRepository = regiaoRepository;
-		this.ladrilhoJazidaRepository = ladrilhoJazidaRepository;
+		this.ladrilhoRepository = ladrilhoRepository;
 	}
 
 	/** Máximo de ladrilhos marcados por nível: N1 4, N2 10, N3 20. */
@@ -56,7 +56,7 @@ public class MarcacaoService {
 		if (!ConstrucaoCatalogo.ehPredioDeColeta(c.getTipo())) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "Construção não é um prédio de coleta");
 		}
-		int lado = GeradorJazidaService.LADO;
+		int lado = GeradorLadrilhoService.LADO;
 		if (x < 0 || y < 0 || x >= lado || y >= lado) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "Ladrilho fora da região");
 		}
@@ -72,14 +72,14 @@ public class MarcacaoService {
 		if (marcacaoRepository.existsByVilaIdAndRegiaoIndiceAndXAndY(vila.getId(), c.getRegiaoIndice(), x, y)) {
 			throw new JogoException(HttpStatus.BAD_REQUEST, "Ladrilho já marcado");
 		}
-		Jazida esperada = ConstrucaoCatalogo.jazida(c.getTipo()).orElse(null);
+		TipoTerreno esperado = ConstrucaoCatalogo.terreno(c.getTipo()).orElse(null);
 		Regiao regiao = regiaoRepository.findByVilaIdAndIndice(vila.getId(), c.getRegiaoIndice())
 				.orElseThrow(() -> new JogoException(HttpStatus.NOT_FOUND, "Região não encontrada"));
-		Jazida atual = ladrilhoJazidaRepository.findAllByRegiaoId(regiao.getId()).stream()
-				.filter(l -> l.getX() == x.intValue() && l.getY() == y.intValue())
-				.map(LadrilhoJazida::getJazida).findFirst().orElse(null);
-		if (esperada == null || atual != esperada) {
-			throw new JogoException(HttpStatus.BAD_REQUEST, "Ladrilho sem a jazida compatível (%s)".formatted(esperada));
+		TipoTerreno atual = ladrilhoRepository.findByRegiaoIdAndXAndY(regiao.getId(), x, y).map(Ladrilho::getTerreno)
+				.orElse(null);
+		if (esperado == null || atual != esperado) {
+			throw new JogoException(HttpStatus.BAD_REQUEST, "Ladrilho sem o terreno do prédio (%s)"
+					.formatted(esperado == null ? "-" : esperado.getNomeExibicao()));
 		}
 		List<ConstrucaoMarcacao> marcadas = marcacaoRepository.findByConstrucaoId(c.getId());
 		if (marcadas.size() >= limite(c.getNivel())) {

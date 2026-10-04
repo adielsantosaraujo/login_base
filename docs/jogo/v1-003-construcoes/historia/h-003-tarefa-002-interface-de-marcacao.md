@@ -21,13 +21,13 @@ Não se aplica.
   - Button "Modo marcação" ativa overlay.
   - Células clicáveis: click = marcar/desmarcar.
   - Célula marcada: visual destaque (cor, ícone).
-  - Células com jazida errada: desabilitadas ou aviso ao clicar.
+  - Células com terreno errado: desabilitadas ou aviso ao clicar.
   - Contador: "X/N marcados" (ex: "4/4" para N1).
   - Preview de produtivos: "Produtivos: min(alocados, floor(X÷2))".
 
 - **Validação em tempo real**:
   - Limite atingido: desabilita novos cliques.
-  - Jazida incompatível: aviso ao clicar ou visual.
+  - Terreno incompatível: aviso ao clicar ou visual.
 
 - **Chamadas de API**:
   - `POST /api/jogo/construcoes/{id}/marcacoes` (marcar).

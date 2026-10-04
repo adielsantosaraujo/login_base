@@ -5,12 +5,12 @@
 
 ## Objetivo
 
-Implementar endpoint `POST /api/jogo/regioes/{indice}/anexar` que valida adjacência, masmorra, recursos, e conclui a anexação mantendo tipo e bônus sorteados.
+Implementar endpoint `POST /api/jogo/regioes/{indice}/anexar` que valida adjacência, masmorra, recursos, e conclui a anexação mantendo tipo e percentuais de terreno sorteados.
 
 ## Contexto necessário
 
 - [design.md — D11. Mapa, resumo e anexação](/openspec/changes/redesenho-criacao-vila-populacao/design.md#d11-mapa-resumo-e-anexação)
-  > Anexação usa tipo/bônus gravados na criação; POST sem corpo; ladrilhos gerados se ausentes.
+  > Anexação usa tipo/percentuais de terreno gravados na criação; POST sem corpo; ladrilhos gerados se ausentes (todos os tipos).
 
 - [../regioes.md](../regioes.md) — adjacência, custo, masmorras (1.2, 1.6)
   > Custo: Ouro = round(150 × 1,35^(k−3)); Madeira = Pedra = 50 × (k−2).
@@ -22,7 +22,7 @@ Implementar endpoint `POST /api/jogo/regioes/{indice}/anexar` que valida adjacê
 - [/src/main/java/com/example/loginbase/jogo/controlador/RegiaoControlador.java](/src/main/java/com/example/loginbase/jogo/controlador/RegiaoControlador.java)
   - Endpoint: `POST /api/jogo/regioes/{indice}/anexar`
   - Corpo: vazio ou ignorado (sem `AnexarRegiaoRequest`)
-  - Resposta sucesso (200): `{ "regiao": { indice, tipo, bonus: [...], possuida }, "estoque": {...}, "custo": { ouro: 203, madeira: 100, pedra: 100 } }`
+  - Resposta sucesso (200): `{ "regiao": { indice, tipo, terrenos: [{terreno, posicao, percentual}, ...], possuida }, "estoque": {...}, "custo": { ouro: 203, madeira: 100, pedra: 100 } }`
   - Resposta erro (400/409): `{ "erro": "...", "codigo": "..." }`
 
 **Serviço (novo/existente):**
@@ -37,10 +37,10 @@ Implementar endpoint `POST /api/jogo/regioes/{indice}/anexar` que valida adjacê
     6. Estoque tem Ouro, Madeira, Pedra suficientes (fórmula de custo)
   - Execução (transação):
     - Debitar recursos do estoque
-    - Atualizar regiao: possuida = true (tipo e bônus já gravados na criação)
-    - Gerar ladrilhos se ausentes e tipo ≠ URBANA
+    - Atualizar regiao: possuida = true (tipo e 3 percentuais de terreno já gravados na criação)
+    - Gerar ladrilhos se ausentes (todos os tipos, inclusive Urbana)
     - Gravar evento no relatório de turno (ou log)
-  - Retornar Regiao atualizada com bônus
+  - Retornar Regiao atualizada com percentuais de terreno
 
 **Exceções:**
 - `RegiaoJaPossuídaException`
@@ -63,7 +63,7 @@ Não se aplica (tarefa 002).
 
 ## Testes
 
-- **Teste de integração**: POST /api/jogo/regioes/3/anexar sem corpo, k=3, região Montanha com bônus sorteados, recursos suficientes → 200, região 3 possuída com tipo Montanha, bônus retornados, estoque debitado.
+- **Teste de integração**: POST /api/jogo/regioes/3/anexar sem corpo, k=3, região Montanha com percentuais de terreno sorteados, recursos suficientes → 200, região 3 possuída com tipo Montanha, percentuais retornados, estoque debitado.
 - **Teste de validação**: POST região não adjacente → 400, "As regiões escolhidas precisam ser vizinhas entre si".
 - **Teste de validação**: POST região com masmorra ativa → 400, erro apropriado.
 - **Teste de validação**: POST com recursos insuficientes → 400, erro apropriado.
