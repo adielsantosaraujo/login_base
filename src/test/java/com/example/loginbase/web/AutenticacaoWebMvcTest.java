@@ -326,4 +326,18 @@ class AutenticacaoWebMvcTest {
 				.andExpect(redirectedUrl(null));
 	}
 
+	@Test
+	void apiDocsAnonimoRetorna401SemRedirecionar() throws Exception {
+		mockMvc.perform(get("/v3/api-docs"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(redirectedUrl(null));
+	}
+
+	@Test
+	void swaggerUiAnonimoRedirecionaParaLogin() throws Exception {
+		mockMvc.perform(get("/swagger-ui/index.html"))
+				.andExpect(status().isFound())
+				.andExpect(redirectedUrlPattern("/**/login"));
+	}
+
 }

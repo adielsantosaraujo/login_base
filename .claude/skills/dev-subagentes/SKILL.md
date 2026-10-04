@@ -1,9 +1,9 @@
 ---
 name: dev-subagentes
-description: Fluxo obrigatório para QUALQUER desenvolvimento de código — pedido avulso (implementar, corrigir bug, refatorar, criar teste, alterar arquivo de código/config). A sessão principal só orquestra; pensamento, planejamento e raciocínio ficam com subagentes Opus, código com subagentes Sonnet (sempre em sessão nova e limpa), e textos/documentos .md com subagentes Haiku. Tarefas independentes rodam em paralelo; ao final, relatório apresentado no chat. Use sempre que for escrever ou alterar código.
+description: Fluxo obrigatório para QUALQUER desenvolvimento de código — pedido avulso (implementar, corrigir bug, refatorar, criar teste, alterar arquivo de código/config). A sessão principal só orquestra; pensamento, planejamento e raciocínio ficam com subagentes Opus, código com subagentes Sonnet (sempre em sessão nova e limpa), e textos/documentos .md com subagentes Haiku, e, ao final, um subagente Haiku atualiza os documentos de docs/ afetados (skill documentacao). Tarefas independentes rodam em paralelo; ao final, relatório apresentado no chat. Use sempre que for escrever ou alterar código.
 metadata:
   author: adiel
-  version: "2.1"
+  version: "2.2"
 ---
 
 # Desenvolvimento orquestrado por subagentes (Opus / Sonnet / Haiku)
@@ -21,7 +21,7 @@ Vale para:
    |---|---|---|
    | Pensamento, planejamento, raciocínio | `opus` | analisar o pedido, desenhar a solução, quebrar em tarefas/ondas, investigar causa de bug, revisar resultados e decidir correções |
    | Desenvolvimento de código | `sonnet` | implementar uma feature, corrigir código, criar testes, rodar build/testes de verificação |
-   | Escrita de textos e documentos `.md` | `haiku` | README, documentação, relatórios |
+   | Escrita de textos e documentos `.md` | `haiku` | README, documentação, documentação em docs/, relatórios |
 
    Use **um ou mais** subagentes de cada tipo conforme o tamanho do trabalho (ex.: dois Opus analisando partes independentes do problema em paralelo).
 2. **Sessão limpa sempre**: cada tarefa = um subagente **novo**, sem contexto anterior.
@@ -92,6 +92,40 @@ Quando cada subagente terminar:
 - Siga para a próxima onda. Nunca invente resultados de um subagente que ainda está rodando — aguarde a notificação.
 
 Ao final, se couber, dispare um subagente **Sonnet** de verificação (build + testes do projeto) em sessão limpa.
+
+## Passo 5 — Atualizar a documentação (subagente Haiku)
+
+Se a mudança alterar código ou configuração (e não seja um pedido puramente de documentação que já usa a skill `documentacao` direto):
+
+- O orquestrador coleta: `git status --porcelain`, `git diff --name-only HEAD`, um resumo breve da mudança e as decisões tomadas no plano.
+- Dispara um subagente **Haiku** em sessão limpa que lê `.claude/skills/documentacao/SKILL.md` e segue o "Modo manutenção".
+- O Haiku devolve: a lista de documentos em `docs/` que foram alterados (com justificativa breve), ou "nenhum documento afetado".
+- Esse agente entra na tabela do relatório final (função "documentação", modelo "haiku").
+- **O passo pode ser pulado** apenas quando a mudança não toca código nem configuração (ex.: pedido só de documentação, que já usa a skill `documentacao` diretamente).
+
+Template curto para o prompt do subagente Haiku:
+
+```
+Você é um subagente de redação. Responda em português do Brasil.
+
+## Projeto
+- Diretório: <caminho absoluto>
+- Skill de documentação: `.claude/skills/documentacao/SKILL.md`
+
+## Mudança
+Resumo: <resumo breve da mudança em 1-2 linhas>
+Decisões: <lista curta de decisões ou pontos-chave>
+
+## Arquivos alterados
+<saída de `git diff --name-only HEAD`>
+
+## Tarefa
+Leia `.claude/skills/documentacao/SKILL.md` (seção "Modo manutenção") e aplique-a aos arquivos em `docs/` afetados pela mudança acima. Retorne a lista de documentos alterados ou "nenhum documento afetado", com justificativa breve.
+
+## Retorno esperado
+1. Lista de documentos alterados (ou constatação de que nenhum foi afetado)
+2. Breve justificativa
+```
 
 ## Relatório final
 
